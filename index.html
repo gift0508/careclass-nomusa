@@ -642,6 +642,11 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
 .pbadge{display:block;font-size:.58rem;font-weight:700;margin-top:0;letter-spacing:0;white-space:nowrap}
 .pbadge.start{color:#8fb4ff}.pbadge.diag{color:#ffb347}.pbadge.done{color:#5ec98f}
 .pathcard{max-width:560px;position:relative}
+.pathbig{position:absolute;top:14px;right:58px;z-index:2;font:inherit;font-size:.74rem;font-weight:700;padding:5px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:transparent;color:var(--sub);cursor:pointer}.pathbig:hover{border-color:var(--gold);color:var(--gold)}
+.pathcard h3{padding-right:150px}
+.pathcard.big{max-width:1100px;width:calc(100vw - 32px)}
+.pathcard.big #pathBody{zoom:1.22}
+@media (max-width:700px){.pathcard.big{width:100%}.pathcard.big #pathBody{zoom:1.08}.pathcard h3{padding-right:0;margin-top:34px}}
 .pbtns{display:flex;gap:8px;margin-top:14px;align-items:center}.pbtns .gbtn{flex:1;margin:0}
 .pscroll{max-height:56vh;overflow:auto;margin-top:6px}
 .psec{margin-top:10px}
@@ -2644,7 +2649,7 @@ function ccPathModal(ctx){
   });
   window.__ccPick=pick;
   let m=document.getElementById("pathmodal");
-  if(!m){ m=document.createElement("div"); m.id="pathmodal"; m.className="upmodal"; m.innerHTML='<div class="upcard pathcard"><div id="pathBody"></div></div>'; document.body.appendChild(m); }
+  if(!m){ m=document.createElement("div"); m.id="pathmodal"; m.className="upmodal"; m.innerHTML='<div class="upcard pathcard"><button class="pathbig" id="pathBigBtn" onclick="ccPathBig()">⛶ 크게보기</button><div id="pathBody"></div></div>'; document.body.appendChild(m); }
   const sec=tracks.map(function(t){
     const sv=ccTrackSaved(t), dg=sv.diag||{};
     const rows=CC_LAWS[t].map(function(l){
@@ -2665,6 +2670,8 @@ function ccPathModal(ctx){
     '<button class="btn gbtn" onclick="ccPathSave()">'+(window.__ccPathCtx==="diag"?"이대로 정하고 진단 시작 →":"저장하기")+'</button></div>';
   m.classList.add("open");
 }
+function ccPathBig(v){ const c=document.querySelector("#pathmodal .pathcard"); if(!c) return; const on=(v==null)?!c.classList.contains("big"):!!v;
+  c.classList.toggle("big",on); const b=document.getElementById("pathBigBtn"); if(b) b.textContent=on?"− 작게보기":"⛶ 크게보기"; }
 function ccPathClose(){ const m=document.getElementById("pathmodal"); if(m) m.classList.remove("open"); }
 function ccPathPick(b){ const t=b.getAttribute("data-t"), s=b.getAttribute("data-s"), v=b.getAttribute("data-v"); window.__ccPick[t][s]=v;
   b.parentNode.querySelectorAll(".pbtn").forEach(function(x){ x.classList.toggle("on",x===b); }); }
@@ -3677,7 +3684,7 @@ window.ccExamDate=function(t,today){
 /* 출발점 창: 2차 선택과목 고르기 (진단 버튼은 아래에서 단계 고르기로 바뀜) */
 (function(){
   const st=document.createElement("style");
-  st.textContent='#pathBody .pbtn[data-v="diag"],#pathBody .pall button:last-child{display:none!important}.nmopt{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 4px;font-size:.88rem}.nmopt select{font:inherit;padding:5px 8px;border-radius:8px}';
+  st.textContent='#pathBody .prow .pl{flex:0 0 36%;word-break:keep-all;white-space:normal}#pathBody select.nmstart{flex:1;min-width:0}#pathBody .pbtn[data-v="diag"],#pathBody .pall button:last-child{display:none!important}.nmopt{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:8px 0 4px;font-size:.88rem}.nmopt select{font:inherit;padding:5px 8px;border-radius:8px}';
   document.head.appendChild(st);
   const pm=window.ccPathModal;
   if(pm) window.ccPathModal=function(ctx){
