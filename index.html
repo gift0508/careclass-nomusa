@@ -2901,9 +2901,12 @@ window.ccConc=ccConc;
 function ccFlat(t,pl){
   pl=pl||ccPlanOf(t);
   const out=[], ord=ccOrder(t,pl), conc=ccConc(t,pl), LAWS=CC_LAWS[t]||[], seen={};
-  for(let si=0;si<ccNS(t);si++){
+  /* 과목별 「지금 듣는 단계」(pl.focus[과목]=단계): 그 단계 먼저 → 다 들으면 나머지 단계를 원래 순서대로(멈춘 단계부터 이어 듣기) */
+  const NS=ccNS(t), FO=pl.focus||{}, seqOf=function(l){ const f=FO[l]; if(f==null||f<=0||f>=NS) return null; const a=[f]; for(let k=0;k<NS;k++) if(k!==f) a.push(k); return a; };
+  for(let r=0;r<NS;r++){
     const Q=[];
     ord.forEach(function(l,oi){
+      const sq=seqOf(l), si=sq?sq[r]:r;
       const s=ccSel(t,l,si,pl), src=ccSrc(t,l,si,pl), li=LAWS.indexOf(l), q=[];
       for(let i=0;i<s.length;i++) if(s.charCodeAt(i)===49){ const ck=ccSharedTo(t,l,si,src,i)||l, key=ck+"|"+si+"|"+i+"|"+src; if(seen[key]) continue; seen[key]=1; q.push({t:t,l:l,si:si,i:i,li:li,oi:oi,src:src,key:key}); }
       if(q.length) Q.push(q);
@@ -3008,10 +3011,17 @@ function ccPlanCalc(t){
 function ccBuildCells(){
   const t=TRACK, pl=CC_PLAN, c=ccPlanCalc(t);
   return laws.map(function(l){
-    const n=STAGEMAP[l], cr=CREDITMAP[l]||0, sk=!!((pl.skip||{})[l]);
+    const n=STAGEMAP[l], cr=CREDITMAP[l]||0, sk=!!((pl.skip||{})[l]), fo=(pl.focus||{})[l], H=ccHeard(t,pl,l);
     return ccZeros(t).map(function(_,k){
       const cnt=ccCount(ccSel(t,l,k,pl));
       if(sk&&!cnt) return {p:"선택 안 함 · 듣지 않음",s:"none"};
+      if(fo!=null){
+        /* 수강생이 단계를 옮긴 과목: 옮긴 단계 = 진행 중 · 듣다가 멈춘 단계 = 진행 일시정지 */
+        const h=H[k]||0, pr=(c.rng[k]?c.rng[k]+" · ":"")+cnt+"강"+(h?" · "+h+"강 들음":""), fc=ccCount(ccSel(t,l,fo,pl)), fdone=fc>0&&(H[fo]||0)>=fc;
+        if(cnt&&h>=cnt) return {p:pr,s:"done"};
+        if(!fdone&&k===fo) return {p:pr,s:"now"};
+        if(h>0&&h<cnt) return {p:pr,s:fdone?"now":"paused"};
+      }
       const s=(n==null||n<0)?"none":(k<cr?"credit":(k<n?"done":(k===n?"now":"todo")));
       const p=cnt?((c.rng[k]?c.rng[k]+" · ":"")+cnt+"강"):(ccIsAuto(t,k)?"자율선택 · 담은 강의 없음":"담은 강의 없음");
       return {p:p,s:s};
@@ -3019,6 +3029,25 @@ function ccBuildCells(){
   });
 }
 
+/* 과목의 단계별 「들은 강의 수」(어제까지 배정된 강의) */
+function ccHeard(t,pl,l){
+  const A=pl.asg||{}, T=ccISO(ccToday()), H={};
+  ccFlat(t,pl).forEach(function(o){ if(o.l===l&&A[o.key]&&A[o.key]<T) H[o.si]=(H[o.si]||0)+1; });
+  return H;
+}
+/* 진행 중인 단계를 수강생이 옮김: 그 단계 강의부터 먼저 배정 (담긴 강의가 없으면 그 단계 강의를 모두 담음)
+   · 이미 들은 강의 기록은 그대로 · 오늘 배정은 새 순서로 다시 */
+window.ccPlanFocus=function(t,l,si){
+  const pl=ccPlanSync(t,true), T=ccISO(ccToday());
+  pl.focus=pl.focus||{}; pl.pick=pl.pick||{};
+  if(pl.skip&&pl.skip[l]){ delete pl.skip[l]; try{ if(t===TRACK) CC_PATH[l]=si>0?("s"+si):"start"; }catch(e){} }
+  if(!ccCount(ccSel(t,l,si,pl))) pl.pick[l+"|"+si]="1".repeat(ccCat(t,l,pl)[si]||0);
+  pl.focus[l]=si;
+  if(pl.per&&pl.asg){ Object.keys(pl.asg).forEach(function(k){ if(pl.asg[k]===T) delete pl.asg[k]; }); pl.sync=ccISO(ccAddDays(ccToday(),-1)); }
+  if(t===TRACK){ try{ STAGEMAP[l]=si; }catch(e){} }
+  ccPlanWrite(t,pl); ccPlanSync(t);
+  try{ P.A.cells=buildCellsA(); grid(); ccPlanBar(); ccSaveState(); }catch(e){}
+};
 /* 로드맵 위 '나의 수강 계획' 막대 */
 function ccPlanBar(){
   const g=document.getElementById("grid"); if(!g||!user) return;
@@ -4193,6 +4222,41 @@ window.CC_STAGE_DESC={
   "2차":{"핵심이론":"문제풀이를 위한 필요지식 습득 단계","문제풀이":"진도별 문제풀이를 통한 실전에서의 득점확보 단계",
          "테마특강":"중요논의주제들을 익혀 타인보다 뒤떨어짐 방지 단계","답안작성특강":"최단기 집중상기하기를 통한 답안작성능력 회복 단계"}
 };
+
+/* ── 로드맵: 단계 수만큼 칸 · 「진행 일시정지」 표시 · 칸에서 「이 단계로 옮기기」 ── */
+(function(){
+  const st=document.createElement("style");
+  st.textContent='.cell.paused{border-color:#8a7a3a!important;background:repeating-linear-gradient(45deg,rgba(201,162,39,.06),rgba(201,162,39,.06) 8px,transparent 8px,transparent 16px)!important}.cell.paused .st{color:#e0b94a!important}'+
+    '.nmfocus{margin-top:10px;padding:12px 14px;border:1px solid rgba(201,162,39,.45);border-radius:12px;background:rgba(201,162,39,.08);font-size:.88rem;line-height:1.6}.nmfocus button{margin-top:8px;font:inherit;font-weight:800;padding:9px 14px;border-radius:10px;border:none;background:linear-gradient(90deg,#C9A227,#E5BE44);color:#0D1F3C;cursor:pointer}';
+  document.head.appendChild(st);
+  const og=window.grid;
+  if(og){ window.grid=grid=function(){
+    const r=og.apply(this,arguments);
+    try{ const g=document.getElementById("grid"); if(g) g.style.gridTemplateColumns="88px repeat("+stages.length+",1fr)";
+      document.querySelectorAll("#grid .cell.paused .st").forEach(function(e){ e.textContent="진행 일시정지"; }); }catch(e){}
+    return r; }; }
+  const oc=window.openCell;
+  if(oc){ window.openCell=openCell=function(li,si){
+    const r=oc.apply(this,arguments);
+    try{
+      const l=laws[li], c=P[cur].cells[li][si], d=document.getElementById("detail"), m=d&&d.querySelector(".meta");
+      if(m&&c.s==="paused") m.innerHTML=m.innerHTML.replace(/상태: [^<]*/,"상태: 진행 일시정지 — 듣다가 다른 단계로 옮겨 멈춰 둔 단계입니다");
+      if(d&&!ccIsAuto(TRACK,si)&&c.s!=="now"){
+        const box=document.createElement("div"); box.className="nmfocus";
+        box.innerHTML='🔀 <b>'+l+'</b>을(를) 지금부터 <b>'+stages[si]+'</b> 강의로 들을까요?<br><small>내일 학습미션부터가 아니라 <b>오늘 배정부터</b> 이 단계 강의가 먼저 올라옵니다 · 듣던 단계는 「진행 일시정지」로 남고, 들은 기록은 그대로입니다 · 이 단계를 마치면 멈춘 단계로 돌아가 이어 듣습니다</small><br>'+
+          '<button onclick="nmFocus('+li+','+si+')">▶ '+stages[si]+'(으)로 옮기기</button>';
+        d.appendChild(box);
+      }
+    }catch(e){ console.warn(e); }
+    return r; }; }
+  window.nmFocus=function(li,si){
+    const l=laws[li];
+    if(!(CC_PLAN&&CC_PLAN.per)){ toast("먼저 학습 로드맵에서 하루 수강량을 정해 주세요"); return; }
+    ccPlanFocus(TRACK,l,si);
+    try{ document.getElementById("detail").classList.remove("open"); }catch(e){}
+    toast(l+" — 지금부터 "+stages[si]+" 강의를 먼저 듣습니다 · 듣던 단계는 「진행 일시정지」");
+  };
+})();
 
 </script>
 <!-- 케길반 신청 -->
