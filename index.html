@@ -2242,7 +2242,7 @@ function ccChatHTML(mode){
   return `<div class="ccchat">
     <div class="ccnotice"><div class="ccnt">📢 공지</div><div class="ccnbody" id="ccNotice"></div>
       ${adm?`<textarea id="ccNoticeEd" rows="3" placeholder="채팅방 맨 위에 보일 공지를 쓰세요 (비우고 저장하면 공지가 내려갑니다)"></textarea><button class="mini" style="margin-top:6px;border-color:var(--gold);color:var(--gold)" onclick="ccNoticeSave()">공지 저장</button>`:""}</div>
-    <div class="cchead">💬 케길반 채팅방 <span class="ccpn">지금 접속 <b id="ccPplN">0</b>명</span><span id="ccLive" class="cclive">연결 중…</span><button class="ccbigbtn" onclick="ccChatBig()" title="채팅창을 화면 가득 펼칩니다">⛶ 크게보기</button></div>
+    <div class="cchead">💬 케길반 채팅방 <span class="ccpn">지금 접속 <b id="ccPplN">0</b>명</span><span id="ccLive" class="cclive">연결 중…</span><button class="ccbigbtn ccdockbtn" onclick="ccChatDock()" title="채팅창을 화면 오른쪽에 붙여 둡니다 · 강의실 자리를 누르며 귓속말할 수 있습니다">📌 옆에 붙이기</button><button class="ccbigbtn" onclick="ccChatBig()" title="채팅창을 화면 가득 펼칩니다">⛶ 크게보기</button></div>
     <div class="ccppl" id="ccPpl"></div>
     <div class="ccmsgs" id="ccMsgs"></div>
     <div class="ccwbar" id="ccWbar" style="display:none"></div>
@@ -2517,14 +2517,32 @@ async function ccChatExport(){
     '.ccchat.ccbig{position:fixed!important;top:3vh;left:3vw;right:3vw;bottom:3vh;z-index:9600;height:auto!important;box-shadow:0 24px 70px rgba(0,0,0,.55);font-size:1.08rem}'+
     '.ccchat.ccbig .ccmsgs{font-size:1.06rem;padding:16px 20px}.ccchat.ccbig .ccin{padding:14px}.ccchat.ccbig .ccin input{font-size:1.1rem;padding:13px 14px}.ccchat.ccbig .ccin button{font-size:1rem;padding:10px 18px}'+
     '.ccbigbg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9590}'+
-    '@media(max-width:640px){.ccchat.ccbig{top:0;left:0;right:0;bottom:0;border-radius:0}}'+
+    '.ccdockbtn{margin-left:auto}.ccdockbtn+.ccbigbtn{margin-left:6px}'+
+    '.ccchat.ccdock{position:fixed!important;top:0;right:0;bottom:0;width:min(400px,92vw);z-index:9600;height:auto!important;border-radius:0!important;box-shadow:-10px 0 40px rgba(0,0,0,.35);font-size:1.02rem}.ccchat.ccdock .ccin input{font-size:1.02rem;padding:11px 12px}'+
+    '@media(max-width:640px){.ccchat.ccbig{top:0;left:0;right:0;bottom:0;border-radius:0}.ccchat.ccdock{top:auto;left:0;width:auto;height:55vh!important;box-shadow:0 -10px 40px rgba(0,0,0,.35)}}'+
     '.ccwbar{background:#6b3fa0!important;color:#fff!important;font-size:.8rem!important;font-weight:700}.ccwbar b{color:#fff!important}.ccwbar button{background:#fff!important;color:#5b2d82!important;border:none!important;font-weight:800!important;padding:5px 10px!important;border-radius:8px!important;cursor:pointer}';
   document.head.appendChild(st);
-  document.addEventListener("keydown",function(e){ if(e.key!=="Escape") return; if(typeof ccChat!=="undefined"&&ccChat.to){ ccWhisperOff(); return; } if(document.querySelector(".ccchat.ccbig")) ccChatBig(false); });   /* Esc: 귓속말 중이면 귓속말 끝내기 → 아니면 크게보기 닫기 */
+  document.addEventListener("keydown",function(e){ if(e.key!=="Escape") return; if(typeof ccChat!=="undefined"&&ccChat.to){ ccWhisperOff(); return; } if(document.querySelector(".ccchat.ccbig")) ccChatBig(false); else if(document.querySelector(".ccchat.ccdock")) ccChatDock(false); });   /* Esc: 귓속말 중이면 귓속말 끝내기 → 아니면 크게보기 닫기 */
 })();
+function ccChatBg(c,on){
+  if(on){ let col=""; try{ col=getComputedStyle(document.body).backgroundColor; if(!col||/rgba\(0, 0, 0, 0\)|transparent/.test(col)) col=getComputedStyle(document.documentElement).backgroundColor; }catch(e){}
+    c.style.background=(col&&!/rgba\(0, 0, 0, 0\)|transparent/.test(col))?col:"#0d1b30"; } else c.style.background="";
+}
+/* 📌 옆에 붙이기: 화면 오른쪽(휴대폰은 아래쪽)에 붙여 두고 나머지 화면(가상강의실 자리 등)은 그대로 누를 수 있게 */
+window.ccChatDock=function(on){
+  const c=document.querySelector(".ccchat"); if(!c) return;
+  const dock=(on==null)?!c.classList.contains("ccdock"):!!on;
+  if(dock&&c.classList.contains("ccbig")) ccChatBig(false);
+  c.classList.toggle("ccdock",dock); ccChatBg(c,dock);
+  const mob=window.innerWidth<=640;
+  document.body.style.marginRight=(dock&&!mob)?"min(400px,92vw)":""; document.body.style.paddingBottom=(dock&&mob)?"55vh":"";
+  const b=c.querySelector(".ccdockbtn"); if(b) b.textContent=dock?"✕ 떼어내기":"📌 옆에 붙이기";
+  const L=document.getElementById("ccMsgs"); if(L) L.scrollTop=L.scrollHeight;
+};
 window.ccChatBig=function(on){
   const c=document.querySelector(".ccchat"); if(!c) return;
   const big=(on==null)?!c.classList.contains("ccbig"):!!on;
+  if(big&&c.classList.contains("ccdock")) ccChatDock(false);
   let bg=document.getElementById("ccBigBg");
   if(big){
     if(!bg){ bg=document.createElement("div"); bg.id="ccBigBg"; bg.className="ccbigbg"; bg.onclick=function(){ ccChatBig(false); }; document.body.appendChild(bg); }
@@ -2619,6 +2637,58 @@ window.ccwList=function(){
       box.innerHTML='<div class="stt" style="margin:18px 0 8px">귓속말 차단 현황 <small style="font-weight:400">'+L.length+'건</small></div>'+(L.length?L.map(function(x){ return '<div class="ccbanrow"><span><b>'+nm(x.user_id)+'</b> 님이 <b>'+nm(x.blocked)+'</b> 님을 차단</span><small>'+String(x.created_at||"").slice(0,10)+'</small></div>'; }).join(""):'<div class="sub">차단한 수강생이 없습니다</div>');
     });
   };
+})();
+
+/* 🔎 친구찾기 (2026-10-22) — A~E반 전체에서 이름으로 찾기 · 「○○○는 C반 넷째 줄 5번째 좌석에서 공부 중입니다.」 (줄 = 위에서 아래 · 번째 = 왼쪽에서 오른쪽 · 한 줄 10석) */
+var CCF_COLS=10, CCF_ORD=["첫째","둘째","셋째","넷째","다섯째","여섯째","일곱째","여덟째","아홉째","열째"];
+function ccfMask(n){ n=String(n||"").trim(); if(n.length<=1) return n; if(n.length===2) return n[0]+"O"; return n[0]+"O".repeat(n.length-2)+n[n.length-1]; }
+function ccfPos(x){ const r=Math.ceil(x.seat/CCF_COLS), c=(x.seat-1)%CCF_COLS+1; return x.cls+"반 "+(CCF_ORD[r-1]||(r+"째"))+" 줄 "+c+"번째 좌석"; }
+function ccfFind(q){
+  q=String(q||"").trim().replace(/\s+/g,""); if(!q) return [];
+  const L=(typeof ccRoom!=="undefined"&&ccRoom.list)||[], qm=ccfMask(q).replace(/O/g,"o"), qq=q.replace(/[O0○]/g,"o");
+  const real=function(x){ try{ if(ccChat.mode==="admin"&&typeof ccProfiles!=="undefined"){ const p=ccProfiles.find(function(y){ return y.id===x.user_id; }); return p?String(p.name||""):""; } }catch(e){} return ""; };
+  return L.filter(function(x){
+    const nm=String(x.name||"").replace(/\s+/g,""), nmo=nm.replace(/[O0○]/g,"o"), rn=real(x);
+    return nmo===qm||nmo===qq||(qq.length>=1&&nmo.indexOf(qq)>=0&&qq.indexOf("o")<0&&q.length===1)||(rn&&rn.indexOf(q)>=0);
+  }).sort(function(a,b){ return a.cls===b.cls?a.seat-b.seat:(a.cls<b.cls?-1:1); });
+}
+window.ccfOpen=function(){
+  const old=document.getElementById("ccfPop"); if(old){ old.remove(); return; }
+  const pop=document.createElement("div"); pop.id="ccfPop"; pop.className="ccpop ccfpop";
+  pop.innerHTML='<div class="ccwph">🔎 친구찾기 <small>A~E반 전체</small></div><div class="ccfin"><input id="ccfQ" placeholder="이름 (예: 홍길동 · 홍O동)" onkeydown="if(event.key===\'Enter\'&&!event.isComposing){event.preventDefault();ccfGo();}"><button onclick="ccfGo()">찾기</button></div><div id="ccfRes" class="ccfres"><div class="ccwpf">지금 가상강의실에 앉아 있는 사람만 찾을 수 있습니다</div></div>';
+  document.body.appendChild(pop);
+  const b=document.getElementById("ccfBtn"), r=b?b.getBoundingClientRect():{left:20,top:300};
+  pop.style.left=Math.max(8,Math.min(r.left,window.innerWidth-300))+"px"; pop.style.top=Math.max(8,r.top-230)+"px";
+  pop.onclick=function(e){ e.stopPropagation(); };
+  setTimeout(function(){ const i=document.getElementById("ccfQ"); if(i) i.focus(); document.addEventListener("click",function f(){ pop.remove(); document.removeEventListener("click",f); }); },0);
+};
+window.ccfGo=function(){
+  const q=(document.getElementById("ccfQ")||{}).value||"", R=document.getElementById("ccfRes"); if(!R) return;
+  const L=ccfFind(q), myId=(ccChat&&ccChat.myId)||null, nm0=String(q).trim();
+  if(!nm0){ R.innerHTML='<div class="ccwpf">이름을 입력해 주세요</div>'; return; }
+  if(!L.length){ R.innerHTML='<div class="ccfmsg">'+ccEscC(ccfMask(nm0))+'님은 지금 가상강의실에 없습니다.</div>'; return; }
+  R.innerHTML=L.map(function(x){ const me=x.user_id===myId, nm=ccEscC(x.name);
+    return '<div class="ccfmsg">'+(me?'내 자리는 <b>'+ccfPos(x)+'</b>입니다.':nm+'님은 <b>'+ccfPos(x)+'</b>에서 공부 중입니다.')+'</div><div class="ccfbt"><button onclick="ccfShow(\''+x.cls+'\','+x.seat+')">🪑 자리 보기</button>'+(me?'':'<button onclick="ccfWhisper(\''+x.user_id+'\',\''+nm.replace(/'/g,"")+'\')">🤫 귓속말</button>')+'</div>'; }).join("");
+};
+window.ccfShow=function(cls,seat){
+  try{ ccRoomView(cls); }catch(e){}
+  setTimeout(function(){ try{ const g=document.getElementById("seatgrid"); const el=g&&g.children[seat-1]; if(el){ el.scrollIntoView({block:"center",behavior:"smooth"}); el.classList.add("ccfhit"); setTimeout(function(){ el.classList.remove("ccfhit"); },3000); } }catch(e){} },150);
+};
+window.ccfWhisper=function(uid,name){ const p=document.getElementById("ccfPop"); if(p) p.remove(); try{ ccWhisperOn(uid,name); }catch(e){} };
+(function(){
+  try{ const st=document.createElement("style"); st.textContent='.ccfpop{min-width:270px;max-width:320px;padding:6px 0}.ccfin{display:flex;gap:6px;padding:4px 12px 8px}.ccfin input{flex:1;min-width:0;font:inherit;font-size:.86rem;padding:7px 9px;border-radius:8px;border:1px solid #c9c4b6}.ccfin button{font:inherit;font-size:.8rem;font-weight:800;padding:6px 11px;border-radius:8px;cursor:pointer}'+
+    '.ccfres{max-height:240px;overflow:auto}.ccfmsg{font-size:.84rem;line-height:1.55;padding:6px 12px 2px}.ccfbt{display:flex;gap:6px;padding:2px 12px 8px;border-bottom:1px dashed rgba(127,127,127,.3)}.ccfbt button{font:inherit;font-size:.74rem;padding:3px 9px;border-radius:7px;cursor:pointer}'+
+    '.seat.ccfhit{outline:3px solid #e5be44!important;outline-offset:2px;animation:ccfblink .6s 4}@keyframes ccfblink{50%{outline-color:transparent}}'; document.head.appendChild(st); }catch(e){}
+  /* 채팅창 아래 줄에 🔎 친구찾기 단추 (수강생 · 관리자) */
+  const ow=window.ccwFoot||ccwFoot;
+  window.ccwFoot=ccwFoot=function(){ ow.apply(this,arguments); ccfBtn(); };
+  window.ccfBtn=function(){
+    const f=document.querySelector(".ccchat .ccfoot"); if(!f||document.getElementById("ccfBtn")) return;
+    let row=document.getElementById("ccwRow"); if(!row){ row=document.createElement("div"); row.id="ccwRow"; row.className="ccwrow"; f.parentNode.insertBefore(row,f); }
+    row.insertAdjacentHTML("afterbegin",'<button id="ccfBtn" class="ccwtg" onclick="event.stopPropagation();ccfOpen()">🔎 친구찾기</button>');
+  };
+  const os=window.ccChatStart||ccChatStart;
+  window.ccChatStart=ccChatStart=async function(){ const r=await os.apply(this,arguments); try{ ccfBtn(); }catch(e){} return r; };
 })();
 
 /* ── 가상 강의실: A~E반 · 반마다 50석 · 지금 접속한 사람만 (서버가 A반부터 차례로 배정) ── */
