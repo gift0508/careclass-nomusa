@@ -2691,6 +2691,9 @@ window.ccfWhisper=function(uid,name){ const p=document.getElementById("ccfPop");
   window.ccChatStart=ccChatStart=async function(){ const r=await os.apply(this,arguments); try{ ccfBtn(); }catch(e){} return r; };
 })();
 
+/* 옆에 붙이기·크게보기(z-index 9600) 위에서도 친구찾기·차단 목록·이름 메뉴 창이 보이도록 */
+(function(){ try{ const st=document.createElement("style"); st.textContent=".ccpop{z-index:9700!important}"; document.head.appendChild(st); }catch(e){} })();
+
 /* ── 가상 강의실: A~E반 · 반마다 50석 · 지금 접속한 사람만 (서버가 A반부터 차례로 배정) ── */
 const CR_CLASSES=["A","B","C","D","E"], CR_CAP=50, CR_STALE=150000;
 const ccRoom={list:[],me:null,view:"A",ping:null,poll:null,ch:null,token:null,watching:false,mode:null};
