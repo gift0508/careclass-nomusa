@@ -960,7 +960,7 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
     <div class="matrix-head">
       <div>
         <div class="step-tag">STEP ② 합격경로 한눈에 보기 — 과목별 독립 진행 · 통과한 과목만 다음 칸으로</div>
-        <p class="lede" id="rmLede">칸을 누르면 그 칸의 객관식 학습 레이어가 열립니다. 5과목 × 5단계(입문특강·기본이론·문제풀이·테마특강·기출특강)를 과목별로 독립 진행합니다 · 로드맵 밖 특강은 맨 오른쪽 「특강」 칸에서 골라 듣습니다.</p>
+        <p class="lede" id="rmLede">칸을 누르면 그 칸의 객관식 학습 레이어가 열립니다. 5과목 × 6단계(입문특강·기본이론·문제풀이·테마특강·핵지총특강·기출특강)를 과목별로 독립 진행합니다 · 로드맵 밖 특강은 맨 오른쪽 「특강」 칸에서 골라 듣습니다.</p>
       </div>
       <div class="legend">
         <span><span class="chip c-done"></span>통과</span>
@@ -3916,7 +3916,7 @@ function applyTrackChrome(track){
   S("profDesc", two?`2차 4과목(노동법 · 행정쟁송법 · 인사노무관리론 · 선택 1과목)을 사례형 답안 중심으로 준비하는 트랙입니다.`:`1차 5과목(노동법Ⅰ · 노동법Ⅱ · 민법 · 사회보험법 · 경영학개론)을 객관식 중심으로 준비하는 트랙입니다.`);
   S("profDiag", two?`진단 결과 — 민법·형법 기본 · 형사소송법·민사소송법 문풀 · <b>부동산등기법·등기신청서류의작성는 미진입</b>(강의매칭에서 신청하면 기본으로 진입) · 강의매칭한 지점까지만 로드맵에 반영됩니다`:`진단 결과 — 헌법 핵심 · 민법·상법 문풀 · <b>민사집행법·상업등기및비송은 미진입</b>(강의매칭에서 신청하면 기본으로 진입) · 강의매칭한 지점까지만 로드맵에 반영됩니다`);
   T("rmTitle", two?"나의 28칸 로드맵":"나의 32칸 로드맵");
-  S("rmLede", two?`칸을 누르면 그 칸의 사례형 학습 레이어가 열립니다. 4과목 × 4단계(핵심이론·답안작성특강·문제풀이·테마특강)를 과목별로 독립 진행합니다.`:`칸을 누르면 그 칸의 객관식 학습 레이어가 열립니다. 5과목 × 5단계(입문특강·기본이론·문제풀이·테마특강·기출특강)를 과목별로 독립 진행합니다 · 로드맵 밖 특강은 맨 오른쪽 「특강」 칸에서 골라 듣습니다.`);
+  S("rmLede", two?`칸을 누르면 그 칸의 사례형 학습 레이어가 열립니다. 4과목 × 4단계(핵심이론·답안작성특강·문제풀이·테마특강)를 과목별로 독립 진행합니다.`:`칸을 누르면 그 칸의 객관식 학습 레이어가 열립니다. 5과목 × 6단계(입문특강·기본이론·문제풀이·테마특강·핵지총특강·기출특강)를 과목별로 독립 진행합니다 · 로드맵 밖 특강은 맨 오른쪽 「특강」 칸에서 골라 듣습니다.`);
   T("fbTag", two?"파이널 · 자신의 선택":"특강 · 자율수행"); var _fb=document.querySelector(".finalbar"); if(_fb) _fb.style.display=two?"none":"";
   S("fbTitle", two?`28칸(핵심·문풀·파이널·특강)을 마친 뒤 — 파이널은 스스로 여는 단계입니다`:`32칸(기본·문풀·핵심·기출실전)을 마친 뒤 — 특강은 스스로 여는 단계입니다`);
   S("fbSub", two?`파이널은 28칸 안에 배치되지 않습니다. 핵심·문풀·파이널·특강를 통과하면 <b>전범위를 압축하는 파이널</b>이 열리고, 원하는 시점에 <b>스스로 선택</b>해 들어갑니다. 실전 채점·모의와 연결되는 지점입니다.`:`특강은 합격경로상에 없는 별도의 과정입니다. 시험 직전 자신의 약점을 없애는 과정입니다.`);
@@ -4054,19 +4054,19 @@ window.CC_PROF={"1차":{"노동법Ⅰ":"김희향","노동법Ⅱ":"김희향","�
 var NM_BASE2=["노동법","행정쟁송법","인사노무관리론"];
 window.CC_OPT={"2차":["경영조직론","민사소송법"]};
 window.CC_ADMIN_LAWS2=NM_BASE2.concat(window.CC_OPT["2차"]);  /* 관제실: 2차 선택과목 둘 다 열로 */
-/* 단계 — 시대에듀 학습커리큘럼 순서 · 1차: 입문 → 기본 → 문제풀이 → 테마특강 → 기출 (1차에는 파이널특강 없음 · 2026-10-20 확인)
+/* 단계 — 시대에듀 학습커리큘럼 순서 · 1차: 입문 → 기본 → 문제풀이 → 테마특강 → 핵지총특강(2026-10-22 추가) → 기출 (1차에는 파이널특강 없음 · 2026-10-20 확인)
    · 1차 「특강」: 로드맵 단계에 들어가지 않는 특강(27년 대비 모의고사특강 · 26년 대비 특강)을 한데 묶은 자율선택 칸 (2026-10-21)
    · 2차: 핵심 → 답안작성특강 → 문제풀이 → 테마 — 답안작성특강은 답안을 쓰기 전에 듣도록 핵심이론 바로 뒤 (2026-10-21) */
-CC_STAGES={"1차":["입문특강","기본이론","문제풀이","테마특강","기출특강","특강"],"2차":["핵심이론","답안작성특강","문제풀이","테마특강"]};
-window.CC_AUTO_STAGE={"1차":5,"2차":-1};   /* 1차 「특강」 = 자율선택 (기본으로 담지 않음 · 강의매칭에서 골라 담기) */
+CC_STAGES={"1차":["입문특강","기본이론","문제풀이","테마특강","핵지총특강","기출특강","특강"],"2차":["핵심이론","답안작성특강","문제풀이","테마특강"]};
+window.CC_AUTO_STAGE={"1차":6,"2차":-1};   /* 1차 「특강」 = 자율선택 (기본으로 담지 않음 · 강의매칭에서 골라 담기) */
 window.CC_BASIC_SI={"1차":1,"2차":0};
-window.CC_FLOW3=true; window.CC_LIGHT_SI={"1차":[0,4]}; window.CC_OPEN_ALL=true; window.CC_NO_PLAY=true; window.CC_D0_TEXT="오늘 들을 진도 강의는 시대에듀 내강의실에서 듣고 오세요. 들은 다음에 오늘 수강내용복습을 진행하면 됩니다."; window.CC_MCL5="5지택일 · 선다형";   /* 모든 강의: 🧠 뇌각인(강의요약) → 🔘 OX풀이 → 📚 1차 5지택일·선다형 / 2차 주관식 사례형 */
+window.CC_FLOW3=true; window.CC_LIGHT_SI={"1차":[0,5]}; window.CC_OPEN_ALL=true; window.CC_NO_PLAY=true; window.CC_D0_TEXT="오늘 들을 진도 강의는 시대에듀 내강의실에서 듣고 오세요. 들은 다음에 오늘 수강내용복습을 진행하면 됩니다."; window.CC_MCL5="5지택일 · 선다형";   /* 모든 강의: 🧠 뇌각인(강의요약) → 🔘 OX풀이 → 📚 1차 5지택일·선다형 / 2차 주관식 사례형 */
 /* 신규 강의 = 27년 대비 (26~27년 진행) */
 /* 1차 「특강」 칸(자율선택) = 27년 대비 모의고사특강 4강 + 26년 대비 특강 (노동법Ⅰ·Ⅱ 특강 11강은 공동) */
 window.CC_SPECIAL={"1차":{"노동법Ⅰ":[["모의고사특강",4],["특강",11]],"노동법Ⅱ":[["모의고사특강",4],["특강",11]],"민법":[["모의고사특강",4],["특강",6]],
                           "사회보험법":[["모의고사특강",4],["특강",9]],"경영학개론":[["모의고사특강",4],["특강",5]]}};
 CC_CATALOG={
-  "1차":{"노동법Ⅰ":[0,50,15,7,2,15],"노동법Ⅱ":[0,25,10,3,2,15],"민법":[0,60,12,5,2,10],"사회보험법":[0,40,6,19,2,13],"경영학개론":[0,55,9,4,2,9]},
+  "1차":{"노동법Ⅰ":[0,50,15,7,0,2,15],"노동법Ⅱ":[0,25,10,3,0,2,15],"민법":[0,60,12,5,0,2,10],"사회보험법":[0,40,6,19,0,2,13],"경영학개론":[0,55,9,4,0,2,9]},
   "2차":{"노동법":[53,2,18,8],"행정쟁송법":[34,1,24,10],"인사노무관리론":[47,0,7,4],"경영조직론":[57,1,10,4],"민사소송법":[0,0,0,0]}
 };
 /* 2차 막판정리특강은 맨 끝(테마특강 칸 뒤쪽)에 그대로 */
@@ -4075,20 +4075,20 @@ window.CC_GROUPS={
 };
 /* 작년 강의 = 26년 대비 (25~26년 · 시대에듀 학습커리큘럼 표) */
 window.CC_CATALOG_OLD={
-  "1차":{"노동법Ⅰ":[5,62,17,8,11,0],"노동법Ⅱ":[5,32,12,8,10,0],"민법":[6,63,13,7,12,0],"사회보험법":[6,42,6,6,10,0],"경영학개론":[6,53,9,8,11,0]},
+  "1차":{"노동법Ⅰ":[5,62,17,8,8,11,0],"노동법Ⅱ":[5,32,12,3,5,10,0],"민법":[6,63,13,7,17,12,0],"사회보험법":[6,42,6,20,8,10,0],"경영학개론":[6,53,9,8,6,11,0]},
   "2차":{"노동법":[51,1,18,5],"인사노무관리론":[47,1,7,5],"행정쟁송법":[35,1,21,5],"경영조직론":[59,1,10,5],"민사소송법":[76,1,21,5]}
 };
 /* 노동법1·2가 함께 듣는 강의(26년 대비 입문특강 5강 · 「특강」 칸의 26년 대비 특강 11강): 두 과목에 똑같이 보이고 한 번만 배정
    from:{단계:시작 번호} = 그 단계에서는 이 번호(0부터)부터만 공동 — 「특강」 칸 앞의 모의고사특강 4강은 과목별 */
 window.CC_SHARED_OLD={"1차":{"노동법Ⅱ":{to:"노동법Ⅰ",si:[0]}}};
-window.CC_SHARED={"1차":{"노동법Ⅱ":{to:"노동법Ⅰ",si:[5],from:{5:4}}}};
+window.CC_SHARED={"1차":{"노동법Ⅱ":{to:"노동법Ⅰ",si:[6],from:{6:4}}}};
 window.CC_SRC_LABEL={o:"26년 대비",oy:"",n:"27년 대비",ny:""};   /* 강의 과정 이름 (작년/신규 대신) */
 /* 신규 강의는 관리자가 공개한 강의까지만 배정 · 관리자 화면에서 [+1강]으로 늘림
    기본값(관리자가 아직 정하지 않았을 때): 1차는 완강된 노동법Ⅰ 기본이론 50강만 공개, 나머지 0 · 2차는 전부 공개 */
 window.CC_PUB_ON=true;
 window.CC_PUB_DEFAULT=(function(){
   const d={};
-  Object.keys(CC_CATALOG["1차"]).forEach(function(l){ for(let si=0;si<5;si++) d["1차|"+l+"|"+si]=0; });
+  Object.keys(CC_CATALOG["1차"]).forEach(function(l){ for(let si=0;si<6;si++) d["1차|"+l+"|"+si]=0; });
   d["1차|노동법Ⅰ|1"]=50;
   return d;
 })();
@@ -4103,7 +4103,7 @@ window.NM_STATE_VER=3;
         Object.keys(st.tracks).forEach(function(t){ const tr=st.tracks[t]||{}; st.tracks[t]={}; if(tr.plan&&tr.plan.per) st.tracks[t].plan={per:tr.plan.per}; });
         st.nmv=NM_STATE_VER; localStorage.setItem("cc_state",JSON.stringify(st)); try{ ccLastState=""; }catch(e){}
       } else if(st.nmv!==NM_STATE_VER){ st.nmv=NM_STATE_VER; localStorage.setItem("cc_state",JSON.stringify(st)); }
-      if(st.nmsp!==NM_SP_VER){ try{ nmMigrateSP(st); }catch(e){ console.warn("[단계 옮김]",e); } st.nmsp=NM_SP_VER; localStorage.setItem("cc_state",JSON.stringify(st)); try{ ccLastState=""; }catch(e){} }
+      if(st.nmsp!==NM_SP_VER){ try{ if(!(st.nmsp>=1)) nmMigrateSP(st); if(!(st.nmsp>=2)) nmMigrateSP2(st); }catch(e){ console.warn("[단계 옮김]",e); } st.nmsp=NM_SP_VER; localStorage.setItem("cc_state",JSON.stringify(st)); try{ ccLastState=""; }catch(e){} }
     }catch(e){}
     return orig.apply(this,arguments);
   };
@@ -4112,7 +4112,7 @@ window.NM_STATE_VER=3;
 /* 2026-10-21 단계 개편 — 저장된 계획을 새 칸으로 옮김 (들은 기록 · 고른 강의 · 출발점 유지)
    1차: 테마특강 칸 뒤쪽의 모의고사특강(27년 대비) · 특강(26년 대비) → 새 「특강」 칸(5)
    2차: [핵심, 문풀, 테마, 답안(막판정리+답안작성)] → [핵심, 답안작성, 문풀, 테마(+막판정리)] */
-window.NM_SP_VER=1;
+window.NM_SP_VER=2;
 function nmMigrateSP(st){
   const T={"1차":{teO:{"노동법Ⅰ":8,"노동법Ⅱ":8,"민법":7,"사회보험법":6,"경영학개론":8},teN:{"노동법Ⅰ":7,"노동법Ⅱ":3,"민법":5,"사회보험법":19,"경영학개론":4},mock:4},
            "2차":{mak:{"노동법":5,"행정쟁송법":5},teN:{"노동법":3,"행정쟁송법":5}}};
@@ -4142,7 +4142,7 @@ function nmMigrateSP(st){
       /* 새 「특강」 칸: 이미 배정된(들은) 강의만 담아 둠 — 나머지는 자율선택 */
       Object.keys(pl.asg||{}).forEach(function(k){ const a=k.split("|"); if(a[1]!=="5") return;
         const subj=[a[0]].concat(a[0]==="노동법Ⅰ"&&+a[2]>=4?["노동법Ⅱ"]:[]);
-        subj.forEach(function(l){ const n=(CC_CATALOG["1차"][l]||[])[5]||0, cur=(np[l+"|5"]||"0".repeat(n)).split(""); if(+a[2]<n) cur[+a[2]]="1"; np[l+"|5"]=cur.join(""); }); });
+        subj.forEach(function(l){ const n=(CC_CATALOG["1차"][l]||[])[6]||0, cur=(np[l+"|5"]||"0".repeat(n)).split(""); if(+a[2]<n) cur[+a[2]]="1"; np[l+"|5"]=cur.join(""); }); });
     } else {
       Object.keys(pick).forEach(function(k){ const a=k.split("|"), si=+a[1]; if(si>=0&&si<=2) np[a[0]+"|"+SI2[si]]=pick[k]; });
       Object.keys(src).forEach(function(k){ const a=k.split("|"), si=+a[1]; if(si>=0&&si<4) ns[a[0]+"|"+SI2[si]]=src[k]; });
@@ -4155,6 +4155,20 @@ function nmMigrateSP(st){
     }
     pl.pick=np; pl.src=ns; tr.plan=pl;
   });
+}
+/* 2026-10-22 1차에 「핵지총특강」(핵심지문 총정리) 단계를 테마특강 바로 뒤에 추가 — 저장된 계획의 1차 단계 번호 4(기출특강)·5(특강) → 5·6 */
+function nmMigrateSP2(st){
+  const sh=function(si){ return si>=4?si+1:si; };
+  const tr=st.tracks&&st.tracks["1차"]; if(!tr) return;
+  const pl=tr.plan||{};
+  const rk=function(key){ const a=String(key).split("|"); if(a.length<2) return key; a[1]=String(sh(+a[1])); return a.join("|"); };
+  if(pl.asg){ const A={}; Object.keys(pl.asg).forEach(function(k){ A[rk(k)]=pl.asg[k]; }); pl.asg=A; }
+  if(pl.rv){ const V={}; Object.keys(pl.rv).forEach(function(k){ const p=k.indexOf("|"); V[k.slice(0,p+1)+rk(k.slice(p+1))]=pl.rv[k]; }); pl.rv=V; }
+  ["pick","src"].forEach(function(f){ if(pl[f]){ const N={}; Object.keys(pl[f]).forEach(function(k){ N[rk(k)]=pl[f][k]; }); pl[f]=N; } });
+  ["base","focus"].forEach(function(f){ if(pl[f]) Object.keys(pl[f]).forEach(function(l){ if(typeof pl[f][l]==="number") pl[f][l]=sh(pl[f][l]); }); });
+  ["sm","cm"].forEach(function(f){ if(tr[f]) Object.keys(tr[f]).forEach(function(l){ if(typeof tr[f][l]==="number") tr[f][l]=sh(tr[f][l]); }); });
+  if(tr.path) Object.keys(tr.path).forEach(function(l){ const m=/^s(\d+)$/.exec(tr.path[l]||""); if(m) tr.path[l]="s"+sh(+m[1]); });
+  tr.plan=pl;
 }
 /* 2차 선택과목: 수강생이 출발점에서 고름 (cc_state.opt2) */
 function nmOpt2(){ try{ const st=JSON.parse(localStorage.getItem("cc_state")||"{}")||{}; if(CC_OPT["2차"].indexOf(st.opt2)>=0) return st.opt2; }catch(e){} return CC_OPT["2차"][0]; }
@@ -4332,7 +4346,7 @@ window.ccPathBadge=ccPathBadge;
 /* 단계 소개 — 강의매칭에서 단계 탭 아래에 보입니다 (수강생 안내문 · 시대에듀 과정 설명 참고) */
 window.CC_STAGE_DESC={
   "1차":{"입문특강":"기본이론 학습 전, 기초 필수 개념을 학습하는 단계","기본이론":"문제풀이를 위한 필요지식 습득 단계","문제풀이":"진도별 문제풀이를 통한 실전에서의 득점확보 단계",
-         "테마특강":"중요논의주제들을 익혀 타인보다 뒤떨어짐 방지 단계","기출특강":"출제 유형 분석과 최종 마무리 단계",
+         "테마특강":"중요논의주제들을 익혀 타인보다 뒤떨어짐 방지 단계","핵지총특강":"핵심지문 총정리 — 시험에 자주 나오는 지문을 과목 전체에 걸쳐 한 번에 다시 보는 단계","기출특강":"출제 유형 분석과 최종 마무리 단계",
          "특강":"로드맵에 들어가지 않는 특강 묶음 — 모의고사특강(27년 대비) · 특강(26년 대비) 중 듣고 싶은 강의만 골라 담는 자율선택 칸"},
   "2차":{"핵심이론":"문제풀이를 위한 필요지식 습득 단계","문제풀이":"진도별 문제풀이를 통한 실전에서의 득점확보 단계",
          "테마특강":"중요논의주제들을 익혀 타인보다 뒤떨어짐 방지 단계","답안작성특강":"최단기 집중상기하기를 통한 답안작성능력 회복 단계"}
@@ -4674,7 +4688,7 @@ window.nmRvNoteItems=async function(subj){
 };
 /* 테마특강(최종정리)에 들어선 과목 — 계획상 마지막으로 들은(오늘까지 배정된) 강의의 단계가 테마특강 · 기출특강 */
 function nmRvFinalSubjects(){
-  const S=CC_STAGES["1차"]||[], a=S.indexOf("테마특강"), b=S.indexOf("기출특강"), cur={};
+  const S=CC_STAGES["1차"]||[], a=S.indexOf("테마특강"), b=S.indexOf("기출특강"), c=S.indexOf("핵지총특강"), cur={};
   try{
     const pl=ccPlanOf("1차");
     if(pl.per&&pl.asg){ const T=nmRvT(), A=pl.asg;
@@ -4686,7 +4700,7 @@ function nmRvFinalSubjects(){
   ((CC_LAWS&&CC_LAWS["1차"])||[]).forEach(function(l){
     let si=cur[l]?cur[l].si:null;
     if(si==null){ try{ if(TRACK==="1차"&&typeof STAGEMAP!=="undefined") si=STAGEMAP[l]; }catch(e){} }
-    if(si==null||(si!==a&&si!==b)) return;
+    if(si==null||(si!==a&&si!==b&&si!==c)) return;
     const n=nmRvNotes(l).filter(function(r){ return !r.final_done&&!r.graduated; }).length;
     if(n) out.push({subj:l,n:n});
   });
@@ -5159,7 +5173,8 @@ window.nmRvBigClose=function(){ const ov=document.getElementById("nmRvBigOv"); i
   }
   function btnSync(){
     document.querySelectorAll(".nmthemebtn").forEach(function(b){ var L=(THEME==="light");
-      b.textContent=L?"🌙":"☀"; b.title=L?"어두운 화면으로":"밝은 화면으로"; b.setAttribute("aria-label",b.title); });
+      b.textContent=L?"🌙":"☀"; var t=L?"어두운 화면으로":"밝은 화면으로";
+      b.title=b.classList.contains("titlebtn")?"밝은 화면/어두운 화면 바꾸기":t; b.setAttribute("aria-label",t); });
   }
   function set(t,save){
     if(t!=="light"&&t!=="dark") t="dark";
@@ -5174,17 +5189,26 @@ window.nmRvBigClose=function(){ const ov=document.getElementById("nmRvBigOv"); i
   window.nmThemeToggle=function(){ set(THEME==="light"?"dark":"light",true); };
   function addBtns(){
     var mk=function(){ var b=document.createElement("button"); b.type="button"; b.className="nmthemebtn"; b.onclick=function(e){ e.stopPropagation(); window.nmThemeToggle(); }; return b; };
-    var uc=document.getElementById("userchip"); if(uc&&!uc.querySelector(".nmthemebtn")) uc.insertBefore(mk(),uc.firstChild);
+    /* 제목 「시대에듀 노무사 · 케길반」 바로 뒤 (2026-10-22) — 수강생 머리줄 · 관리자 머리줄 · 로그인 화면 */
+    var nextTo=function(el){ if(!el||el.querySelector(".nmthemebtn")) return; var b=mk(); b.classList.add("titlebtn"); var sm=el.querySelector("small"), tn=sm?sm.previousSibling:el.lastChild;
+      /* 제목 끝 낱말(「케길반」)과 버튼이 다른 줄로 갈라지지 않게 한 묶음(줄바꿈 금지)으로 */
+      if(tn&&tn.nodeType===3){ var v=tn.nodeValue.replace(/\s+$/,""), k=v.search(/\S+$/);
+        if(k>=0){ var w=document.createElement("span"); w.className="nmtitlewrap"; w.style.whiteSpace="nowrap";
+          w.appendChild(document.createTextNode(v.slice(k))); w.appendChild(b); tn.nodeValue=v.slice(0,k); el.insertBefore(w,sm); return; } }
+      el.insertBefore(b,sm); };
+    nextTo(document.querySelector(".wrap > .topbar > .brand"));
+    nextTo(document.querySelector("#adminView .topbar .brand"));
+    nextTo(document.querySelector("#gate .gbrand"));
     var eh=document.querySelector(".enghead"); if(eh&&!eh.querySelector(".nmthemebtn")){ var q=eh.querySelector(".qatop"); eh.insertBefore(mk(),q||null); }
-    var au=document.querySelector("#adminView .userchip"); if(au&&!au.querySelector(".nmthemebtn")) au.insertBefore(mk(),au.firstChild);
-    var gt=document.getElementById("gate"); if(gt&&!gt.querySelector(".nmthemebtn")){ var g=mk(); g.classList.add("gatebtn"); gt.appendChild(g); }
   }
   (function(){
     var st=document.createElement("style"); st.id="nmThemeBase";
     st.textContent='.nmthemebtn{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;flex:0 0 34px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);font-size:16px;line-height:1;cursor:pointer;padding:0;font-family:inherit}'+
       '.nmthemebtn:hover{border-color:var(--gold)}.enghead .nmthemebtn{margin-left:auto}.enghead .nmthemebtn+.qatop{margin-left:8px}'+
-      '.nmthemebtn.gatebtn{position:fixed;top:14px;right:14px;z-index:5}'+
-      '@media(max-width:640px){#userchip{flex-wrap:wrap;row-gap:8px}.enghead .nmthemebtn{width:30px;height:30px;flex-basis:30px;font-size:14px}.enghead .nmthemebtn+.qatop{margin-left:6px}}';
+      '.nmthemebtn.titlebtn{width:30px;height:30px;flex-basis:30px;font-size:15px;vertical-align:middle;position:relative;top:-2px;margin:0 2px 0 10px;border:1.5px solid var(--gold);background:rgba(232,185,60,.12);box-shadow:0 1px 3px rgba(0,0,0,.25);font-family:"Noto Sans KR",sans-serif;font-weight:400;transition:transform .12s,background .12s}'+
+      '.nmthemebtn.titlebtn:hover{background:rgba(232,185,60,.26);transform:scale(1.08)}.nmthemebtn.titlebtn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}'+
+      '.gbrand .nmthemebtn.titlebtn{top:-3px}'+
+      '@media(max-width:640px){#userchip{flex-wrap:wrap;row-gap:8px}.nmthemebtn.titlebtn{width:28px;height:28px;flex-basis:28px;font-size:14px;margin-left:8px}.enghead .nmthemebtn{width:30px;height:30px;flex-basis:30px;font-size:14px}.enghead .nmthemebtn+.qatop{margin-left:6px}}';
     document.head.appendChild(st);
   })();
   function init(){
