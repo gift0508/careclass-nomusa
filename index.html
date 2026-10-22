@@ -2467,6 +2467,7 @@ async function ccChatExport(){
       const rows=r.data||[]; all=all.concat(rows);
       if(rows.length<1000) break; last=rows[rows.length-1].id;
     }
+    await ccDelTrash(all);
     const who=function(uid,shown,isAdm){
       if(isAdm) return "관리자";
       const p=ccProfiles.find(function(x){ return x.id===uid; });
@@ -2474,7 +2475,7 @@ async function ccChatExport(){
     };
     const lines=all.map(function(m){
       const head="["+ccTs(m.created_at)+"] "+(m.to_user?"[귓속말] ":"")+who(m.user_id,m.name,m.is_admin)+" → "+(m.to_user?who(m.to_user,m.to_name,false):"전체");
-      return head+"\n    "+String(m.body).replace(/\r?\n/g,"\n    ");
+      return head+"\n    "+ccDelBody(m).replace(/\r?\n/g,"\n    ");
     });
     let adm=""; try{ const s=await sb.auth.getSession(); adm=s.data.session.user.email||""; }catch(e){}
     const body=lines.join("\n");
@@ -2693,6 +2694,79 @@ window.ccfWhisper=function(uid,name){ const p=document.getElementById("ccfPop");
 
 /* 옆에 붙이기·크게보기(z-index 9600) 위에서도 친구찾기·차단 목록·이름 메뉴 창이 보이도록 */
 (function(){ try{ const st=document.createElement("style"); st.textContent=".ccpop{z-index:9700!important}"; document.head.appendChild(st); }catch(e){} })();
+
+/* 🗑 채팅 메시지 삭제 (2026-10-22) — 수강생: 내 메시지만 · 관리자: 모두 · 원문은 서버 보관함(_chat_trash)에 남김 */
+var CCD={T:CCW.P+"_chat", trash:{}};
+function ccDelCan(m){ if(!m||m.deleted||!ccChat.myId) return false; return ccChat.mode==="admin"||m.user_id===ccChat.myId; }
+(function(){
+  const oh=window.ccMsgHTML||ccMsgHTML;
+  window.ccMsgHTML=ccMsgHTML=function(m){
+    let h=oh.apply(this,arguments); if(!m) return h;
+    h=h.replace('<div class="ccmsg','<div data-mid="'+m.id+'" class="ccmsg'+(m.deleted?' ccdeld':''));
+    if(m.deleted){
+      const t=m.deleted==="admin"?"관리자가 삭제한 메시지입니다":"삭제된 메시지입니다";
+      h=h.replace(/<div class="cctext">[\s\S]*?<\/div><\/div>$/,'<div class="cctext ccdelt">🗑 '+t+'</div></div>');
+    } else if(ccDelCan(m)){
+      h=h.replace('<span class="cctime">','<button class="ccdelb" title="이 메시지 삭제" onclick="event.stopPropagation();ccDelMsg('+m.id+')">🗑 삭제</button><span class="cctime">');
+    }
+    return h;
+  };
+})();
+function ccDelApply(row){
+  if(!row||!row.id||!row.deleted) return;
+  const m=ccChat.msgs.find(function(x){ return x.id===row.id; }); if(!m) return;
+  if(m.deleted===row.deleted) return;
+  m.deleted=row.deleted; m.body="";
+  const el=document.querySelector('#ccMsgs [data-mid="'+row.id+'"]'); if(el) el.outerHTML=ccMsgHTML(m);
+}
+window.ccDelMsg=async function(id){
+  const m=ccChat.msgs.find(function(x){ return x.id===id; }); if(!m||!ccDelCan(m)) return;
+  const mine=m.user_id===ccChat.myId;
+  if(!confirm(mine?"이 메시지를 지울까요?\n모든 사람의 채팅창에서 「삭제된 메시지입니다」로 바뀝니다.":"이 메시지를 관리자 권한으로 지울까요?\n모든 사람의 채팅창에서 「관리자가 삭제한 메시지입니다」로 바뀝니다.\n(원문은 채팅 기록 txt에 남습니다)")) return;
+  try{ const r=await sb.rpc(CCW.P+"_chat_delete",{p_id:id}); if(r.error) throw r.error; ccDelApply({id:id,deleted:r.data||(mine?"self":"admin")}); toast("메시지를 지웠습니다"); }
+  catch(e){ toast("지우지 못했습니다 — "+ccErr(e)); }
+};
+async function ccDelSync(){
+  if(!ccChat.mode||!ccChat.msgs.length||(ccChat.banned&&ccChat.mode==="student")) return;
+  const min=ccChat.msgs.reduce(function(a,x){ return Math.min(a,x.id); },Infinity);
+  try{ const r=await sb.from(CCD.T).select("id,deleted").not("deleted","is",null).gte("id",min).limit(1000); if(r.error) return; (r.data||[]).forEach(ccDelApply); }catch(e){}
+}
+/* 관리자 txt 기록: 지운 메시지는 보관함 원문 + [본인 삭제]/[관리자 삭제] */
+async function ccDelTrash(rows){
+  const ids=rows.filter(function(m){ return m.deleted&&!(m.id in CCD.trash); }).map(function(m){ return m.id; });
+  for(let i=0;i<ids.length;i+=200){
+    try{ const r=await sb.from(CCD.T+"_trash").select("chat_id,body").in("chat_id",ids.slice(i,i+200)); (r.data||[]).forEach(function(t){ CCD.trash[t.chat_id]=t.body; }); }catch(e){}
+  }
+}
+function ccDelBody(m){
+  if(!m.deleted) return String(m.body);
+  return (m.deleted==="admin"?"[관리자 삭제] ":"[본인 삭제] ")+(m.id in CCD.trash?String(CCD.trash[m.id]):"(원문 없음)");
+}
+(function(){
+  try{ const st=document.createElement("style"); st.textContent=
+    '.ccdelb{margin-left:auto;font:inherit;font-size:.68rem;padding:1px 7px;border-radius:6px;border:1px solid rgba(127,127,127,.35);background:transparent;color:inherit;cursor:pointer;opacity:0;transition:opacity .15s}'+
+    '.ccdelb+.cctime{margin-left:6px!important}.ccmsg:hover .ccdelb,.ccmsg:focus-within .ccdelb{opacity:.75}.ccdelb:hover{opacity:1!important;border-color:#c0392b;color:#c0392b}'+
+    '@media (hover:none){.ccdelb{opacity:.6}}'+
+    '.ccmsg.ccdeld{opacity:.6}.ccdelt{font-style:italic;color:var(--mute,#888)}'; document.head.appendChild(st); }catch(e){}
+  /* 실시간: 지운 메시지(UPDATE)를 바로 반영 · 실시간이 막혀도 12초마다 확인 */
+  const os=window.ccChatStart||ccChatStart;
+  window.ccChatStart=ccChatStart=async function(){
+    const r=await os.apply(this,arguments);
+    try{
+      if(ccChat.myId&&ccChat.mode){
+        ccChat.delCh=sb.channel("cc-chatdel-"+Date.now()).on("postgres_changes",{event:"UPDATE",schema:"public",table:CCD.T},function(p){ if(p&&p.new) ccDelApply(p.new); }).subscribe();
+        ccChat.delPoll=setInterval(ccDelSync,12000);
+      }
+    }catch(e){}
+    return r;
+  };
+  const ost=window.ccChatStop||ccChatStop;
+  window.ccChatStop=ccChatStop=function(){
+    if(ccChat.delPoll){ clearInterval(ccChat.delPoll); ccChat.delPoll=null; }
+    if(ccChat.delCh){ try{ sb.removeChannel(ccChat.delCh); }catch(e){} ccChat.delCh=null; }
+    return ost.apply(this,arguments);
+  };
+})();
 
 /* ── 가상 강의실: A~E반 · 반마다 50석 · 지금 접속한 사람만 (서버가 A반부터 차례로 배정) ── */
 const CR_CLASSES=["A","B","C","D","E"], CR_CAP=50, CR_STALE=150000;
