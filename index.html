@@ -972,6 +972,8 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
     <div class="grid" id="grid"></div>
     <div class="detail" id="detail"></div>
 
+    <a class="realbtn" style="margin-bottom:18px" href="#" onclick="openEngine('roadmap');return false">🗺️ 며칠 만에 선택한 강의를 모두 들을 수 있을까? <small>· 하루 강의 수로 완주일 계산</small></a>
+
     <div class="finalbar">
       <div class="fhead">
         <div class="ftag" id="fbTag">특강 · 자율수행</div>
@@ -980,8 +982,6 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
       <p class="fsub" id="fbSub">특강은 합격경로상에 없는 별도의 과정입니다. 시험 직전 자신의 약점을 없애는 과정입니다.</p>
       <div class="finallaws" id="finallaws"></div>
     </div>
-
-    <a class="realbtn" href="#" onclick="openEngine('roadmap');return false">🗺️ 합격경로 예상완주일수 계산기 열기 <small>· 하루 강의수로 완주 가능 판정</small></a>
   </section>
 
   <!-- ③ -->
@@ -4509,7 +4509,7 @@ window.ccExamDate=function(t,today){
     set("rmTitle","나의 "+N+"칸 로드맵");
     set("fbTitle",N+"칸("+main.join("·")+") 밖의 과정 — "+sp+"은 스스로 여는 과정입니다");
     set("fbSub",sp+"은 합격경로(로드맵)에 들어가지 않는 특강 묶음입니다. 과목별 "+(TRACK==="1차"?"모의고사특강(27년 대비) · 특강(26년 대비)":"특강")+"을 원하는 시점에 <b>스스로 골라</b> 듣습니다.");
-    if(ai>=0){ const fl=document.getElementById("finallaws"); if(fl) fl.innerHTML=laws.map(function(l){ const n=(ccCatNew(TRACK,l)||[])[ai]||0; return '<div class="flchip"><span class="fn">'+l+'</span><span class="fsel">'+sp+' '+n+'강 · 언제든 골라 담기</span></div>'; }).join(""); }
+    if(ai>=0){ const fl=document.getElementById("finallaws"); if(fl) fl.innerHTML=laws.map(function(l){ const n=(ccCatNew(TRACK,l)||[])[ai]||0; return '<button type="button" class="flchip flgo" title="강의매칭에서 '+l+' '+sp+' 강의를 골라 담습니다" onclick="nmTeukGo(\''+l+'\')"><span class="fn">'+l+'</span><span class="fsel">'+sp+' '+n+'강 · 골라 담기 →</span></button>'; }).join(""); }
     set("s4lede","지난 1주간 내가 푼 엔진 실행 데이터입니다. 버튼을 누르면 이 데이터가 위 "+N+"칸 로드맵을 실제로 고칩니다.");
   }
   window.initTrack=initTrack;
@@ -4695,6 +4695,10 @@ window.CC_STAGE_DESC={
   st.textContent='@media(max-width:640px){.enghead{flex-wrap:wrap;gap:8px;padding:9px 12px}.enghead b{font-size:.9rem;white-space:nowrap}.enghead .et{display:none}.enghead .qatop,.enghead .engback{font-size:.75rem;padding:6px 10px;white-space:nowrap}.enghead .qatop{margin-left:auto}}';
   document.head.appendChild(st);
 })();
+
+/* 특강(자율) 칩: 누르면 강의매칭의 그 과목 · 특강 단계로 바로 들어가 골라 담기 (2026-10-23) */
+window.nmTeukGo=function(l){ try{ const ai=ccAutoSI(TRACK); window.matchSubject=l; window.matchStage=CC_STAGES[TRACK][ai]; openEngine("match"); }catch(e){ console.warn(e); } };
+(function(){ try{ const st=document.createElement("style"); st.textContent=".finallaws .flchip.flgo{cursor:pointer;font:inherit;font-size:.8rem;transition:.15s}.finallaws .flchip.flgo:hover{border-color:var(--gold);transform:translateY(-1px)}.finallaws .flchip.flgo:hover .fsel{border-color:var(--gold);color:var(--gold)}"; document.head.appendChild(st); }catch(e){} })();
 
 </script>
 <script>
@@ -5408,9 +5412,12 @@ window.nmDiagSnap=function(){
     const L=nmdLL(), s=L.s||{}; if(!Object.keys(s).length) return;
     const wk=nmdWeek(), h=L.h=L.h||{}, cur={};
     Object.keys(s).forEach(function(k){ const o=s[k]||{}; if(o.n) cur[k]=[o.n,o.ok||0,o.cf||0]; });
-    if(JSON.stringify(h[wk]||{})===JSON.stringify(cur)) return;
-    h[wk]=cur; const ks=Object.keys(h).sort(); while(ks.length>26) delete h[ks.shift()];
-    localStorage.setItem("cc_learnlog",JSON.stringify(L));
+    let ch=false;
+    if(JSON.stringify(h[wk]||{})!==JSON.stringify(cur)){ h[wk]=cur; const ks=Object.keys(h).sort(); while(ks.length>26) delete h[ks.shift()]; ch=true; }
+    /* 지난주와 비교할 수 있게 이번 주 진단(합격 가능성 칸 · 과목별 시험일 예상 점수)도 남김 */
+    try{ const D=nmDiag(L), hd=L.hd=L.hd||{}, sc={}; D.S.forEach(function(x){ if(x.score!=null) sc[x.subj]=x.score; });
+      const v={n:D.curDots.n,s:sc}; if(JSON.stringify(hd[wk]||{})!==JSON.stringify(v)){ hd[wk]=v; const kd=Object.keys(hd).sort(); while(kd.length>26) delete hd[kd.shift()]; ch=true; } }catch(e){}
+    if(ch) localStorage.setItem("cc_learnlog",JSON.stringify(L));
   }catch(e){}
 };
 /* 과목별 진단값 */
@@ -5426,7 +5433,7 @@ function nmdSubj(L,subj){
     prev=c; });
   const P=Math.min(0.97,Math.max(0.03,p));
   const sExam=100*Math.sqrt(P*(1-P)/40), sEst=Math.min(15,100*Math.sqrt(P*(1-P)/Math.max(n,1)));
-  let sVol=0, slope=null;
+  let sVol=0, slope=null, se=null;
   const R=pts.slice(-6);
   if(R.length>=3){
     const my=R.reduce(function(a,b){ return a+b.y; },0)/R.length, vy=R.reduce(function(a,b){ return a+(b.y-my)*(b.y-my); },0)/(R.length-1);
@@ -5434,17 +5441,31 @@ function nmdSubj(L,subj){
     sVol=Math.min(15,Math.sqrt(Math.max(0,vy-vb)));
     const mx=R.reduce(function(a,b){ return a+b.x; },0)/R.length, sxx=R.reduce(function(a,b){ return a+(b.x-mx)*(b.x-mx); },0);
     slope=sxx?Math.max(-8,Math.min(8,R.reduce(function(a,b){ return a+(b.x-mx)*(b.y-my); },0)/sxx)):0;
+    const b0=my-slope*mx, rss=R.reduce(function(a,b){ const e=b.y-(b0+slope*b.x); return a+e*e; },0);
+    se=sxx?Math.min(6,Math.sqrt(rss/Math.max(1,R.length-2)/sxx)):3;
   }
-  const sig=Math.sqrt(sExam*sExam+sEst*sEst+sVol*sVol);
+  const sig0=Math.sqrt(sExam*sExam+sEst*sEst+sVol*sVol);
+  /* 시험일 예상 점수: 최근 추세(3주 이상)가 있으면 시험일까지 이어 감 — 오를수록 오르기 어려워지는 곡선 · 내려가는 추세는 4주분까지만 반영 */
+  const now=n?p*100:null, W=Math.max(0,nmdDays()/7);
+  let proj=now, sig=sig0;
+  if(now!=null&&slope!=null){
+    /* 짧은 기간의 추세는 오래 그대로 이어지지 않으므로 「약 8주분」까지만 서서히 반영 (Weff = 8·(1−e^(−W/8))) · 오르는 폭은 최대 +30점 */
+    const Weff=8*(1-Math.exp(-W/8));
+    if(slope>0){ const k=slope/Math.max(5,100-now); proj=Math.min(now+30,100-(100-now)*Math.exp(-k*Weff)); }
+    else proj=Math.max(now-15,now+slope*Math.min(Weff,4));
+    proj=Math.max(0,Math.min(NMD.CAP,proj));
+    const sd=se*Weff*0.5; sig=Math.min(16,Math.sqrt(sig0*sig0+sd*sd));   /* 먼 앞날일수록 예상의 폭이 넓어짐 */
+  }
   const speed=slope==null?1:Math.max(0.5,Math.min(2,1+slope/4));
   /* 경보: 지금 실력으로 40점 아래로 떨어질 위험 · 최근 2주 연속 하락 */
   let alert=null;
   if(n>=10){
-    const pFail=1-nmdPhi((p*100-38.75)/sig);
+    const pFail=1-nmdPhi((proj-38.75)/sig);
     if(pFail>0.25) alert={k:"fail",t:"과락 위험"};
     else if(R.length>=3&&R[R.length-1].y<R[R.length-2].y&&R[R.length-2].y<R[R.length-3].y&&R[R.length-3].y-R[R.length-1].y>=5) alert={k:"drop",t:"2주 연속 하락"};
   }
-  return {subj:subj,n:n,raw:raw,score:score,p:p,sig:sig,slope:slope,speed:speed,weeks:R.length,cf:cf,alert:alert};
+  if(alert) alert.soft=(n<60||(R.length<3&&n<150));   /* 기록이 적은 초반에는 수강생에게 「주의」로 (관제실 경보는 그대로) */
+  return {subj:subj,n:n,raw:raw,now:score,score:proj==null?null:Math.round(proj*10)/10,p:p,sig:sig,slope:slope,speed:speed,weeks:R.length,cf:cf,alert:alert};
 }
 /* 합격 확률 (로그) */
 function nmdLogP(T,S){
@@ -5507,7 +5528,7 @@ window.nmDiag=function(L,W){
   plans.forEach(function(p){ p.rec=(p.key===rec); });
   return {laws:laws,S:S,has:has,days:days,weeks:wks,cur:cur,curP:curP,curDots:nmdDots(curP),plans:plans,rec:rec,
     alerts:S.filter(function(x){ return x.alert; }).map(function(x){ return {subj:x.subj,t:x.alert.t,k:x.alert.k}; }),
-    trend:S.some(function(x){ return x.weeks>=3; })};
+    trend:S.some(function(x){ return x.weeks>=3; }), prev:(function(){ const hd=L.hd||{}, wk=nmdWeek(), ks=Object.keys(hd).filter(function(k){ return k<wk; }).sort(); return ks.length?hd[ks[ks.length-1]]:null; })()};
 };
 /* 교시별 시간 배분 (마킹 5분씩 남김) · 목표 점수가 높은 과목부터 */
 window.nmDiagTime=function(plan,laws){
@@ -5556,7 +5577,7 @@ window.nmPlanTxt=function(rates,L,uid){
   return L.map(function(l,i){ return l+" "+P.t[i]+"점("+P.q[i]+"문항)"+(rates[i]==null?"":" ← 지금 "+rates[i]+"점"); }).join(" · ")+" = 총점 "+P.sum+"점";
 };
 window.nmAlertAdvP=function(uid){ const D=nmDiagFor(uid); if(!D||!D.alerts.length) return null;
-  return D.alerts.map(function(a){ const x=D.S[D.laws.indexOf(a.subj)]; return "<b>"+a.subj+" "+(x.score!=null?x.score+"점":"")+"</b> — "+a.t; }).join(" · ")+" — 이 과목 복구 상담과 문제풀이·오답노트 비중 상향을 바로 권고합니다 (과락 1과목이면 총점과 관계없이 불합격)"; };
+  return D.alerts.map(function(a){ const x=D.S[D.laws.indexOf(a.subj)]; return "<b>"+a.subj+" "+(x.score!=null?"시험일 예상 "+x.score+"점":"")+"</b> — "+a.t; }).join(" · ")+" — 이 과목 복구 상담과 문제풀이·오답노트 비중 상향을 바로 권고합니다 (과락 1과목이면 총점과 관계없이 불합격)"; };
 
 /* ── 수강생 화면: 🎯 300점 합격 진단 ── */
 function nmdEsc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
@@ -5574,38 +5595,44 @@ window.nmDiagOpen=async function(){
     h+='<div class="nmdempty">아직 풀이 기록이 없습니다.<br>과목별 학습엔진에서 문제를 풀면 지금 위치와 300점 조합이 여기에 나옵니다.</div></div>';
     m.innerHTML=h; m.classList.add("on"); return;
   }
-  h+='<div class="nmdh">지금 내 위치 <span class="nmddots">'+D.curDots.dots+'</span> <small>지금 실력 그대로 시험을 보면 — '+D.curDots.t+'</small></div>'+
-    '<table class="nmdt"><tr><th>과목</th><th>지금 점수</th><th>푼 문항</th><th>추세</th></tr>'+
-    D.S.map(function(x){ return '<tr'+(x.alert?' class="al"':'')+'><td>'+nmdEsc(x.subj)+(x.alert?' <b class="nmdal">⚠ '+x.alert.t+'</b>':'')+'</td><td>'+(x.score==null?'<span class="nmdmu">기록 없음</span>':'<b>'+x.score+'</b>점')+'</td><td>'+x.n+'</td><td>'+tr(x)+'</td></tr>'; }).join("")+'</table>';
+  h+='<div class="nmdh">시험일 내 예상 위치 <span class="nmddots">'+D.curDots.dots+'</span> <small>지금 페이스대로 가면 시험일에 — '+D.curDots.t+'</small></div>'+
+    '<table class="nmdt"><tr><th>과목</th><th>시험일 예상 점수</th><th>푼 문항</th><th>추세</th></tr>'+
+    D.S.map(function(x){ const pv=D.prev&&D.prev.s&&D.prev.s[x.subj], dl=(pv!=null&&x.score!=null)?Math.round((x.score-pv)*10)/10:null;
+      const hard=x.alert&&!x.alert.soft, soft=x.alert&&x.alert.soft;
+      return '<tr'+(hard?' class="al"':(soft?' class="so"':''))+'><td>'+nmdEsc(x.subj)+(hard?' <b class="nmdal">⚠ '+x.alert.t+'</b>':(soft?' <b class="nmdso">△ 주의</b>':''))+'</td><td>'+(x.score==null?'<span class="nmdmu">기록 없음</span>':'<b>'+x.score+'</b>점'+(x.slope==null?' <small class="nmdmu">(지금 점수 기준)</small>':' <small class="nmdmu">(지금 '+x.now+'점)</small>'))+(dl==null||Math.abs(dl)<0.5?'':' <span class="'+(dl>0?'nmdup':'nmddn')+'" title="지난주 대비">'+(dl>0?'▲ +':'▼ ')+dl+'</span>')+'</td><td>'+x.n+'</td><td>'+tr(x)+'</td></tr>'; }).join("")+'</table>';
+  if(D.prev&&D.prev.n){ const dn=D.curDots.n-D.prev.n;
+    h+='<div class="nmdchg '+(dn>0?'up':(dn<0?'dn':''))+'">'+(dn>0?'🎉 지난주보다 합격 가능성이 <b>'+dn+'칸 올랐어요</b> ▲':(dn<0?'지난주보다 합격 가능성이 '+(-dn)+'칸 내려갔어요 ▼ — 아래 조합대로 다시 끌어올려 봐요':'지난주와 같은 칸입니다 — 표의 ▲▼로 과목별 변화를 확인하세요'))+'</div>'; }
   const none=D.S.filter(function(x){ return x.n===0; }).map(function(x){ return x.subj; });
   if(none.length) h+='<div class="nmdnote">📝 '+none.map(nmdEsc).join(", ")+' — 아직 풀이 기록이 없어 「50점 근처」로 가정했습니다. 이 과목 문제를 풀면 조합이 정확해집니다.</div>';
-  if(D.alerts.length) h+='<div class="nmdwarn">⚠ <b>과락 경보</b> — '+D.alerts.map(function(a){ return nmdEsc(a.subj)+'('+a.t+')'; }).join(", ")+'. 한 과목이라도 40점 아래면 총점과 관계없이 불합격입니다. 이 과목 문제풀이와 오답노트를 먼저 챙기세요.</div>';
-  h+='<div class="nmdh">300점 합격 조합 <small>목표 점수(맞혀야 할 문항 수)</small></div>'+
+  const AH=D.S.filter(function(x){ return x.alert&&!x.alert.soft; }), AS=D.S.filter(function(x){ return x.alert&&x.alert.soft; });
+  if(AH.length) h+='<div class="nmdwarn">⚠ <b>과락 경보</b> — '+AH.map(function(x){ return nmdEsc(x.subj)+'('+x.alert.t+')'; }).join(", ")+'. 한 과목이라도 40점 아래면 총점과 관계없이 불합격입니다. 이 과목 문제풀이와 오답노트를 먼저 챙기세요.</div>';
+  if(AS.length) h+='<div class="nmdsoft">△ <b>주의</b> — '+AS.map(function(x){ return nmdEsc(x.subj); }).join(" · ")+' — 지금은 과락선에 가까운 40점대에 있어요. 아직 기록이 쌓이는 중이라 확정된 것은 아니니 너무 걱정하지 마세요. 기본기를 다지면서 이 과목 문제를 조금 더 자주 풀어 50점선을 넘겨 봐요.</div>';
+  h+='<div class="nmdh">300점 합격 조합 <small>목표 점수(맞혀야 할 문항 수) · +는 예상보다 더 올려야 할 문항</small></div>'+
     '<div class="nmdwhy">💡 <b>약한 과목도 왜 50점인가요?</b> 과락선은 40점이지만, 시험 당일에는 컨디션과 문제 운에 따라 과목마다 점수가 몇 점씩 오르내립니다. 40점대에 머물러 있으면 한두 문항만 흔들려도 과락이 될 수 있어요. 그래서 <b>확실한 합격을 위해, 과락 위험이 있는 40점대를 올라서는 50점(20문항)을 약한 과목의 기준으로 잡았습니다.</b></div><div class="nmdplans">'+
     D.plans.map(function(p){ return '<div class="nmdp'+(p.rec?' rec':'')+'">'+(p.rec?'<span class="nmdrec">추천</span>':'')+'<div class="nmdpn">'+p.name+'</div><div class="nmdpd">'+p.note+(p.same?' <b>(결과가 '+p.same+'과 같음)</b>':'')+'</div>'+
       D.laws.map(function(l,i){ return '<div class="nmdr"><span>'+nmdEsc(l)+'</span><b>'+p.t[i]+'점</b><small>'+p.q[i]+'문항'+(D.S[i].score==null?' · 기록 없음':(p.gainQ[i]?' · +'+p.gainQ[i]:''))+(p.tight[i]?' <em>빠듯</em>':'')+'</small></div>'; }).join("")+
       '<div class="nmdsum">총점 <b>'+p.sum+'</b>점 · 합격 가능성 <span class="nmddots">'+p.dots.dots+'</span></div>'+
-      '<div class="nmdpw">지금보다 <b>'+p.gain+'문항</b> 더 맞히기 · 시험까지 주당 약 '+p.perWeek+'문항씩 실력 올리기</div></div>'; }).join("")+'</div>';
+      '<div class="nmdpw">'+(p.gain?'예상보다 <b>'+p.gain+'문항</b> 더 · 시험까지 주당 약 '+p.perWeek+'문항씩 더 올리기':'<b>지금 페이스 그대로면 도달</b> — 페이스를 지키세요')+'</div></div>'; }).join("")+'</div>';
   const R=D.plans.find(function(p){ return p.rec; });
   h+='<div class="nmdh">추천 조합으로 가는 길 — '+R.name+'</div><div id="nmdUnits" class="nmdunits"><span class="nmdmu">과목별로 어느 강의에서 문항을 더 맞힐지 찾는 중…</span></div>';
   h+='<div class="nmdh">시험장 시간 배분 <small>마킹 5분씩 남김 · 목표가 높은 과목부터</small></div><div class="nmdtime">'+
     nmDiagTime(R,D.laws).map(function(g){ return '<div class="nmdg"><b>'+g.n+' ('+g.min+'분)</b>'+g.rows.map(function(r,k){ return '<div>'+(k+1)+'. '+nmdEsc(r.subj)+' <b>'+r.min+'분</b> <small>· 목표 '+r.q+'문항</small></div>'; }).join("")+'<div class="nmdmu">마킹 5분</div></div>'; }).join("")+
     '<div class="nmdtip">목표가 낮은 과목은 아는 문항부터 확실히 맞히고(50점 = 20문항), 모르는 문항은 표시만 하고 넘긴 뒤 남는 시간에 돌아오세요.</div></div>';
-  h+='<div class="nmdfoot">• 문제를 맞힌 뒤 「🤔 헷갈렸지만 맞음」을 누르면 그 문항은 실력에 절반만 반영되어 진단이 더 정확해집니다.<br>• '+(D.trend?'최근 주별 기록으로 과목별 흔들림·상승 속도까지 반영했습니다.':'주별 기록이 3주 이상 쌓이면 과목별 흔들림·상승 속도까지 반영되어 조합이 더 정확해집니다.')+' 조합은 기록이 쌓일 때마다 다시 계산됩니다.</div></div>';
+  h+='<div class="nmdfoot">• 문제를 맞힌 뒤 「🤔 헷갈렸지만 맞음」을 누르면 그 문항은 실력에 절반만 반영되어 진단이 더 정확해집니다.<br>• '+(D.trend?'최근 주별 기록으로 과목별 흔들림과 상승 추세를 시험일까지 이어서 예상했습니다.':'「시험일 예상 점수」는 주별 기록이 3주 이상 쌓인 과목부터 상승 추세를 시험일까지 이어서 계산합니다 — 그 전에는 지금 점수를 그대로 씁니다.')+' 예상 점수와 조합은 문제를 풀 때마다 다시 계산되어 시험일까지 계속 바뀝니다.</div></div>';
   m.innerHTML=h; m.classList.add("on");
   /* 단원 배정 */
   try{
     const parts=[];
     for(let i=0;i<D.laws.length;i++){ if(D.S[i].score==null){ parts.push('<div class="nmdu"><b>'+nmdEsc(D.laws[i])+'</b> → <span class="nmdmu">이 과목 문제부터 풀어 지금 위치를 확인하세요 (목표 '+R.t[i]+'점)</span></div>'); continue; } if(!R.gainQ[i]) continue; const U=await nmDiagUnits(D.laws[i],R.gainQ[i]);
       parts.push('<div class="nmdu"><b>'+nmdEsc(D.laws[i])+' +'+R.gainQ[i]+'문항</b> → '+(U.length?U.map(function(u){ return '<button class="nmdub" onclick="document.getElementById(\'nmdModal\').classList.remove(\'on\');ccOpenQB(\''+D.laws[i]+'\',\''+u.stage+'\','+u.lec+')">'+nmdEsc(u.stage)+' '+nmdEsc(ccJindo(u.lec))+(u.title?' '+nmdEsc(u.title):'')+' <i>+'+u.give+'</i></button>'; }).join(" "):'<span class="nmdmu">풀이 기록이 더 쌓이면 강의를 짚어 드립니다 — 이 과목 문제풀이부터</span>')+'</div>'); }
-    const el=document.getElementById("nmdUnits"); if(el) el.innerHTML=parts.length?parts.join(""):'<span class="nmdmu">지금 실력으로 추천 조합에 이미 도달했습니다 — 지금 점수를 지키세요</span>';
+    const el=document.getElementById("nmdUnits"); if(el) el.innerHTML=parts.length?parts.join(""):'<span class="nmdmu">지금 페이스대로면 추천 조합에 도달합니다 — 페이스를 지키세요</span>';
   }catch(e){ const el=document.getElementById("nmdUnits"); if(el) el.innerHTML=""; }
 };
 /* AI 질의응답: 이 수강생의 진단을 함께 전달 (계산 방식·확률은 빼고) */
 window.nmDiagBrief=function(){
   try{ if(typeof TRACK!=="undefined"&&TRACK!=="1차") return ""; const D=nmDiag(); if(!D.has) return "";
     const R=D.plans.find(function(p){ return p.rec; });
-    return " [이 수강생의 300점 합격 진단] 지금 점수: "+D.laws.map(function(l,i){ return l+" "+(D.S[i].score==null?"기록 없음":D.S[i].score+"점"); }).join(", ")+
+    return " [이 수강생의 300점 합격 진단] 시험일 예상 점수: "+D.laws.map(function(l,i){ return l+" "+(D.S[i].score==null?"기록 없음":D.S[i].score+"점"); }).join(", ")+
       ". 추천 조합("+R.name+"): "+D.laws.map(function(l,i){ return l+" "+R.t[i]+"점("+R.q[i]+"문항)"; }).join(", ")+" = 총점 "+R.sum+"점."+
       (D.alerts.length?" 과락 경보: "+D.alerts.map(function(a){ return a.subj+"("+a.t+")"; }).join(", ")+".":"")+" 조언할 때 이 조합을 기준으로 하되 확률·계산 방식은 말하지 마세요.";
   }catch(e){ return ""; }
@@ -5618,7 +5645,7 @@ window.nmDiagBrief=function(){
     '.nmdh{font-weight:800;color:#0D1F3C;font-size:.95rem;margin:16px 0 8px}.nmdh small{font-weight:500;color:#7a7f8c;font-size:.76rem;margin-left:6px}'+
     '.nmddots{color:#C9A227;letter-spacing:2px;font-size:1rem}.nmdmu{color:#8a8f9c;font-size:.8rem}.nmdup{color:#2f8f5a;font-weight:700}.nmddn{color:#c0392b;font-weight:700}'+
     '.nmdt{width:100%;border-collapse:collapse;font-size:.86rem}.nmdt th{white-space:nowrap}.nmdt th{font-size:.74rem;color:#7a7f8c;font-weight:600;text-align:left;border-bottom:1px solid #e4e1d8;padding:5px 6px}.nmdt td{padding:6px;border-bottom:1px solid #f0ede5}.nmdt tr.al td{background:#fff3f1}'+
-    '.nmdal{color:#c0392b;font-size:.72rem}.nmdwarn{margin-top:10px;background:#fff3f1;border:1px solid #f1b8ae;color:#8f2a1d;border-radius:10px;padding:9px 12px;font-size:.84rem}'+
+    '.nmdal{color:#c0392b;font-size:.72rem}.nmdso{color:#b7791f;font-size:.72rem}.nmdt tr.so td{background:#fffaf0}.nmdsoft{margin-top:10px;background:#fffaf0;border:1px solid #f3d9a4;color:#7a5410;border-radius:10px;padding:9px 12px;font-size:.84rem}.nmdchg{margin-top:10px;font-size:.86rem;background:#f3f6fb;border-radius:10px;padding:8px 12px;color:#3a4a6d}.nmdchg.up{background:#eefaf2;color:#1f6b40}.nmdchg.dn{background:#fff5f2;color:#8f3a1d}.nmdwarn{margin-top:10px;background:#fff3f1;border:1px solid #f1b8ae;color:#8f2a1d;border-radius:10px;padding:9px 12px;font-size:.84rem}'+
     '.nmdplans{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}@media(max-width:640px){.nmdplans{grid-template-columns:1fr}}'+
     '.nmdp{position:relative;border:1.5px solid #e4e1d8;border-radius:12px;padding:12px 12px 10px;font-size:.84rem}.nmdp.rec{border-color:#C9A227;background:#FFFBEF}'+
     '.nmdrec{position:absolute;top:-9px;right:10px;background:#C9A227;color:#fff;font-size:.7rem;font-weight:800;border-radius:8px;padding:1px 8px}'+
