@@ -5411,7 +5411,7 @@ window.nmDiagSnap=function(){
   try{
     const L=nmdLL(), s=L.s||{}; if(!Object.keys(s).length) return;
     const wk=nmdWeek(), h=L.h=L.h||{}, cur={};
-    Object.keys(s).forEach(function(k){ const o=s[k]||{}; if(o.n) cur[k]=[o.n,o.ok||0,o.cf||0]; });
+    Object.keys(s).forEach(function(k){ const o=s[k]||{}; if(o.n||o.scn) cur[k]=[o.n||0,o.ok||0,o.cf||0,o.sc||0,o.scn||0]; });   /* 1차 객관식 [푼·맞힌·헷갈림] + 2차 사례형 [점수합·답안수] */
     let ch=false;
     if(JSON.stringify(h[wk]||{})!==JSON.stringify(cur)){ h[wk]=cur; const ks=Object.keys(h).sort(); while(ks.length>26) delete h[ks.shift()]; ch=true; }
     /* 지난주와 비교할 수 있게 이번 주 진단(합격 가능성 칸 · 과목별 시험일 예상 점수)도 남김 */
@@ -5680,6 +5680,168 @@ window.nmDiagBrief=function(){
   };
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",addW); else addW();
   try{ const ol=window.ccLoadAdmin; if(typeof ol==="function") window.ccLoadAdmin=ccLoadAdmin=async function(){ const r=await ol.apply(this,arguments); try{ nmdWFill(); }catch(e){} return r; }; }catch(e){}
+})();
+
+/* ═══ 노무사 2차 「290점 합격 진단」 (2026-10-26) ═══
+   2차 = 노동법 150점 + 인사노무관리론 100점 + 행정쟁송법 100점 + 선택과목 100점 = 450점
+   합격 기준: 과목마다 40% 이상 + 총점 60%(270점) 이상 → 서술형 채점의 흔들림을 감안해 목표는 290점
+   ① 과목별 사례형 답안 점수(cc_learnlog.s[과목].sc/scn, 100점 환산)로 지금 실력 · 주별 기록으로 추세 → 시험일 예상 점수
+   ② 시험일 예상 「범위」(보수적~낙관적) · 총점 시나리오(보수적 · 중간 · 낙관적)
+   ③ 290점 조합 3가지(최소노력안 · 강점집중안 · 균형안) — 2%(노동법 3점 · 그 밖 2점)씩 「합격 가능성 상승 ÷ 비용」이 큰 과목에 배정
+   수강생 화면에는 점수·범위·합격 가능성(●5칸)만 보이고 계산 방식·확률 숫자는 보이지 않습니다 */
+var ND2={ TARGET:290, LEGAL:270, CUT:40, FLOOR:50, CAP:85, STEP:2, K:2};
+function nd2Laws(){ try{ return CC_LAWS["2차"].slice(); }catch(e){ return ["노동법","행정쟁송법","인사노무관리론","경영조직론"]; } }
+function nd2Max(l){ return /^노동법$/.test(String(l||"").replace(/\s/g,""))?150:100; }
+function nd2Pt(pct,l){ return Math.round(pct*nd2Max(l))/100; }
+function nd2Fmt(v){ return String(Math.round(v*10)/10); }
+function nd2Up(v){ return Math.ceil(v/ND2.STEP-1e-9)*ND2.STEP; }
+function nd2Days(){ try{ const t=ccToday(), d=ccExamDate("2차",t); return Math.max(1,Math.round((d-t)/864e5)); }catch(e){ return 300; } }
+/* 과목별 진단값 (모두 100점 환산 %로 계산 · 화면에는 과목 배점으로) */
+function nd2Subj(L,subj){
+  const s=L.s||{}, key=Object.keys(s).find(function(k){ return nmdNorm(k)===nmdNorm(subj); });
+  const o=key?s[key]:null, n=o?(o.scn||0):0, sc=o?(o.sc||0):0;
+  const p=(sc+50*ND2.K)/(n+ND2.K);                   /* 답안이 적으면 50% 쪽으로 당겨 봄 */
+  const H=L.h||{}, wks=Object.keys(H).sort(), pts=[]; let prev=[0,0,0,0,0];
+  wks.forEach(function(w){ const hk=Object.keys(H[w]||{}).find(function(k){ return nmdNorm(k)===nmdNorm(subj); }); const c=hk?H[w][hk]:null; if(!c||c.length<5) return;
+    const dn=c[4]-(prev[4]||0); if(dn>=2) pts.push({x:nmdWeekIdx(w),y:Math.max(0,Math.min(100,(c[3]-(prev[3]||0))/dn)),n:dn}); prev=c; });
+  const sExam=9, sEst=Math.min(15,18/Math.sqrt(Math.max(n,1)));
+  let sVol=0, slope=null, se=null; const R=pts.slice(-6);
+  if(R.length>=3){
+    const my=R.reduce(function(a,b){ return a+b.y; },0)/R.length, vy=R.reduce(function(a,b){ return a+(b.y-my)*(b.y-my); },0)/(R.length-1);
+    const vb=R.reduce(function(a,b){ return a+81/b.n; },0)/R.length; sVol=Math.min(12,Math.sqrt(Math.max(0,vy-vb)));
+    const mx=R.reduce(function(a,b){ return a+b.x; },0)/R.length, sxx=R.reduce(function(a,b){ return a+(b.x-mx)*(b.x-mx); },0);
+    slope=sxx?Math.max(-8,Math.min(8,R.reduce(function(a,b){ return a+(b.x-mx)*(b.y-my); },0)/sxx)):0;
+    const b0=my-slope*mx, rss=R.reduce(function(a,b){ const e=b.y-(b0+slope*b.x); return a+e*e; },0); se=sxx?Math.min(6,Math.sqrt(rss/Math.max(1,R.length-2)/sxx)):3;
+  }
+  const sig0=Math.sqrt(sExam*sExam+sEst*sEst+sVol*sVol), now=n?p:null, W=Math.max(0,nd2Days()/7);
+  let proj=now, sig=sig0;
+  if(now!=null&&slope!=null){
+    const Weff=8*(1-Math.exp(-W/8));
+    if(slope>0){ const k=slope/Math.max(5,100-now); proj=Math.min(now+25,100-(100-now)*Math.exp(-k*Weff)); }
+    else proj=Math.max(now-15,now+slope*Math.min(Weff,4));
+    proj=Math.max(0,Math.min(ND2.CAP,proj)); const sd=se*Weff*0.5; sig=Math.min(16,Math.sqrt(sig0*sig0+sd*sd));
+  }
+  const speed=slope==null?1:Math.max(0.5,Math.min(2,1+slope/4));
+  let alert=null;
+  if(n>=3){ const pf=1-nmdPhi((proj-(ND2.CUT-0.5))/sig); if(pf>0.25) alert={k:"fail",t:"과락 위험",soft:(n<8||(R.length<3&&n<20))}; }
+  return {subj:subj,max:nd2Max(subj),w:nd2Max(subj)/100,n:n,now:now==null?null:Math.round(now*10)/10,score:proj==null?null:Math.round(proj*10)/10,sig:sig,slope:slope,speed:speed,weeks:R.length,alert:alert};
+}
+/* 합격 가능성: 과목마다 40% 이상일 확률 × 총점이 합격 기준(270점) 이상일 확률 */
+function nd2LogP(T,S){
+  let lp=0, sum=0, v=0;
+  T.forEach(function(t,j){ lp+=nmdLogPhi((t-(ND2.CUT-0.5))/S[j].sig); sum+=t*S[j].w; v+=S[j].w*S[j].w*S[j].sig*S[j].sig; });
+  return lp+nmdLogPhi((sum-(ND2.LEGAL-0.5))/Math.sqrt(v));
+}
+function nd2Band(s){ return s<55?1:(s<65?1.5:(s<75?2.5:(s<ND2.CAP?4:Infinity))); }
+/* 1점 올리는 비용: 점수대가 높을수록 · 정체된 과목일수록 비쌈 · 예상 범위(낙관적)를 넘는 목표는 3배 */
+function nd2Cost(j,t,S){ const x=S[j], hi=x.score==null?null:x.score+x.sig; return nd2Band(t)/x.speed/x.w*((hi!=null&&t+ND2.STEP>hi+0.01)?3:1); }
+function nd2Start(S){ return S.map(function(x){ return Math.min(ND2.CAP,Math.max(ND2.FLOOR,x.score==null?ND2.FLOOR:nd2Up(x.score))); }); }
+function nd2Sum(T,S){ return T.reduce(function(a,t,j){ return a+t*S[j].w; },0); }
+function nd2Pack(name,key,T,S,note){
+  const cur=S.map(function(x){ return x.score==null?null:x.score; }); let eff=0;
+  T.forEach(function(t,j){ for(let v=Math.max(cur[j]==null?ND2.FLOOR:nd2Up(cur[j]),0);v<t-1e-9;v+=ND2.STEP) eff+=nd2Cost(j,v,S)*ND2.STEP*S[j].w; });
+  const pts=T.map(function(t,j){ return nd2Pt(t,S[j].subj); });
+  const gain=T.map(function(t,j){ return cur[j]==null?0:Math.max(0,Math.round((t-cur[j])*S[j].w)); });
+  const hi=S.map(function(x){ return x.score==null?null:x.score+x.sig; });
+  return {name:name,key:key,t:T.slice(),pts:pts,gain:gain,gainSum:gain.reduce(function(a,b){ return a+b; },0),sum:Math.round(pts.reduce(function(a,b){ return a+b; },0)),
+    P:Math.exp(nd2LogP(T,S)),eff:eff,note:note,out:T.map(function(t,j){ return hi[j]!=null&&t>hi[j]+0.01; })};
+}
+/* 최소노력안: 총점 290점이 될 때까지 「1점 올리는 비용」이 가장 싼 과목에 2%씩 */
+function nd2MinEffort(S){
+  const T=nd2Start(S); let g=0;
+  while(nd2Sum(T,S)<ND2.TARGET-1e-9&&g++<300){
+    let best=-1,bc=Infinity; T.forEach(function(t,j){ if(t>=ND2.CAP) return; const c=nd2Cost(j,t,S); if(c<bc){ bc=c; best=j; } });
+    if(best<0) break; T[best]+=ND2.STEP;
+  }
+  return T;
+}
+/* 강점집중안: 약한 과목은 50%선만 · 강한 2과목(같은 %면 배점 큰 노동법 먼저)을 80%까지 채워 290점 · 모자라면 나머지 */
+function nd2Strong(S){
+  const T=nd2Start(S), ord=S.map(function(x,j){ return j; }).sort(function(a,b){ return ((S[b].score||0)+(S[b].w>1?3:0))-((S[a].score||0)+(S[a].w>1?3:0)); });
+  const ok=function(){ return nd2Sum(T,S)>=ND2.TARGET-1e-9; };
+  [80,ND2.CAP].forEach(function(cap){ ord.forEach(function(j,r){ if(cap===80&&r>1) return; while(!ok()&&T[j]<cap) T[j]+=ND2.STEP; }); });
+  return T;
+}
+/* 균형안: 모든 과목을 같은 % 이상으로 올려 290점 */
+function nd2Balance(S){
+  const base=nd2Start(S); let X=ND2.FLOOR, T=base.slice();
+  while(nd2Sum(T,S)<ND2.TARGET-1e-9&&X<ND2.CAP){ X+=ND2.STEP; T=base.map(function(t){ return Math.max(t,X); }); }
+  return T;
+}
+window.nmDiag2=function(L){
+  L=L||nmdLL();
+  const laws=nd2Laws(), S=laws.map(function(l){ return nd2Subj(L,l); }), has=S.filter(function(x){ return x.n>0; }).length;
+  const days=nd2Days(), wks=Math.max(1,days/7);
+  const E=S.map(function(x){ return x.score==null?ND2.FLOOR:x.score; });
+  const tot=function(f){ return Math.round(S.reduce(function(a,x,j){ return a+Math.max(0,Math.min(100,f(x,j)))*x.w; },0)); };
+  const scen={lo:tot(function(x,j){ return E[j]-x.sig; }),mid:tot(function(x,j){ return E[j]; }),hi:tot(function(x,j){ return E[j]+x.sig; })};
+  const curP=Math.exp(nd2LogP(E,S));
+  const plans=[nd2Pack("최소노력안","min",nd2MinEffort(S),S,"지금 실력에서 가장 적은 노력으로 290점을 만드는 조합"),
+    nd2Pack("강점집중안","strong",nd2Strong(S),S,"약한 과목은 50%선만 지키고 강한 과목을 80%까지 끌어올림"),
+    nd2Pack("균형안","bal",nd2Balance(S),S,"모든 과목을 같은 % 이상으로 고르게")];
+  plans.forEach(function(p,k){ const d=plans.slice(0,k).find(function(q){ return q.t.join()===p.t.join(); }); if(d) p.same=d.name; p.dots=nmdDots(p.P); p.perWeek=Math.ceil(p.gainSum/wks*10)/10; });
+  const inR=plans.filter(function(p){ return !p.out.some(Boolean); });
+  const rec=(inR.length?inR:plans).slice().sort(function(a,b){ return a.eff-b.eff; })[0].key;
+  plans.forEach(function(p){ p.rec=(p.key===rec); });
+  return {laws:laws,S:S,has:has,days:days,scen:scen,curP:curP,curDots:nmdDots(curP),plans:plans,rec:rec,trend:S.some(function(x){ return x.weeks>=3; }),
+    prev:(function(){ const hd=L.hd2||{}, wk=nmdWeek(), ks=Object.keys(hd).filter(function(k){ return k<wk; }).sort(); return ks.length?hd[ks[ks.length-1]]:null; })()};
+};
+/* 주 단위 기록: 2차 진단도 이번 주 값을 남김 (지난주 비교) */
+window.nmDiag2Snap=function(){
+  try{ const L=nmdLL(); if(!Object.keys(L.s||{}).some(function(k){ return (L.s[k]||{}).scn; })) return;
+    const D=nmDiag2(L), wk=nmdWeek(), hd=L.hd2=L.hd2||{}, sc={}; D.S.forEach(function(x){ if(x.score!=null) sc[x.subj]=nd2Pt(x.score,x.subj); });
+    const v={n:D.curDots.n,s:sc,t:D.scen.mid}; if(JSON.stringify(hd[wk]||{})===JSON.stringify(v)) return;
+    hd[wk]=v; const ks=Object.keys(hd).sort(); while(ks.length>26) delete hd[ks.shift()]; localStorage.setItem("cc_learnlog",JSON.stringify(L));
+  }catch(e){}
+};
+window.nmDiag2Open=function(){
+  try{ nmDiagSnap(); }catch(e){} nmDiag2Snap();
+  let m=document.getElementById("nmdModal");
+  if(!m){ m=document.createElement("div"); m.id="nmdModal"; m.className="tkmodal"; m.onclick=function(e){ if(e.target===m) m.classList.remove("on"); }; document.body.appendChild(m); }
+  const D=nmDiag2();
+  const tr=function(x){ return x.slope==null?'<span class="nmdmu">추세 확인 전</span>':(x.slope>=1?'<span class="nmdup">▲ 오르는 중</span>':(x.slope<=-1?'<span class="nmddn">▼ 내려가는 중</span>':'<span class="nmdmu">― 제자리</span>')); };
+  const close='document.getElementById(\'nmdModal\').classList.remove(\'on\')';
+  let h='<div class="tkbox nmdbox"><button class="tkx" onclick="'+close+'">✕</button>'+
+    '<h3>🎯 290점 합격 진단 <small>노무사 2차 · 시험까지 '+D.days+'일</small></h3>'+
+    '<div class="nmdrule">'+D.laws.map(function(l){ return nmdEsc(l)+' '+nd2Max(l); }).join(' + ')+' = 450점 · 합격 기준: <b>과목마다 40% 이상</b> + <b>총점 60%(270점) 이상</b> · 목표 <b>290점</b></div>';
+  if(!D.has){ h+='<div class="nmdempty">아직 채점된 사례형 답안이 없습니다.<br>사례형 학습엔진에서 답안을 쓰고 채점을 받으면 시험일 예상 점수와 290점 조합이 여기에 나옵니다.</div></div>'; m.innerHTML=h; m.classList.add("on"); return; }
+  h+='<div class="nmdh">시험일 내 예상 위치 <span class="nmddots">'+D.curDots.dots+'</span> <small>지금 페이스대로 가면 시험일에 — '+D.curDots.t+'</small></div>'+
+    '<table class="nmdt"><tr><th>과목</th><th>시험일 예상 점수</th><th>예상 범위</th><th>채점 답안</th><th>추세</th></tr>'+
+    D.S.map(function(x){ const pv=D.prev&&D.prev.s&&D.prev.s[x.subj], cur=x.score==null?null:nd2Pt(x.score,x.subj), dl=(pv!=null&&cur!=null)?Math.round((cur-pv)*10)/10:null;
+      const hard=x.alert&&!x.alert.soft, soft=x.alert&&x.alert.soft;
+      return '<tr'+(hard?' class="al"':(soft?' class="so"':''))+'><td>'+nmdEsc(x.subj)+' <small class="nmdmu">/'+x.max+'</small>'+(hard?' <b class="nmdal">⚠ 과락 위험</b>':(soft?' <b class="nmdso">△ 주의</b>':''))+'</td><td>'+
+        (x.score==null?'<span class="nmdmu">기록 없음</span>':'<b>'+nd2Fmt(cur)+'</b>점'+(x.slope==null?' <small class="nmdmu">(지금 기준)</small>':' <small class="nmdmu">(지금 '+nd2Fmt(nd2Pt(x.now,x.subj))+'점)</small>')+(dl==null||Math.abs(dl)<0.5?'':' <span class="'+(dl>0?'nmdup':'nmddn')+'" title="지난주 대비">'+(dl>0?'▲ +':'▼ ')+dl+'</span>'))+'</td><td>'+
+        (x.score==null?'–':Math.round(nd2Pt(Math.max(0,x.score-x.sig),x.subj))+' ~ '+Math.round(nd2Pt(Math.min(100,x.score+x.sig),x.subj))+'점')+'</td><td>'+x.n+'</td><td>'+tr(x)+'</td></tr>'; }).join("")+'</table>';
+  const sm=function(v){ return v>=ND2.TARGET?'목표 290점을 넘는 점수대':(v>=ND2.LEGAL?'합격 기준 270점을 넘지만 여유가 적은 점수대':(v>=ND2.LEGAL-15?'합격 기준 270점에 근접한 점수대':'합격 가능성이 낮은 점수대')); };
+  h+='<div class="nmdh">시험일 예상 총점 <small>같은 실력이라도 시험 당일 채점에 따라 이만큼 달라질 수 있어요</small></div><table class="nmdt nmdsc"><tr><th>시나리오</th><th>예상 총점</th><th>의미</th></tr>'+
+    [["보수적",D.scen.lo],["중간",D.scen.mid],["낙관적",D.scen.hi]].map(function(r){ return '<tr><td>'+r[0]+'</td><td><b>약 '+r[1]+'점</b></td><td>'+sm(r[1])+'</td></tr>'; }).join("")+'</table>';
+  if(D.prev&&D.prev.n){ const dn=D.curDots.n-D.prev.n, dt=D.prev.t!=null?D.scen.mid-D.prev.t:null;
+    h+='<div class="nmdchg '+(dn>0?'up':(dn<0?'dn':''))+'">'+(dn>0?'🎉 지난주보다 합격 가능성이 <b>'+dn+'칸 올랐어요</b> ▲':(dn<0?'지난주보다 합격 가능성이 '+(-dn)+'칸 내려갔어요 ▼ — 아래 조합대로 다시 끌어올려 봐요':'지난주와 같은 칸입니다'))+(dt?' · 예상 총점 '+(dt>0?'+':'')+dt+'점':'')+'</div>'; }
+  const none=D.S.filter(function(x){ return x.n===0; }).map(function(x){ return x.subj; });
+  if(none.length) h+='<div class="nmdnote">📝 '+none.map(nmdEsc).join(", ")+' — 아직 채점된 답안이 없어 「50% 근처」로 가정했습니다. 이 과목 사례형 답안을 쓰면 조합이 정확해집니다.</div>';
+  const AH=D.S.filter(function(x){ return x.alert&&!x.alert.soft; }), AS=D.S.filter(function(x){ return x.alert&&x.alert.soft; });
+  if(AH.length) h+='<div class="nmdwarn">⚠ <b>과락 경보</b> — '+AH.map(function(x){ return nmdEsc(x.subj); }).join(", ")+'. 한 과목이라도 40% 아래면 총점과 관계없이 불합격입니다. 이 과목 답안 작성을 먼저 챙기세요.</div>';
+  if(AS.length) h+='<div class="nmdsoft">△ <b>주의</b> — '+AS.map(function(x){ return nmdEsc(x.subj); }).join(" · ")+' — 지금은 과락선(40%)에 가까워요. 아직 답안이 쌓이는 중이라 확정된 것은 아니니 너무 걱정하지 마세요. 이 과목 답안을 조금 더 자주 써서 50%선을 넘겨 봐요.</div>';
+  h+='<div class="nmdh">290점 합격 조합 <small>과목별 목표 점수 · +는 예상보다 더 올려야 할 점수</small></div>'+
+    '<div class="nmdwhy">💡 <b>왜 290점인가요?</b> 2차는 과목마다 40% 이상, 4과목 총점 60%(270점) 이상이면 합격 기준을 충족합니다. 하지만 서술형은 채점에 따라 점수가 흔들려서, 270점에 딱 맞추면 한두 문제의 채점 차이로 기준 아래로 내려갈 수 있어요. 그래서 <b>확실한 합격을 위해 270점보다 여유를 둔 290점을 목표로, 약한 과목도 과락 위험이 있는 40%대를 올라서는 50%를 기준으로 잡았습니다.</b></div><div class="nmdplans">'+
+    D.plans.map(function(p){ return '<div class="nmdp'+(p.rec?' rec':'')+'">'+(p.rec?'<span class="nmdrec">추천</span>':'')+'<div class="nmdpn">'+p.name+'</div><div class="nmdpd">'+p.note+(p.same?' <b>(결과가 '+p.same+'과 같음)</b>':'')+'</div>'+
+      D.laws.map(function(l,i){ return '<div class="nmdr"><span>'+nmdEsc(l)+'</span><b>'+nd2Fmt(p.pts[i])+'점</b><small>/'+nd2Max(l)+(D.S[i].score==null?' · 기록 없음':(p.gain[i]?' · +'+p.gain[i]:''))+(p.out[i]?' <em>범위 밖</em>':'')+'</small></div>'; }).join("")+
+      '<div class="nmdsum">총점 <b>'+p.sum+'</b>점 · 합격 가능성 <span class="nmddots">'+p.dots.dots+'</span></div>'+
+      '<div class="nmdpw">'+(p.gainSum?'예상보다 <b>'+p.gainSum+'점</b> 더 · 시험까지 주당 약 '+p.perWeek+'점씩 더 올리기':'<b>지금 페이스 그대로면 도달</b> — 페이스를 지키세요')+'</div></div>'; }).join("")+'</div>'+
+    '<div class="nmdnote">「범위 밖」은 그 과목의 예상 범위(낙관적)보다 높은 목표라 무리가 될 수 있다는 뜻입니다. 추천 조합은 되도록 범위 안에서 고릅니다.</div>';
+  h+='<div class="nmdfoot">• 점수는 사례형 학습엔진에서 채점받은 답안으로 계산한 <b>예상치</b>이며, 실제 합격자 통계로 검증한 값은 아닙니다. 290점이면 합격, 그 아래면 불합격이라고 단정할 수는 없어요 — 총점 290점을 목표로 하되 과목별 최저점(40%)도 함께 관리하세요.<br>• '+(D.trend?'최근 주별 기록으로 과목별 흔들림과 상승 추세를 시험일까지 이어서 예상했습니다.':'「시험일 예상 점수」는 주별 기록이 3주 이상 쌓인 과목부터 상승 추세를 시험일까지 이어서 계산합니다 — 그 전에는 지금 점수를 그대로 씁니다.')+' 예상 점수와 조합은 답안을 쓸 때마다 다시 계산되어 시험일까지 계속 바뀝니다.</div></div>';
+  m.innerHTML=h; m.classList.add("on");
+};
+/* 머리 단추: 1차 화면이면 「300점 합격 진단」, 2차 화면이면 「290점 합격 진단」 */
+(function(){
+  try{ const st=document.createElement("style"); st.textContent='.nmdt.nmdsc td:first-child{white-space:nowrap}'; document.head.appendChild(st); }catch(e){}
+  window.nmDiagBtnSync=function(){ const b=document.getElementById("nmdBtn"); if(!b) return; const two=(typeof TRACK!=="undefined"&&TRACK==="2차");
+    b.textContent=two?"🎯 290점 합격 진단":"🎯 300점 합격 진단"; b.onclick=two?nmDiag2Open:nmDiagOpen; };
+  const t=function(){ try{ nmDiagBtnSync(); }catch(e){} };
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(t,0); }); else setTimeout(t,0);
+  try{ const oi=window.initTrack; if(typeof oi==="function") window.initTrack=initTrack=function(){ const r=oi.apply(this,arguments); t(); return r; }; }catch(e){}
+  setInterval(t,3000);
+  setTimeout(nmDiag2Snap,3500); setInterval(nmDiag2Snap,10*60*1000);
 })();
 
 /* ═══ 노무사판 · 밝은 화면 / 어두운 화면 (2026-10-21) ═══
