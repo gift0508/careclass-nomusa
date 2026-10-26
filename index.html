@@ -5846,6 +5846,228 @@ window.nmDiag2Open=function(){
   setTimeout(nmDiag2Snap,3500); setInterval(nmDiag2Snap,10*60*1000);
 })();
 
+/* ═══ 관리자: 📤 문제 올리기 (2026-10-26) ═══
+   txt · docx 파일을 끌어다 놓으면 → 미리보기 → 저장 = Supabase 문제 은행(cc_questions)에 바로 들어감
+   · 관리자만 쓸 수 있음(서버 보안 규칙 cc_q_admin_ins/upd/del)
+   · 문항 사이는 === 한 줄 · 「항목: 내용」 형식 · 파일 맨 위(첫 === 앞)에 쓴 과목·단계·강의는 아래 모든 문항에 적용
+   · 1차: OX · 5지택일 · 선다형(ㄱㄴㄷ 보기) / 2차: 사례형(주관식) — 배점표 = 매칭채점표 */
+var QUP={rows:[],last:null,busy:false};
+const QUP_LABELS=["차수","과목","단계","강의","진도","유형","단원","주제","사례지문","사례","물음","발문","문제","보기","정답","해설","모범답안","배점표","매칭채점표","핵심필수현출문구","금지표현","핵심논리","핵심키워드","답안개선방안","재작성처방","대비"];
+function qupEsc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function qupNorm(x){ return String(x||"").replace(/[\s·.]/g,""); }
+function qupLaws(t){ try{ return t==="2차"?(window.CC_ADMIN_LAWS2||CC_LAWS["2차"]).slice():CC_LAWS["1차"].slice(); }catch(e){ return []; } }
+/* 「항목: 내용」 나누기 — 항목 이름은 줄 맨 앞에 */
+function qupFields(b){
+  const re=new RegExp("^[ \\t]*\\[?("+QUP_LABELS.join("|")+")\\]?[ \\t]*[:：][ \\t]?","gm"), out={}, hits=[]; let m;
+  while((m=re.exec(b))) hits.push({k:m[1],s:m.index,e:re.lastIndex});
+  hits.forEach(function(h,i){ const v=b.slice(h.e,i+1<hits.length?hits[i+1].s:b.length).replace(/^\n+|\s+$/g,""); out[h.k]=(out[h.k]?out[h.k]+"\n":"")+v; });
+  return out;
+}
+const QUP_CIRC="①②③④⑤";
+function qupChoices(text){
+  const lines=String(text||"").split("\n"), stem=[], ch=[];
+  lines.forEach(function(l){ const t=l.trim(), m=t.match(/^([①②③④⑤])\s*(.*)$/)||t.match(/^\(?([1-5])[).]\s+(.*)$/);
+    if(m){ ch.push(m[2].trim()); } else if(ch.length&&t){ ch[ch.length-1]+=" "+t; } else stem.push(l); });
+  return {stem:stem.join("\n").trim(),choices:ch};
+}
+function qupAns(a){ a=String(a||"").trim(); const i=QUP_CIRC.indexOf(a.charAt(0)); if(i>=0) return String(i+1); const m=a.match(/^([1-5])/); return m?m[1]:""; }
+function qupOX(a){ a=String(a||"").trim().toUpperCase().replace(/○|◯/g,"O").replace(/×|✕/g,"X"); return /^[OX]/.test(a)?a.charAt(0):""; }
+function qupLec(v){ const m=String(v||"").match(/(\d+)\s*[-–]\s*(\d+)/); if(m) return (parseInt(m[1],10)-1)*3+parseInt(m[2],10); const n=parseInt(String(v||"").replace(/[^\d]/g,""),10); return n>0?n:0; }
+function qupType(v,track){ v=String(v||"").replace(/\s/g,"");
+  if(/^(OX|ox|O\/X)$/.test(v)) return "OX"; if(/^(5지택일|5지|5지선다|선택형|객관식)$/.test(v)) return "5지택일";
+  if(/^(선다형|콤보형|콤보|결합형)$/.test(v)) return "콤보형"; if(/^(주관식|사례형|사례)$/.test(v)) return "주관식"; if(/^(필수암기|암기)$/.test(v)) return "필수암기";
+  return track==="2차"?"주관식":""; }
+/* 파일 글 → 문항 목록 */
+function qupParse(text,def){
+  text=String(text||"").replace(/\r\n?/g,"\n").replace(/ /g," ");
+  const blocks=text.split(/^[ \t]*={3,}[ \t]*$/m).map(function(x){ return x.trim(); }).filter(Boolean);
+  const head={}; const out=[];
+  blocks.forEach(function(b,bi){
+    const f=qupFields(b);
+    const isHead=!(f["문제"]||f["발문"]||f["사례"]||f["사례지문"]||f["물음"]||f["정답"]||f["모범답안"]);
+    if(isHead){ ["차수","과목","단계","강의","진도","대비"].forEach(function(k){ if(f[k]) head[k]=f[k].trim(); }); return; }
+    const g=function(k){ return (f[k]!=null?f[k]:"").trim(); };
+    const trk=(function(v){ v=String(v||"").replace(/\s/g,""); return v==="1"||v==="1차"?"1차":(v==="2"||v==="2차"?"2차":""); })(g("차수")||head["차수"])||def.track;
+    const laws=qupLaws(trk), sj0=g("과목")||head["과목"]||def.subject, sj=laws.find(function(l){ return qupNorm(l)===qupNorm(sj0); })||"";
+    const stgs=(CC_STAGES[trk]||[]), st0=g("단계")||head["단계"]||def.stage, st=stgs.find(function(s){ return qupNorm(s)===qupNorm(st0); })||"";
+    const lec=qupLec(g("강의")||g("진도")||head["강의"]||head["진도"]||def.lec);
+    const it={n:out.length+1,track:trk,subject:sj,stage:st,lec:lec,qtype:qupType(g("유형"),trk),case_text:null,question:"",choices:null,answer:null,explanation:null,keywords:null,model_answer:null,
+      chapter:null,topic:null,logic:null,grid:null,advice:null,rewrite:null,src:def.src||null,err:[]};
+    if(!sj) it.err.push("과목"); if(!st) it.err.push("단계"); if(!lec) it.err.push("강의");
+    if(trk==="2차"){
+      it.qtype=it.qtype==="필수암기"?"필수암기":"주관식";
+      const cs=g("사례")||g("사례지문"), mq=g("물음");
+      it.question=[cs,mq?("【물음】\n"+mq):""].filter(Boolean).join("\n\n")||g("문제")||g("발문");
+      it.model_answer=g("모범답안")||g("정답")||g("해설")||null;
+      let grid=g("배점표")||g("매칭채점표");
+      if(g("핵심필수현출문구")) grid+=(grid?"\n":"")+"핵심필수현출문구: "+g("핵심필수현출문구").replace(/\n+/g," / ");
+      if(g("금지표현")) grid+=(grid?"\n":"")+"금지표현: "+g("금지표현").replace(/\n+/g," / ");
+      it.grid=grid||null; it.chapter=g("단원")||null; it.topic=g("주제")||null; it.logic=g("핵심논리")||null; it.keywords=g("핵심키워드")||null; it.advice=g("답안개선방안")||null; it.rewrite=g("재작성처방")||null;
+      if(!it.question) it.err.push("사례·물음"); if(!it.model_answer) it.err.push("모범답안");
+      if(it.qtype==="주관식"&&!it.grid) it.warn="배점표 없음 — 모범답안의 Ⅰ·Ⅱ 목차로 나눠 채점";
+    } else {
+      const body=g("문제")||g("발문"), B=qupChoices(g("보기")), cs=B.stem;
+      const C=qupChoices(body); if(!C.choices.length&&B.choices.length) C.choices=B.choices; let ty=it.qtype;
+      const ox=qupOX(g("정답"));
+      if(!ty) ty=C.choices.length?(cs?"콤보형":"5지택일"):(ox?"OX":"");
+      it.qtype=ty; it.explanation=g("해설")||null;
+      if(ty==="OX"){ it.question=body; it.answer=ox; if(!ox) it.err.push("정답(O·X)"); }
+      else if(ty==="5지택일"||ty==="콤보형"){
+        it.question=C.stem; it.case_text=cs||null; it.choices=C.choices; it.answer=qupAns(g("정답"));
+        if(C.choices.length<2) it.err.push("선지(①~⑤)"); if(!it.answer||+it.answer>C.choices.length) it.err.push("정답(번호)");
+        if(ty==="콤보형"&&!cs) it.warn="선다형인데 「보기:」(ㄱ·ㄴ·ㄷ)가 없습니다";
+      } else if(ty==="필수암기"){ it.question=body; it.model_answer=g("정답")||g("모범답안")||null; if(!it.model_answer) it.err.push("필수암기문장(정답)"); }
+      else it.err.push("유형");
+      if(!it.question) it.err.push("문제");
+    }
+    if(it.question&&it.question.length>20000) it.err.push("문제가 너무 김(2만 자)");
+    out.push(it);
+  });
+  return out;
+}
+/* docx → 글 (표는 「칸 | 칸 | 칸」 줄로) */
+async function qupDocx(file){
+  if(!window.JSZip) await new Promise(function(res,rej){ const s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"; s.onload=res; s.onerror=function(){ rej(new Error("docx 읽기 도구를 불러오지 못했습니다")); }; document.head.appendChild(s); });
+  const zip=await JSZip.loadAsync(file), xml=await zip.file("word/document.xml").async("string");
+  const doc=new DOMParser().parseFromString(xml,"application/xml"), W="http://schemas.openxmlformats.org/wordprocessingml/2006/main";
+  const pText=function(p){ let s=""; p.querySelectorAll("*").forEach(function(n){ if(n.namespaceURI!==W) return; if(n.localName==="t") s+=n.textContent; else if(n.localName==="tab") s+="\t"; else if(n.localName==="br") s+="\n"; }); return s; };
+  const body=doc.getElementsByTagNameNS(W,"body")[0], lines=[];
+  Array.prototype.forEach.call(body.childNodes,function(n){
+    if(n.localName==="p") lines.push(pText(n));
+    else if(n.localName==="tbl"){ Array.prototype.forEach.call(n.getElementsByTagNameNS(W,"tr"),function(tr){
+      const cells=Array.prototype.filter.call(tr.childNodes,function(c){ return c.localName==="tc"; }).map(function(tc){ return Array.prototype.map.call(tc.getElementsByTagNameNS(W,"p"),pText).join(" ").trim(); });
+      lines.push(cells.join(" | ")); }); }
+  });
+  return lines.join("\n");
+}
+async function qupRead(file){
+  const nm=file.name.toLowerCase();
+  if(/\.docx$/.test(nm)) return qupDocx(file);
+  if(/\.txt$/.test(nm)) return await file.text();
+  if(/\.(hwp|hwpx|pdf|doc)$/.test(nm)) throw new Error(file.name+" — 한글·PDF 파일은 읽을 수 없습니다. 한글에서 「다른 이름으로 저장 → docx」로 바꿔 올려 주세요");
+  throw new Error(file.name+" — txt 또는 docx 파일만 올릴 수 있습니다");
+}
+function qupDef(){ const v=function(id){ const e=document.getElementById(id); return e?e.value:""; };
+  return {track:v("qupTrack")||"2차",subject:v("qupSubj"),stage:v("qupStage"),lec:v("qupLec"),src:v("qupSrc")||null}; }
+function qupFillSel(){
+  const t=(document.getElementById("qupTrack")||{}).value||"2차";
+  const s=document.getElementById("qupSubj"), g=document.getElementById("qupStage");
+  if(s) s.innerHTML='<option value="">파일에 적힌 대로</option>'+qupLaws(t).map(function(l){ return '<option>'+qupEsc(l)+'</option>'; }).join("");
+  if(g) g.innerHTML='<option value="">파일에 적힌 대로</option>'+(CC_STAGES[t]||[]).map(function(l){ return '<option>'+qupEsc(l)+'</option>'; }).join("");
+}
+function qupPanel(){
+  let pn=document.getElementById("qupPanel"); if(pn) return pn;
+  const anchor=document.getElementById("ccQBPanel"); if(!anchor) return null;
+  const L=window.CC_SRC_LABEL||{o:"26년 대비",n:"27년 대비"};
+  pn=document.createElement("div"); pn.className="panel"; pn.id="qupPanel"; pn.style.marginTop="22px";
+  pn.innerHTML='<h3>📤 문제 올리기 <small style="color:var(--mute);font-weight:500;font-size:.8rem">txt · docx — 저장하면 문제 은행에 바로 들어갑니다</small></h3>'+
+    '<div class="sub">문항 사이는 <b>===</b> 한 줄로 나누고, 「<b>항목: 내용</b>」으로 씁니다 · 파일 맨 위(첫 === 앞)에 쓴 과목·단계·강의는 아래 모든 문항에 적용됩니다 · 아래 칸을 고르면 파일에 없는 항목을 채웁니다 '+
+    '<button class="mini" onclick="qupTemplate(\'1차\')">📄 1차 양식 받기</button> <button class="mini" onclick="qupTemplate(\'2차\')">📄 2차 사례형 양식 받기</button></div>'+
+    '<div class="qupbar"><label>차수 <select id="qupTrack" onchange="qupFillSel()"><option>2차</option><option>1차</option></select></label>'+
+    '<label>과목 <select id="qupSubj"></select></label><label>단계 <select id="qupStage"></select></label>'+
+    '<label>강의 <input id="qupLec" type="number" min="1" placeholder="파일대로" style="width:84px"></label>'+
+    '<label>대비 연도 <select id="qupSrc"><option value="">공통</option><option value="o">'+qupEsc(L.o||"작년")+'</option><option value="n">'+qupEsc(L.n||"신규")+'</option></select></label></div>'+
+    '<div id="qupDrop" class="qupdrop" tabindex="0">여기에 txt · docx 파일을 끌어다 놓거나 <b>눌러서 고르세요</b> (여러 개 가능)<input id="qupFile" type="file" accept=".txt,.docx" multiple hidden></div>'+
+    '<div id="qupMsg" class="sub"></div><div id="qupPrev"></div>';
+  anchor.after(pn);
+  const st=document.createElement("style"); st.textContent='.qupbar{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}.qupbar label{font-size:.84rem;display:flex;gap:6px;align-items:center}.qupbar select,.qupbar input{font:inherit;font-size:.84rem;padding:4px 6px}'+
+    '.qupdrop{border:2px dashed var(--line);border-radius:12px;padding:22px 14px;text-align:center;color:var(--sub);cursor:pointer;font-size:.9rem}.qupdrop.on,.qupdrop:hover{border-color:var(--gold);color:var(--ink)}'+
+    '.quptbl{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:10px}.quptbl th{text-align:left;color:var(--mute);font-weight:600;border-bottom:1px solid var(--line);padding:5px 6px;white-space:nowrap}.quptbl td{border-bottom:1px solid var(--line);padding:5px 6px;vertical-align:top}'+
+    '.quptbl tr.bad td{background:rgba(192,57,43,.08)}.qupok{color:#2f8f5a;font-weight:700}.qupbad{color:#c0392b;font-weight:700}.qupwarn{color:#b7791f}.qupact{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:12px}.qupwrap{max-height:420px;overflow:auto}'; document.head.appendChild(st);
+  const drop=document.getElementById("qupDrop"), inp=document.getElementById("qupFile");
+  drop.onclick=function(){ inp.click(); }; drop.onkeydown=function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); inp.click(); } };
+  inp.onchange=function(){ qupFiles(inp.files); inp.value=""; };
+  ["dragenter","dragover"].forEach(function(t){ drop.addEventListener(t,function(e){ e.preventDefault(); drop.classList.add("on"); }); });
+  ["dragleave","drop"].forEach(function(t){ drop.addEventListener(t,function(e){ e.preventDefault(); drop.classList.remove("on"); }); });
+  drop.addEventListener("drop",function(e){ qupFiles(e.dataTransfer.files); });
+  qupFillSel(); return pn;
+}
+async function qupFiles(files){
+  const msg=document.getElementById("qupMsg"); QUP.rows=[]; const errs=[];
+  for(const f of Array.from(files||[])){
+    try{ const txt=await qupRead(f); const rs=qupParse(txt,qupDef()); rs.forEach(function(r){ r.file=f.name; }); QUP.rows=QUP.rows.concat(rs); }
+    catch(e){ errs.push(e.message||String(e)); }
+  }
+  QUP.rows.forEach(function(r,i){ r.n=i+1; });
+  if(msg) msg.innerHTML=errs.map(function(e){ return '<div class="qupbad">'+qupEsc(e)+'</div>'; }).join("");
+  qupPreview();
+}
+function qupPreview(){
+  const el=document.getElementById("qupPrev"); if(!el) return;
+  const R=QUP.rows; if(!R.length){ el.innerHTML='<div class="sub">읽은 문항이 없습니다 — 문항 사이 === 줄과 「문제:」「사례:」 같은 항목 이름을 확인해 주세요</div>'; return; }
+  const ok=R.filter(function(r){ return !r.err.length; }), bad=R.length-ok.length;
+  const lecs={}; ok.forEach(function(r){ lecs[r.track+" "+r.subject+" "+r.stage+" "+r.lec+"강"]=1; });
+  el.innerHTML='<div class="sub" style="margin-top:10px">읽은 문항 <b>'+R.length+'</b>개 · 올릴 수 있는 문항 <b class="qupok">'+ok.length+'</b>개'+(bad?' · 빠진 칸이 있는 문항 <b class="qupbad">'+bad+'</b>개(저장에서 빠짐)':'')+' · 강의 '+Object.keys(lecs).length+'개</div>'+
+    '<div class="qupwrap"><table class="quptbl"><thead><tr><th>#</th><th>과목 · 단계 · 강의</th><th>유형</th><th>내용(앞부분)</th><th>배점표</th><th>상태</th></tr></thead><tbody>'+
+    R.map(function(r){ const gl=r.grid?r.grid.split("\n").filter(function(l){ return /\|/.test(l); }).length:0;
+      return '<tr class="'+(r.err.length?'bad':'')+'"><td>'+r.n+'</td><td>'+qupEsc((r.subject||"?")+" · "+(r.stage||"?")+" · "+(r.lec||"?")+"강")+'</td><td>'+qupEsc(r.qtype==="콤보형"?"선다형":(r.qtype||"?"))+'</td><td>'+qupEsc(String(r.topic?("["+r.topic+"] "):"")+String(r.question||"").replace(/\s+/g," ").slice(0,60))+'</td>'+
+        '<td>'+(r.track==="2차"?(gl?gl+'줄':'—'):(r.choices?r.choices.length+'지 · 정답 '+qupEsc(r.answer||"?"):(r.answer?"정답 "+qupEsc(r.answer):"")))+'</td>'+
+        '<td>'+(r.err.length?'<span class="qupbad">빠짐: '+qupEsc(r.err.join(", "))+'</span>':'<span class="qupok">✓</span>')+(r.warn?'<div class="qupwarn">'+qupEsc(r.warn)+'</div>':'')+'</td></tr>'; }).join("")+'</tbody></table></div>'+
+    (ok.length?'<div class="qupact"><label style="font-size:.84rem"><input type="radio" name="qupMode" value="add" checked> 기존 문항 뒤에 <b>추가</b></label>'+
+      '<label style="font-size:.84rem"><input type="radio" name="qupMode" value="replace"> 같은 강의·같은 유형의 기존 문항을 지우고 <b>바꾸기</b></label>'+
+      '<button class="mini" style="border-color:var(--gold);color:var(--gold)" id="qupSave" onclick="qupSave()">💾 '+ok.length+'문항 저장</button></div>':'')+
+    '<div id="qupDone"></div>';
+}
+async function qupSave(){
+  if(QUP.busy) return; const ok=QUP.rows.filter(function(r){ return !r.err.length; }); if(!ok.length) return;
+  const mode=(document.querySelector('input[name="qupMode"]:checked')||{}).value||"add", btn=document.getElementById("qupSave"), done=document.getElementById("qupDone");
+  QUP.busy=true; if(btn){ btn.disabled=true; btn.textContent="저장하는 중…"; }
+  try{
+    const groups={}; ok.forEach(function(r){ const k=[r.track,r.subject,r.stage,r.lec,r.src||""].join("|"); (groups[k]=groups[k]||[]).push(r); });
+    let removed=0;
+    for(const k of Object.keys(groups)){
+      const g=groups[k], r0=g[0], types=Array.from(new Set(g.map(function(r){ return r.qtype; })));
+      let q=sb.from("cc_questions").select("id,sort,qtype").eq("track",r0.track).eq("subject",r0.subject).eq("stage",r0.stage).eq("lec",r0.lec);
+      q=r0.src?q.eq("src",r0.src):q.is("src",null);
+      const ex=await q; if(ex.error) throw ex.error;
+      let base=0;
+      if(mode==="replace"){
+        const ids=(ex.data||[]).filter(function(x){ return types.indexOf(x.qtype)>=0; }).map(function(x){ return x.id; });
+        if(ids.length){ const d=await sb.from("cc_questions").delete().in("id",ids); if(d.error) throw d.error; removed+=ids.length; }
+        base=(ex.data||[]).filter(function(x){ return types.indexOf(x.qtype)<0; }).reduce(function(a,x){ return Math.max(a,x.sort||0); },0);
+      } else base=(ex.data||[]).reduce(function(a,x){ return Math.max(a,x.sort||0); },0);
+      g.forEach(function(r,i){ r.sort=base+i+1; });
+    }
+    const cols=["track","subject","stage","lec","qtype","case_text","question","choices","answer","explanation","keywords","model_answer","chapter","topic","logic","grid","advice","rewrite","sort","src"];
+    const ids=[];
+    for(let i=0;i<ok.length;i+=200){
+      const chunk=ok.slice(i,i+200).map(function(r){ const o={}; cols.forEach(function(c){ o[c]=(r[c]===""||r[c]===undefined)?null:r[c]; }); return o; });
+      const ins=await sb.from("cc_questions").insert(chunk).select("id"); if(ins.error) throw ins.error;
+      (ins.data||[]).forEach(function(x){ ids.push(x.id); });
+    }
+    QUP.last=ids;
+    if(done) done.innerHTML='<div class="sub qupok" style="margin-top:10px">✓ '+ids.length+'문항을 문제 은행에 저장했습니다'+(removed?' (기존 '+removed+'문항을 바꿈)':'')+' — 수강생 엔진에 바로 나타납니다 '+
+      '<button class="mini" onclick="qupUndo()">↩ 방금 올린 '+ids.length+'문항 지우기</button></div>';
+    try{ toast(ids.length+"문항을 저장했습니다"); }catch(e){}
+    try{ ccQBRefresh(); }catch(e){}
+    QUP.rows=[]; const pv=document.querySelector("#qupPrev .qupact"); if(pv) pv.remove();
+  }catch(e){
+    if(done) done.innerHTML='<div class="qupbad" style="margin-top:10px">저장하지 못했습니다 — '+qupEsc(ccErr(e))+'<br><small>관리자 계정으로 로그인했는지 확인해 주세요. 일부만 저장됐을 수 있으니 문제 은행 현황을 새로고침해 보세요.</small></div>';
+    if(btn){ btn.disabled=false; btn.textContent="💾 다시 저장"; }
+  }
+  QUP.busy=false;
+}
+async function qupUndo(){
+  const ids=QUP.last||[]; if(!ids.length) return;
+  const done=document.getElementById("qupDone");
+  const r=await sb.from("cc_questions").delete().in("id",ids);
+  if(r.error){ if(done) done.innerHTML='<div class="qupbad">지우지 못했습니다 — '+qupEsc(ccErr(r.error))+'</div>'; return; }
+  QUP.last=null; if(done) done.innerHTML='<div class="sub">방금 올린 '+ids.length+'문항을 지웠습니다</div>'; try{ ccQBRefresh(); }catch(e){}
+}
+window.qupTemplate=function(t){
+  const T1="과목: 민법\n단계: 기본이론\n강의: 3\n===\n유형: OX\n문제: 제한능력자의 법률행위는 법정대리인의 동의가 없으면 무효이다.\n정답: X\n해설: 무효가 아니라 취소할 수 있다.\n===\n유형: 5지택일\n문제: 다음 중 옳은 것은?\n① 첫째 선지\n② 둘째 선지\n③ 셋째 선지\n④ 넷째 선지\n⑤ 다섯째 선지\n정답: ③\n해설: …\n===\n유형: 선다형\n문제: 옳은 것을 모두 고른 것은?\n보기:\nㄱ. 첫째 지문\nㄴ. 둘째 지문\nㄷ. 셋째 지문\n① ㄱ\n② ㄴ\n③ ㄱ, ㄴ\n④ ㄴ, ㄷ\n⑤ ㄱ, ㄴ, ㄷ\n정답: 3\n해설: …\n";
+  const T2="과목: 노동법\n단계: 핵심이론\n===\n강의: 12\n단원: 해고\n주제: 부당해고의 구제\n사례:\n甲은 …\n물음:\n1. 甲이 취할 수 있는 구제수단은? (25점)\n모범답안:\nⅠ. 쟁점의 정리\n…\nⅡ. 부당해고 구제신청\n…\nⅢ. 결론\n…\n배점표:\nⅠ | 쟁점의 정리 | 일반 | 부당해고 / 구제신청 | 3\nⅡ | 부당해고 구제신청 | 핵심 | 근로기준법 제28조 / 노동위원회 / 3개월 | 15\nⅢ | 결론 | 일반 | 구제명령 | 2\n핵심필수현출문구: 근로기준법 제28조\n금지표현: \n핵심논리: …\n재작성처방: …\n";
+  const blob=new Blob(["﻿"+(t==="1차"?T1:T2)],{type:"text/plain;charset=utf-8"}), a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=(t==="1차"?"문제올리기_양식_1차.txt":"문제올리기_양식_2차사례형.txt"); document.body.appendChild(a); a.click(); setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },500);
+};
+window.qupFillSel=qupFillSel; window.qupSave=qupSave; window.qupUndo=qupUndo; window.qupParse=qupParse;
+/* 관리자 문제 은행 현황이 그려질 때 함께 */
+(function(){
+  try{ const o=window.ccQBRefresh||ccQBRefresh; window.ccQBRefresh=ccQBRefresh=async function(){ const r=await o.apply(this,arguments); try{ qupPanel();
+    const em=document.querySelector("#ccQBCounts .empty-log"); if(em&&/SQL 파일로 만들어/.test(em.textContent)) em.textContent="아직 올린 문항이 없습니다 — 아래 📤 문제 올리기에 txt·docx 파일을 끌어다 놓으세요.";
+    const sub=document.querySelector("#ccQBPanel .sub"); if(sub&&sub.innerHTML.indexOf("📤")<0) sub.innerHTML=sub.innerHTML.replace("문항은 SQL 파일을 Supabase SQL Editor에서 실행해 올립니다","문항은 아래 <b>📤 문제 올리기</b>(txt·docx)로 올리거나 SQL 파일로 올립니다"); }catch(e){} return r; }; }catch(e){}
+})();
+
 /* ═══ 노무사판 · 밝은 화면 / 어두운 화면 (2026-10-21) ═══
    · 지금 화면(남색) = 어두운 화면 · 밝은 화면은 같은 디자인을 밝은 바탕으로 바꿔 그림
    · 처음에는 기기 설정(prefers-color-scheme)을 따르고, 머리줄 ☀/🌙 버튼으로 바꾸면 이 기기에 기억 (localStorage)
