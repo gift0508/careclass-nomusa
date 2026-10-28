@@ -6546,7 +6546,8 @@ function closeEngine(){
     let ov=document.getElementById("qxModal");
     if(!ov){ ov=document.createElement("div"); ov.id="qxModal"; ov.style.cssText="position:fixed;inset:0;z-index:9800;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:30px 12px";
       ov.onclick=function(e){ if(e.target===ov) ov.remove(); }; document.body.appendChild(ov); }
-    ov.innerHTML='<div style="background:var(--bg,#0f1b33);color:inherit;border:1px solid var(--line);border-radius:14px;max-width:920px;width:100%;padding:18px 22px"><div class="sub">불러오는 중…</div></div>';
+    const LT=document.documentElement.getAttribute("data-theme")==="light"||(document.documentElement.getAttribute("data-theme")!=="dark"&&getComputedStyle(document.body).color.replace(/\s/g,"").match(/^rgb\((\d+),/)&&+RegExp.$1<128);
+    ov.innerHTML='<div style="background:'+(LT?'#ffffff':'#0f1b33')+';color:'+(LT?'#14213d':'#eef2fa')+';border:1px solid var(--line);border-radius:14px;max-width:920px;width:100%;padding:18px 22px"><div class="sub">불러오는 중…</div></div>';
     let R=[];
     try{ let q=sb.from("cc_questions").select("*").eq("track",s.t).eq("subject",s.l).eq("stage",s.s).eq("lec",lec);
       q=s.src?q.eq("src",s.src):q.is("src",null);
