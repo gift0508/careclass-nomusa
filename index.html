@@ -4862,7 +4862,7 @@ function nmSeGo(subj){
      - 「완전히 이해함」: 그 자리에서 맞히면 졸업 · 틀리면 틀린 복습
    · 복습에서는 보기 순서를 섞고, 같은 강의의 다른 문제(교재기출 아닌 기본이론 문제)로 대신 묻기도 함 — 일정은 원래 문제 기준
    · 하루 최대 N문항 (관리자 설정 review_daily_cap · 기본 20) · 넘치면 오래된 것부터 다음 날로
-   · 테마특강(최종정리) 단계에 들어서면 그 과목 오답노트를 한 번 더 풀어 봄
+   · 테마특강 각 강의 날 그 목차의 오답(오답노트 포함)을 다시 풂 (2026-10-28 · 과목 전체 안내는 삭제)
    · 서버 표 cc_review (nomusa_review.sql) · 문제풀이 강의 ↔ 기본이론 강의 연결표 cc_settings.pp_map (없으면 문제풀이 단계로 올린 문항만) */
 var NM_RV={uid:null,rows:{},err:"",cap:20,ppmap:null,P:null,SP:null,bank:null,bankN:0,doc:null};
 var NM_RV_REASONS=["숫자·기간","판례 결론","요건 혼동","예외","지문 오독"];
@@ -5061,12 +5061,12 @@ function nmRvMissionRefresh(){
   const doc=NM_RV.doc; let box=null; try{ box=doc&&doc.getElementById("nmRvSlot"); }catch(e){}
   if(!box||!box.isConnected) return;
   if(NM_RV.err){ box.innerHTML='<div class="rvh">🔁 문제 복습 <small style="font-weight:600;color:#7a7186">· 1차 문제풀이</small></div><div class="rverr">'+nmRvEsc(nmRvErrText())+'</div>'; return; }
-  const p=nmRvPlan(), notes=nmRvNotes(), fin=nmRvFinalSubjects(), any=Object.keys(NM_RV.rows).length;
+  const p=nmRvPlan(), notes=nmRvNotes(), any=Object.keys(NM_RV.rows).length;
   let h=(window.nmFinalCard?nmFinalCard():'')+'<div class="rvh">🔁 문제 복습 <small style="font-weight:600;color:#7a7186">· 1차 문제풀이</small></div>';
   h+='<div class="rvn">오늘 복습 <b>'+p.list.length+'</b>문항'+(p.done?' <small>· 오늘 '+p.done+'문항 풀었음</small>':'')+'</div>';
   h+='<div class="rvs">'+(p.rest?'하루 최대 '+p.cap+'문항 — 남은 <b>'+p.rest+'</b>문항은 내일로 넘어갑니다 (오래된 것부터)':(any?'헷갈리거나 틀린 문제를 강의 날부터 2일째(+2일) · 6일째(다시 +4일)에 다시 풉니다 · 6일째에도 틀리면 오답노트':'1차 문제풀이 강의에서 틀리거나 헷갈린 문제가 2일째 · 6일째(당일 → +2일 → +4일)에 여기에 올라옵니다'))+'</div>';
   h+='<div class="rvbt"><button class="p" onclick="parent.nmRvStart(\'due\')"'+(p.list.length?'':' disabled')+'>🔁 복습 시작 →</button><button onclick="parent.nmRvNoteOpen()">📒 오답노트 '+notes.length+'</button></div>';
-  fin.forEach(function(f){ h+='<div class="rvfin">📒 <b>'+nmRvEsc(f.subj)+'</b> 테마특강(최종정리)에 들어섰습니다 — 오답노트 <b>'+f.n+'</b>문항을 한 번 더 풀어 보세요<br><button onclick="parent.nmRvStart(\'final\',\''+nmRvEsc(f.subj)+'\')">📒 오답노트 다시 풀기 →</button></div>'; });
+  /* 테마특강 진입 시 과목 전체 오답노트 안내는 삭제 (2026-10-28) — 테마특강 강의별 「이 목차 내 오답」으로 대신 */
   box.innerHTML=h;
 }
 window.nmRvMissionRefresh=nmRvMissionRefresh;
@@ -5194,7 +5194,7 @@ window.nmRvNoteSubj=function(s){ NM_RV.noteSubj=s; nmRvNoteDraw(); };
 function nmRvNoteDraw(){
   const body=document.getElementById("nmRvBody"), L=(CC_LAWS&&CC_LAWS["1차"])||[], subj=NM_RV.noteSubj, list=nmRvNotes(subj), B=NM_RV.bank||{byKey:{}};
   let h='<h3>📒 오답노트 <small class="nmrvpos">1차 문제풀이 복습</small></h3>'+
-    '<div class="tkuse">2일째 · 6일째 복습까지 다 익히지 못한 문제입니다 · 다른 날 두 번 맞히면 빠집니다 · 틀린 이유와 한 줄 메모를 남겨 두세요 · 테마특강(최종정리)에 들어서면 한 번 더 풉니다</div>'+
+    '<div class="tkuse">2일째 · 6일째 복습까지 다 익히지 못한 문제입니다 · 다른 날 두 번 맞히면 빠집니다 · 틀린 이유와 한 줄 메모를 남겨 두세요 · 테마특강에서 그 목차 강의 날 한 번 더 풉니다</div>'+
     '<div class="nmrvtabs">'+L.map(function(l){ const n=nmRvNotes(l).length; return '<button class="'+(l===subj?'on':'')+'" onclick="nmRvNoteSubj(\''+nmRvEsc(l)+'\')">'+nmRvEsc(l)+' <small>'+n+'</small></button>'; }).join("")+'</div>';
   if(!list.length) h+='<div class="tksub" style="padding:14px 2px">'+nmRvEsc(subj)+' 오답노트가 비어 있습니다.</div>';
   list.forEach(function(r,i){ const q=B.byKey[r.qkey]; if(!q) return; const ch=nmRvChoices(q), a=(parseInt(q.answer,10)||0)-1;
