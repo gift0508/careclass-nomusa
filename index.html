@@ -2527,7 +2527,7 @@ async function ccChatExport(){
 })();
 function ccChatBg(c,on){
   if(on){ let col=""; try{ col=getComputedStyle(document.body).backgroundColor; if(!col||/rgba\(0, 0, 0, 0\)|transparent/.test(col)) col=getComputedStyle(document.documentElement).backgroundColor; }catch(e){}
-    c.style.background=(col&&!/rgba\(0, 0, 0, 0\)|transparent/.test(col))?col:"#0d1b30"; } else c.style.background="";
+    c.style.background=(col&&!/rgba\(0, 0, 0, 0\)|transparent/.test(col))?col:((document.documentElement.getAttribute("data-theme")==="light")?"#f4f6fa":"#0d1b30"); } else c.style.background="";
 }
 /* 📌 옆에 붙이기: 화면 오른쪽(휴대폰은 아래쪽)에 붙여 두고 나머지 화면(가상강의실 자리 등)은 그대로 누를 수 있게 */
 window.ccChatDock=function(on){
@@ -2548,7 +2548,7 @@ window.ccChatBig=function(on){
   if(big){
     if(!bg){ bg=document.createElement("div"); bg.id="ccBigBg"; bg.className="ccbigbg"; bg.onclick=function(){ ccChatBig(false); }; document.body.appendChild(bg); }
     let col=""; try{ col=getComputedStyle(document.body).backgroundColor; if(!col||/rgba\(0, 0, 0, 0\)|transparent/.test(col)) col=getComputedStyle(document.documentElement).backgroundColor; }catch(e){}
-    c.style.background=(col&&!/rgba\(0, 0, 0, 0\)|transparent/.test(col))?col:"#0d1b30";
+    c.style.background=(col&&!/rgba\(0, 0, 0, 0\)|transparent/.test(col))?col:((document.documentElement.getAttribute("data-theme")==="light")?"#f4f6fa":"#0d1b30");
   } else { if(bg) bg.remove(); c.style.background=""; }
   c.classList.toggle("ccbig",big);
   const b=c.querySelector(".ccbigbtn"); if(b) b.textContent=big?"✕ 작게보기":"⛶ 크게보기";
