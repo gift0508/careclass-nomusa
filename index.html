@@ -797,7 +797,7 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
       <div class="brand">시대에듀 노무사 · 케길반 <small>관리자 대시보드 · 운영 관제</small></div>
       <div class="userchip" style="display:flex">
         <span><b style="color:var(--ink)">관리자</b> · 시대에듀 온라인운영팀</span>
-        <button class="mini" style="border-color:var(--gold);color:var(--gold)" onclick="ccAdminPreview('2차')">👀 수강생 화면 보기</button>
+        <button class="mini" style="border-color:var(--gold);color:var(--gold)" onclick="ccAdminPreview('1+2차')">👀 수강생 화면 보기</button>
         <button class="mini" style="border-color:var(--gold);color:var(--gold)" onclick="openEngine('admin')">🖥 운영 관제실 열기</button>
         <button class="mini" onclick="adminLogout()">나가기</button>
       </div>
@@ -2001,7 +2001,7 @@ function openStudent(i){
       <div>
         <div class="stt">실전답안첨삭 이용권</div>
         <div class="smeta" style="margin-bottom:8px">남은 이용권 <b style="color:var(--gold);font-size:1.1rem">${pf.tickets||0}회</b> · 제출 답안 <b>${ccSubs.filter(function(s){ return s.user_id===pf.id; }).length}건</b></div>
-        <div class="sacts" style="margin-bottom:16px"><button class="extbtn" onclick="ccGrant(${i})">🎫 이용권 지급 · 조정</button></div>
+        <div class="sacts" style="margin-bottom:16px"><button class="extbtn" style="border-color:var(--gold);color:var(--gold)" onclick="ccAdminViewStudent(${i})">👀 이 수강생 화면으로 보기</button><button class="extbtn" onclick="ccGrant(${i})">🎫 이용권 지급 · 조정</button></div>
         <div class="stt">계정 관리</div>
         <div class="sacts">
           <button class="extbtn" onclick="ccResetPw(${i})">🔑 비밀번호 재발급</button>
@@ -2069,16 +2069,22 @@ function ccAdminPreview(track){
   document.getElementById("adminView").classList.remove("open");
   try{ ccChatStop(); }catch(e){}
   ccUid=null;
-  applyUser({name:"관리자", type:"관리자", round:"미리보기", track:track||"2차", plan:"full"});
+  applyUser({name:"관리자", type:"관리자", round:"미리보기", track:track||"1+2차", plan:"full"});
   document.getElementById("uinfo").innerHTML='<b>관리자</b> · 수강생 화면 미리보기';
   let bar=document.getElementById("ccPrevBar");
   if(!bar){ bar=document.createElement("div"); bar.id="ccPrevBar"; bar.className="ccprevbar"; document.body.appendChild(bar); }
   bar.innerHTML='<span>👀 <b>관리자 미리보기</b> · 수강생 화면 · 진도 저장 안 됨</span>'+
-    '<button class="mini'+(TRACK==="1차"?" on":"")+'" onclick="ccAdminPreview(\'1차\')">1차 화면</button>'+
-    '<button class="mini'+(TRACK==="2차"?" on":"")+'" onclick="ccAdminPreview(\'2차\')">2차 화면</button>'+
+    '<button class="mini'+(TRACK==="1차"?" on":"")+'" data-pt="1차" onclick="ccPrevTrack(\'1차\')">1차 화면</button>'+
+    '<button class="mini'+(TRACK==="2차"?" on":"")+'" data-pt="2차" onclick="ccPrevTrack(\'2차\')">2차 화면</button>'+
     '<button class="mini gold" onclick="ccAdminBack()">🖥 대시보드로</button>';
   bar.style.display="flex";
   try{ ccChatStart("admin","ccChatStu"); }catch(e){}
+}
+/* 미리보기 1차·2차 화면 전환 — 1+2차(동차) 미리보기에서는 수강생과 똑같이 차수만 바꿈 */
+function ccPrevTrack(t){
+  if(ccIsDual()){ try{ ccSwitchTrack(t); }catch(e){ console.error(e); } }
+  else ccAdminPreview(t);
+  try{ document.querySelectorAll("#ccPrevBar [data-pt]").forEach(function(b){ b.classList.toggle("on",b.getAttribute("data-pt")===TRACK); }); }catch(e){}
 }
 function ccAdminBack(){
   window.ccPreview=false;
@@ -2930,7 +2936,7 @@ function ccPathHook(){
   };
 }
 function ccPathSummary(){
-  if(!user||window.ccPreview) return;
+  if(!user) return;
   const start=laws.filter(function(l){ return CC_PATH[l]==="start"; }), diag=laws.filter(function(l){ return CC_PATH[l]==="diag"; }), skip=laws.filter(function(l){ return CC_PATH[l]==="skip"; });
   const wait=diag.filter(function(l){ return !CC_DIAG[l]; });
   const T=function(id,v){ const el=document.getElementById(id); if(el) el.innerHTML=v; };
@@ -2951,7 +2957,7 @@ function ccTrackSaved(t){ if(t===TRACK) return {sm:STAGEMAP,cm:CREDITMAP,path:CC
 function ccTrackBar(){
   const ds=document.getElementById("dashSections"); if(!ds) return;
   let bar=document.getElementById("ccTrackBar");
-  if(!ccIsDual()||window.ccPreview){ if(bar) bar.remove(); return; }
+  if(!ccIsDual()){ if(bar) bar.remove(); return; }
   if(!bar){ bar=document.createElement("div"); bar.id="ccTrackBar"; bar.className="cctrackbar"; const hb=ds.querySelector(".homebtn"); ds.insertBefore(bar,hb?hb.nextSibling:ds.firstChild); }
   bar.innerHTML='<span class="ctl">📚 1차+2차 동차 케길반</span>'+["1차","2차"].map(function(t){
     const n=CC_LAWS[t].length; return '<button class="ctb'+(TRACK===t?" on":"")+'" onclick="ccSwitchTrack(\''+t+'\')">'+t+' 전체학습계획 <small>· '+n+'과목 · '+CC_STAGES[t].join("·")+'</small></button>'; }).join("")+
@@ -4869,7 +4875,7 @@ function nmSeGo(subj){
 var NM_RV={uid:null,rows:{},err:"",cap:20,ppmap:null,P:null,SP:null,bank:null,bankN:0,doc:null};
 var NM_RV_REASONS=["숫자·기간","판례 결론","요건 혼동","예외","지문 오독"];
 var NM_RV_SIB=0.5;   /* 복습 때 같은 강의 다른 문제로 대신 물을 확률 */
-function nmRvOn(){ try{ return !!(user&&ccUid&&!window.ccPreview&&ccTracks().indexOf("1차")>=0); }catch(e){ return false; } }
+function nmRvOn(){ try{ return !!(user&&(ccUid||window.ccPreview)&&ccTracks().indexOf("1차")>=0); }catch(e){ return false; } }   /* 관리자 미리보기·열람에서도 보임(저장은 안 됨) */
 function nmRvT(){ return ccISO(ccToday()); }
 function nmRvAdd(iso,n){ return ccISO(ccAddDays(ccParse(iso),n)); }
 function nmRvMD(iso){ try{ return ccMD(ccParse(iso)); }catch(e){ return iso; } }
@@ -4911,7 +4917,8 @@ window.nmPPRows=function(rows){
 
 /* ── 내 복습 기록 ── */
 function nmRvLoad(force){
-  if(NM_RV.uid!==ccUid){ NM_RV.uid=ccUid; NM_RV.rows={}; NM_RV.P=null; NM_RV.err=""; }
+  if(NM_RV.uid!==(window.ccViewUid||ccUid)){ NM_RV.uid=(window.ccViewUid||ccUid); NM_RV.rows={}; NM_RV.P=null; NM_RV.err=""; }
+  if(!(window.ccViewUid||ccUid)){ NM_RV.rows={}; NM_RV.err=""; return (NM_RV.P=Promise.resolve()); }   /* 관리자 미리보기(학생 지정 없음): 빈 기록 */
   if(NM_RV.P&&!force) return NM_RV.P;
   NM_RV.P=(async function(){
     NM_RV.err="";
@@ -4919,7 +4926,7 @@ function nmRvLoad(force){
     if(!nmRvOn()) return;
     const rows={}, PAGE=1000;
     for(let from=0,k=0;k<50;k++,from+=PAGE){
-      const r=await sb.from("cc_review").select("*").eq("user_id",ccUid).order("qkey").range(from,from+PAGE-1);
+      const r=await sb.from("cc_review").select("*").eq("user_id",(window.ccViewUid||ccUid)).order("qkey").range(from,from+PAGE-1);
       if(r.error){ NM_RV.err=nmRvMissing(r.error)?"missing":ccErr(r.error); console.warn("[복습]",r.error); return; }
       const d=r.data||[]; let add=0; d.forEach(function(x){ if(!rows[x.qkey]){ rows[x.qkey]=x; add++; } });
       if(d.length<PAGE||!add) break;
@@ -4931,6 +4938,7 @@ function nmRvLoad(force){
 window.nmRvLoad=nmRvLoad;
 const NM_RV_COLS=["user_id","qkey","qid","subject","lec","first_date","mark","step","next_due","correct_streak","graduated","in_note","note_reason","note_memo","final_done","final_ok","last_review","reviews","updated_at"];
 async function nmRvSave(row){
+  if(window.ccViewUid||window.ccPreview||!ccUid) throw new Error("관리자 미리보기·열람 중에는 저장되지 않습니다");
   row.updated_at=new Date().toISOString(); NM_RV.rows[row.qkey]=row;
   const o={}; NM_RV_COLS.forEach(function(c){ o[c]=row[c]===undefined?null:row[c]; });
   const r=await sb.from("cc_review").upsert([o],{onConflict:"user_id,qkey"});
@@ -6717,6 +6725,49 @@ function closeEngine(){
   if(pm) window.ccPathModal=function(){ return pm.call(this,"edit"); };
   const ps=window.ccPathSave;
   if(ps) window.ccPathSave=function(){ if(window.ccPreview){ try{ toast("관리자 미리보기에서는 수강신청이 저장되지 않습니다"); ccPathClose(); }catch(e){} return; } return ps.apply(this,arguments); };
+})();
+</script>
+<script>
+/* ═══ 관리자: 수강생 한 명의 화면을 그 학생의 진도 그대로 열람 (2026-10-30) ═══
+   · 관리자 대시보드 → 수강생 상세 → 「👀 이 수강생 화면으로 보기」
+   · 그 학생의 서버 진도(cc_progress)를 불러와 수강생 화면을 똑같이 보여 줌 · 문제 복습·오답노트(cc_review)도 읽기만
+   · 열람 전용: 무엇을 눌러도 그 학생의 진도는 바뀌지 않음(서버 저장 없음) · 대시보드로 돌아오면 불러온 진도는 지움 */
+window.ccViewUid=null;
+function ccViewClear(){ if(!window.ccViewUid) return; window.ccViewUid=null; try{ ccWipe(); }catch(e){} try{ NM_RV.uid=null; NM_RV.rows={}; NM_RV.P=null; }catch(e){} }
+async function ccAdminViewStudent(i){
+  if(!window.adminAuthed) return;
+  const x=adminList[i]; if(!x) return; const pf=x.pf;
+  let rows=[];
+  try{ const r=await sb.from("cc_progress").select("key,value").eq("user_id",pf.id); if(r.error) throw r.error; rows=r.data||[]; }
+  catch(e){ alert("이 수강생의 진도를 불러오지 못했습니다 — "+ccErr(e)); return; }
+  try{ closeStudent(); }catch(e){}
+  ccViewClear();
+  window.ccPreview=true; window.ccViewUid=pf.id;
+  document.getElementById("adminView").classList.remove("open");
+  try{ ccChatStop(); }catch(e){}
+  ccUid=null;
+  try{ ccWipe(); }catch(e){}
+  ccMute=true;
+  try{ rows.forEach(function(r){ if(r.value!=null&&CC.isSync(r.key)) localStorage.setItem(r.key,r.value); }); }finally{ ccMute=false; }
+  applyUser({name:pf.name||pf.login_id, type:pf.exam_type||"", round:"열람", exp1:pf.exp1||"", exp2:pf.exp2||"", track:pf.track||"1차", plan:"full", id:pf.id, login_id:pf.login_id});
+  const nm=ccEsc(pf.name||pf.login_id);
+  document.getElementById("uinfo").innerHTML='<b>'+nm+'</b> · 관리자 열람';
+  let bar=document.getElementById("ccPrevBar");
+  if(!bar){ bar=document.createElement("div"); bar.id="ccPrevBar"; bar.className="ccprevbar"; document.body.appendChild(bar); }
+  const dual=ccIsDual();
+  bar.innerHTML='<span>👀 <b>'+nm+'</b> 수강생 화면 · 열람 전용 (저장 안 됨) · 진도 기록 '+rows.length+'건</span>'+
+    (dual?'<button class="mini'+(TRACK==="1차"?" on":"")+'" data-pt="1차" onclick="ccPrevTrack(\'1차\')">1차 화면</button><button class="mini'+(TRACK==="2차"?" on":"")+'" data-pt="2차" onclick="ccPrevTrack(\'2차\')">2차 화면</button>':'')+
+    '<button class="mini gold" onclick="ccAdminBack()">🖥 대시보드로</button>';
+  bar.style.display="flex";
+  try{ ccTrackBar(); }catch(e){}
+  try{ nmRvLoad(true).then(function(){ try{ nmRvMissionRefresh(); }catch(e){} }); }catch(e){}
+  if(!rows.length) toast(nm+" 수강생은 아직 서버에 저장된 진도가 없습니다");
+}
+window.ccAdminViewStudent=ccAdminViewStudent;
+(function(){
+  const back=window.ccAdminBack, pv=window.ccAdminPreview;
+  if(back) window.ccAdminBack=function(){ ccViewClear(); return back.apply(this,arguments); };
+  if(pv) window.ccAdminPreview=function(){ ccViewClear(); return pv.apply(this,arguments); };
 })();
 </script>
 </body>
