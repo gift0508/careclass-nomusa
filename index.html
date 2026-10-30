@@ -6963,7 +6963,7 @@ function nmAdvActOf(kind){ return {idle:"mission",overdue:"mission",note:"wrong"
 
 /* 관리자 자료: 전체 cc_review(진단용 열만) + cc_advice */
 window.nmAdvEnsure=function(force){
-  if(!window.adminAuthed||!sb) return Promise.resolve();
+  if(!window.adminAuthed||!sb) return (NM_ADV.P=NM_ADV.P||Promise.resolve());
   if(NM_ADV.P&&!force&&Date.now()-NM_ADV.at<120000) return NM_ADV.P;
   NM_ADV.at=Date.now();
   NM_ADV.P=(async function(){
