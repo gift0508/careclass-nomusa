@@ -2960,8 +2960,10 @@ function ccTrackBar(){
 function ccSwitchTrack(t){
   if(!ccIsDual()||t===TRACK) return;
   try{ ccSaveState(); }catch(e){}
-  initTrack(t); ccRestoreState(); renderDash();
-  try{ ccTrackBar(); ccPathSummary(); grid(); }catch(e){}
+  const back=TRACK;
+  try{ initTrack(t); ccRestoreState(); }catch(e){ console.error("[차수 전환]",e); try{ initTrack(back); ccRestoreState(); }catch(_){} toast("차수를 바꾸지 못했습니다 — "+(e&&e.message||e)); try{ ccTrackBar(); }catch(_){} return; }
+  try{ renderDash(); }catch(e){ console.error("[차수 전환 · 화면]",e); }
+  try{ ccTrackBar(); ccPathSummary(); grid(); }catch(e){ console.error("[차수 전환 · 계획]",e); }
   const wait=CC_LAWS[t].filter(function(l){ return CC_PATH[l]==="diag"&&!CC_DIAG[l]; });
   toast(t+" 전체학습계획으로 바꿨습니다"+(wait.length?" — 진단 대기 "+wait.length+"과목":""));
 }
@@ -2992,7 +2994,7 @@ function ccPathModal(ctx){
     '<button class="upclose" onclick="ccPathClose()">✕</button><h3>수강신청 · '+(ccIsDual()?"1차+2차":TRACK)+'</h3>'+
     '<div class="upsub">과목마다 <b>처음부터 따라가기</b>(시대에듀 강의를 1강부터 순서대로) 또는 <b>진단 받고 필요한 부분만</b>을 고르세요. 강의를 듣지 않을 과목은 <b>선택 안 함</b>을 고르면 됩니다. 응시 경험에 맞춰 미리 골라 두었습니다 · 나중에 언제든 바꿀 수 있습니다.</div>'+
     '<div class="pscroll">'+sec+'</div>'+
-    '<div class="upsub" style="margin:12px 0 0">진단으로 건너뛴 단계도 <b class="upfeat">면제 · 수강 가능</b>으로 열려 있어, 전 강의를 언제든 들을 수 있습니다.</div>'+
+    '<div class="upsub" style="margin:12px 0 0">고른 단계 앞의 강의도 <b>강의선택</b>에서 「모두 담기 · 선택 담기」로 언제든 담을 수 있습니다.</div>'+
     '<div class="pbtns"><button class="mini" onclick="ccPathClose()">취소</button>'+
     '<button class="btn gbtn" onclick="ccPathSave()">'+(window.__ccPathCtx==="diag"?"이대로 정하고 진단 시작 →":"저장하기")+'</button></div>';
   m.classList.add("open");
@@ -4336,7 +4338,7 @@ window.CC_GROUPS={
 };
 /* 작년 강의 = 26년 대비 (25~26년 · 시대에듀 학습커리큘럼 표) */
 window.CC_CATALOG_OLD={
-  "1차":{"노동법Ⅰ":[5,62,17,8,8,11,0],"노동법Ⅱ":[5,32,12,3,5,10,0],"민법":[6,63,13,7,17,12,0],"사회보험법":[6,42,6,20,8,10,0],"경영학개론":[6,53,9,3,6,11,0]},
+  "1차":{"노동법Ⅰ":[5,62,17,8,8,11,0],"노동법Ⅱ":[5,32,12,3,5,10,0],"민법":[6,63,13,7,17,12,0],"사회보험법":[6,42,6,20,8,10,0],"경영학개론":[6,53,9,3,7,11,0]},
   "2차":{"노동법":[51,1,18,5],"인사노무관리론":[47,1,7,5],"행정쟁송법":[35,1,21,5],"경영조직론":[59,1,10,5],"민사소송법":[76,1,21,5]}
 };
 /* 노동법1·2가 함께 듣는 강의(26년 대비 입문특강 5강 · 「특강」 칸의 26년 대비 특강 11강): 두 과목에 똑같이 보이고 한 번만 배정
@@ -4604,7 +4606,7 @@ window.ccPathBadge=ccPathBadge;
       });
       document.querySelectorAll("#pathBody .pall").forEach(function(p){ p.style.display="none"; });
       const sub=document.querySelector("#pathBody .upsub");
-      if(sub) sub.innerHTML="과목마다 <b>어디서부터 들을지</b> 고르세요. 처음이면 <b>처음부터</b>, 이미 공부한 과목은 시작할 단계를 고르면 됩니다. 강의를 듣지 않을 과목은 <b>선택 안 함</b>을 고르세요. 앞 단계는 <b class=\"upfeat\">면제 · 수강 가능</b>으로 열려 있어 언제든 들을 수 있습니다 · 나중에 언제든 바꿀 수 있습니다.";
+      if(sub) sub.innerHTML="과목마다 <b>어디서부터 들을지</b> 고르세요. 처음이면 <b>처음부터</b>, 이미 공부한 과목은 시작할 단계를 고르면 됩니다. 강의를 듣지 않을 과목은 <b>선택 안 함</b>을 고르세요. 고른 단계 앞의 강의도 강의선택에서 언제든 담을 수 있습니다 · 나중에 언제든 바꿀 수 있습니다.";
       const ch=document.querySelector('#pathBody input[name=nmOpt2r]:checked'); if(ch) nmOpt2Apply(ch.value);
     }catch(e){ console.warn(e); }
     return r;
@@ -6696,5 +6698,26 @@ function closeEngine(){
 #ccfPop .ccfmsg{font-size:14px;padding:6px 14px 4px}
 #ccfPop .ccwpf{font-size:12.5px;opacity:.75;padding:4px 14px 8px}
 </style>
+<script>
+/* ═══ 수강신청 버튼 정리 (2026-10-30): 언제나 수강신청 창만 엶 — 예전 법무사판 「자가진단」 화면은 열지 않음 · 「진단 시작」 문구 없음 ═══ */
+(function(){
+  const oe=window.openEngine;
+  if(oe) window.openEngine=function(k){
+    if(k==="schedule"){ window.__ccPathPass=false;
+      if(!user){ try{ toast("수강생 계정으로 로그인하면 수강신청을 할 수 있습니다"); }catch(e){} return; }
+      if(window.ccPreview){   /* 관리자 미리보기: 수강생과 같은 창을 보여 주되 저장하지 않음 */
+        window.ccPreview=false;
+        try{ ccPathModal("edit"); }finally{ window.ccPreview=true; }
+        try{ const h=document.querySelector("#pathBody h3"); if(h&&!/미리보기/.test(h.innerHTML)) h.innerHTML+=' <small style="font-size:.7em;opacity:.7">(관리자 미리보기 — 저장되지 않음)</small>'; }catch(e){}
+      } else ccPathModal("edit");
+      return; }
+    return oe.apply(this,arguments);
+  };
+  const pm=window.ccPathModal;
+  if(pm) window.ccPathModal=function(){ return pm.call(this,"edit"); };
+  const ps=window.ccPathSave;
+  if(ps) window.ccPathSave=function(){ if(window.ccPreview){ try{ toast("관리자 미리보기에서는 수강신청이 저장되지 않습니다"); ccPathClose(); }catch(e){} return; } return ps.apply(this,arguments); };
+})();
+</script>
 </body>
 </html>
