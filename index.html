@@ -6678,17 +6678,17 @@ function closeEngine(){
     const by={}; R.forEach(function(x){ (by[x.qtype]=by[x.qtype]||[]).push(x); });
     let h='<div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h3 style="margin:0">'+E(s.t)+' '+E(s.l)+' · '+E(s.s)+' '+lec+'강 <small style="color:var(--mute);font-weight:400;font-size:.8rem">'+srcName(s.src)+' · '+R.length+'문항</small></h3>'+
       '<span><button class="mini" onclick="qxView('+(lec-1)+')"'+(lec<=1?' disabled':'')+'>◀ 이전 강</button> <button class="mini" onclick="qxView('+(lec+1)+')">다음 강 ▶</button> <button class="mini" onclick="document.getElementById(\'qxModal\').remove()">✕ 닫기</button></span></div>';
-    if(by["요약"]) h+=sec("📝 강의요약(뇌각인)",by["요약"].length,by["요약"].map(function(x){ return '<div style="margin-bottom:12px"><div style="font-weight:700;color:var(--gold)">'+E(x.question)+'</div>'+md(x.model_answer||x.explanation||"")+'</div>'; }).join('<hr style="border:0;border-top:1px dashed var(--line)">'));
-    if(by["카드"]) h+=sec("🃏 플래시카드",by["카드"].length,by["카드"].map(function(x,i){ return '<div style="display:grid;grid-template-columns:1fr 1.4fr;gap:10px;padding:6px 0;border-top:1px solid rgba(127,127,127,.15)"><div><b>'+(i+1)+'. '+E(x.explanation||"")+' '+E(x.question)+'</b></div><div><b>'+E(x.case_text||"")+'</b><div style="white-space:pre-wrap;font-size:.86rem">'+E(x.model_answer||"")+'</div></div></div>'; }).join(""));
-    if(by["필수암기"]) h+=sec("🧠 필수암기문장",by["필수암기"].length,by["필수암기"].map(function(x,i){ return '<div style="padding:5px 0;border-top:1px solid rgba(127,127,127,.15)"><small style="color:var(--gold)">['+E(x.case_text||"")+']</small> <b>'+E(x.question)+'</b><div style="font-size:.88rem">'+E(x.model_answer||x.explanation||"").replace(/\[\[(.+?)\]\]/g,'<u style="text-decoration-color:var(--gold);text-decoration-thickness:2px"><b>$1</b></u>')+'</div></div>'; }).join(""));
-    if(by["OX"]) h+=sec("⭕ OX",by["OX"].length,by["OX"].map(function(x,i){ return '<div style="padding:6px 0;border-top:1px solid rgba(127,127,127,.15)"><b>'+(i+1)+'.</b> '+E(x.question)+' <b style="color:'+(x.answer==="O"?'#2ecc71':'#e74c3c')+'">['+E(x.answer||"")+']</b><div style="font-size:.84rem;color:var(--mute)">'+E(x.explanation||x.model_answer||"")+'</div></div>'; }).join(""));
-    ["5지택일","콤보형"].forEach(function(k){ if(by[k]) h+=sec(k==="5지택일"?"5지택일":"선다형(콤보형)",by[k].length,by[k].map(function(x,i){ return '<div style="padding:6px 0;border-top:1px solid rgba(127,127,127,.15)"><b>'+(i+1)+'.</b> <span style="white-space:pre-wrap">'+E(x.question)+'</span><div style="font-size:.84rem"><b>정답 '+E(x.answer||"")+'</b> <span style="color:var(--mute);white-space:pre-wrap">'+E(x.explanation||x.model_answer||"")+'</span></div></div>'; }).join("")); });
-    if(by["주관식"]) h+=sec("✍️ 주관식(사례·논술)",by["주관식"].length,by["주관식"].map(function(x){ return '<div style="padding:6px 0"><div style="font-size:.8rem;color:var(--mute)">'+E(x.chapter||"")+(x.topic?' · '+E(x.topic):'')+'</div>'+
+    if(by["요약"]) h+=sec("📝 강의요약(뇌각인)",by["요약"].length,by["요약"].map(function(x){ return qxEB(x)+'<div style="margin-bottom:12px"><div style="font-weight:700;color:var(--gold)">'+E(x.question)+'</div>'+md(x.model_answer||x.explanation||"")+'</div>'; }).join('<hr style="border:0;border-top:1px dashed var(--line)">'));
+    if(by["카드"]) h+=sec("🃏 플래시카드",by["카드"].length,by["카드"].map(function(x,i){ return qxEB(x)+'<div style="display:grid;grid-template-columns:1fr 1.4fr;gap:10px;padding:6px 0;border-top:1px solid rgba(127,127,127,.15)"><div><b>'+(i+1)+'. '+E(x.explanation||"")+' '+E(x.question)+'</b></div><div><b>'+E(x.case_text||"")+'</b><div style="white-space:pre-wrap;font-size:.86rem">'+E(x.model_answer||"")+'</div></div></div>'; }).join(""));
+    if(by["필수암기"]) h+=sec("🧠 필수암기문장",by["필수암기"].length,by["필수암기"].map(function(x,i){ return qxEB(x)+'<div style="padding:5px 0;border-top:1px solid rgba(127,127,127,.15)"><small style="color:var(--gold)">['+E(x.case_text||"")+']</small> <b>'+E(x.question)+'</b><div style="font-size:.88rem">'+E(x.model_answer||x.explanation||"").replace(/\[\[(.+?)\]\]/g,'<u style="text-decoration-color:var(--gold);text-decoration-thickness:2px"><b>$1</b></u>')+'</div></div>'; }).join(""));
+    if(by["OX"]) h+=sec("⭕ OX",by["OX"].length,by["OX"].map(function(x,i){ return qxEB(x)+'<div style="padding:6px 0;border-top:1px solid rgba(127,127,127,.15)"><b>'+(i+1)+'.</b> '+E(x.question)+' <b style="color:'+(x.answer==="O"?'#2ecc71':'#e74c3c')+'">['+E(x.answer||"")+']</b><div style="font-size:.84rem;color:var(--mute)">'+E(x.explanation||x.model_answer||"")+'</div></div>'; }).join(""));
+    ["5지택일","콤보형"].forEach(function(k){ if(by[k]) h+=sec(k==="5지택일"?"5지택일":"선다형(콤보형)",by[k].length,by[k].map(function(x,i){ return qxEB(x)+'<div style="padding:6px 0;border-top:1px solid rgba(127,127,127,.15)"><b>'+(i+1)+'.</b> <span style="white-space:pre-wrap">'+E(x.question)+'</span><div style="font-size:.84rem"><b>정답 '+E(x.answer||"")+'</b> <span style="color:var(--mute);white-space:pre-wrap">'+E(x.explanation||x.model_answer||"")+'</span></div></div>'; }).join("")); });
+    if(by["주관식"]) h+=sec("✍️ 주관식(사례·논술)",by["주관식"].length,by["주관식"].map(function(x){ return qxEB(x)+'<div style="padding:6px 0"><div style="font-size:.8rem;color:var(--mute)">'+E(x.chapter||"")+(x.topic?' · '+E(x.topic):'')+'</div>'+
       '<div style="white-space:pre-wrap;margin:6px 0;padding:8px 10px;border-radius:8px;background:rgba(127,127,127,.08)">'+E(x.question)+'</div>'+
       '<div style="font-weight:800;margin-top:8px">모범답안</div><div style="white-space:pre-wrap;font-size:.9rem">'+E(x.model_answer||x.explanation||"")+'</div>'+
       (x.grid?'<div style="font-weight:800;margin-top:8px">매칭채점표</div><div style="white-space:pre-wrap;font-size:.84rem">'+E(x.grid)+'</div>':'')+
       (x.logic?'<div style="margin-top:6px;font-size:.84rem"><b>핵심논리</b> '+E(x.logic)+'</div>':'')+(x.keywords?'<div style="font-size:.84rem"><b>키워드</b> '+E(x.keywords)+'</div>':'')+'</div>'; }).join(""));
-    Object.keys(by).forEach(function(k){ if(["요약","카드","필수암기","OX","5지택일","콤보형","주관식"].indexOf(k)<0) h+=sec(k,by[k].length,by[k].map(function(x){ return '<div style="white-space:pre-wrap;padding:4px 0;border-top:1px solid rgba(127,127,127,.15)">'+E(x.question)+'</div>'; }).join("")); });
+    Object.keys(by).forEach(function(k){ if(["요약","카드","필수암기","OX","5지택일","콤보형","주관식"].indexOf(k)<0) h+=sec(k,by[k].length,by[k].map(function(x){ return qxEB(x)+'<div style="white-space:pre-wrap;padding:4px 0;border-top:1px solid rgba(127,127,127,.15)">'+E(x.question)+'</div>'; }).join("")); });
     if(!R.length) h+='<div class="empty-log" style="margin-top:12px">이 강의에는 아직 콘텐츠가 없습니다</div>';
     ov.firstChild.innerHTML=h; ov.scrollTop=0;
   };
@@ -7509,6 +7509,121 @@ window.ccFbUpload=async function(id){
   }catch(e){ alert("올리지 못했습니다 — "+ccErr(e)+"\n(nomusa_feedback.sql을 실행했는지 확인해 주세요)"); return; }
   toast("첨삭을 보냈습니다 — "+(pf.name||"수강생")+"님"); ccRenderSubs();
 };
+
+</script>
+<script>
+/* ═══ 문제 은행 ✏️ 수정 · 첨삭 목록 🔍 문제·해설 보기 (2026-11-02) ═══
+   · 관리자 대시보드 → 📚 문제 은행 현황 → 강 「보기」 창에서 문항마다 ✏️ 수정 → 그 자리에서 고쳐 저장(Supabase cc_questions)
+   · 고친 문항: edited_at(수정한 날짜) · edited_by(관리자) 기록 → 「✏️ 11. 2. 수정」 표시 · 앞으로 만드는 콘텐츠 SQL은 이 문항을 건드리지 않음
+   · 실전답안첨삭 제출 목록 → 🔍 문제 · 해설 보기 → 그 문제의 전체 해설 창 → ✏️ 수정
+   · 서버: nomusa_qedit.sql (edited_at · edited_by 칸) */
+var QE={rows:{}};
+function qeE(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+function qeLight(){ const t=document.documentElement.getAttribute("data-theme"); if(t==="light") return true; if(t==="dark") return false;
+  try{ const m=getComputedStyle(document.body).color.replace(/\s/g,"").match(/^rgb\((\d+),/); return !!(m&&+m[1]<128); }catch(e){ return false; } }
+function qeDate(t){ if(!t) return ""; const d=new Date(t); return (d.getMonth()+1)+". "+d.getDate()+"."; }
+/* 문항 하나 위에 붙는 ✏️ 수정 단추 (+ 고친 표시) */
+window.qxEB=function(x){
+  if(!x||x.id==null) return "";
+  QE.rows[x.id]=x;
+  return '<span style="float:right;margin-left:8px;display:inline-flex;gap:6px;align-items:center">'+
+    (x.edited_at?'<small style="color:var(--gold);font-weight:700">✏️ '+qeDate(x.edited_at)+' 수정</small>':'')+
+    '<button class="mini" style="padding:2px 9px" onclick="qxEdit('+x.id+')">✏️ 수정</button></span>';
+};
+/* 유형별로 고칠 칸 */
+const QE_FIELDS={
+  "요약":[["question","제목",1],["model_answer","요약 본문 (마크다운)",18]],
+  "카드":[["explanation","아이콘",1],["question","앞면 질문",2],["case_text","앞면 정답 요지",2],["model_answer","뒷면",6]],
+  "필수암기":[["case_text","분류 태그",1],["question","제목",2],["model_answer","필수암기문장 ([[빈칸]] 표시)",5]],
+  "OX":[["question","지문",4],["answer","정답 (O 또는 X)",1],["explanation","해설",5]],
+  "5지택일":[["question","문제",6],["choices","선지 (한 줄에 하나 · 5줄)",7],["answer","정답 번호 (1~5)",1],["explanation","해설",6]],
+  "콤보형":[["question","문제 (ㄱㄴㄷ 보기 포함)",8],["choices","선지 (한 줄에 하나 · 5줄)",7],["answer","정답 번호 (1~5)",1],["explanation","해설",6]],
+  "주관식":[["chapter","목차(장)",1],["topic","주제",1],["question","문제 (출처 · 사실관계 · 물음)",12],["model_answer","모범답안",18],["grid","매칭채점표 (목차 | 목차명 | 구분 | 논증키워드 / … | 배점 · 핵심필수현출문구: …)",12],["logic","핵심논리",4],["keywords","핵심 키워드 ( / 로 구분)",2]]
+};
+function qeVal(x,k){ const v=x[k]; if(k==="choices"){ try{ const a=Array.isArray(v)?v:JSON.parse(v||"[]"); return (a||[]).join("\n"); }catch(e){ return ""; } } return v==null?"":String(v); }
+window.qxEdit=async function(id){
+  let x=QE.rows[id];
+  try{ const r=await sb.from("cc_questions").select("*").eq("id",id).maybeSingle(); if(!r.error&&r.data){ x=r.data; QE.rows[id]=x; } }catch(e){}
+  if(!x){ alert("문항을 불러오지 못했습니다."); return; }
+  const F=QE_FIELDS[x.qtype]||[["question","문제",6],["answer","정답",1],["explanation","해설",6],["model_answer","모범답안",8]];
+  const LT=qeLight(), bg=LT?"#ffffff":"#0f1b33", fg=LT?"#14213d":"#eef2fa", ib=LT?"#f7f5ef":"rgba(255,255,255,.05)";
+  let ov=document.getElementById("qeModal"); if(ov) ov.remove();
+  ov=document.createElement("div"); ov.id="qeModal";
+  ov.style.cssText="position:fixed;inset:0;z-index:9900;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px 12px";
+  ov.innerHTML='<div style="background:'+bg+';color:'+fg+';border:1px solid var(--line);border-radius:14px;max-width:980px;width:100%;padding:18px 22px">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">✏️ 문항 수정 <small style="font-weight:400;font-size:.8rem;color:var(--mute)">'+qeE(x.track)+' '+qeE(x.subject)+' · '+qeE(x.stage)+' '+x.lec+'강 · '+qeE(x.qtype)+' #'+x.id+(x.src==="o"?' · 26년 대비':x.src==="n"?' · 27년 대비':'')+'</small></h3>'+
+    '<span><button class="mini" onclick="document.getElementById(\'qeModal\').remove()">✕ 닫기</button></span></div>'+
+    (x.edited_at?'<div class="sub" style="margin-top:4px">마지막 수정 '+qeE(new Date(x.edited_at).toLocaleString("ko-KR"))+(x.edited_by?' · '+qeE(x.edited_by):'')+'</div>':'')+
+    '<div class="sub" style="margin:6px 0 10px">저장하면 서버 문제 은행의 이 문항이 바로 바뀌고, 수강생은 새로고침하면 고친 내용을 봅니다.</div>'+
+    F.map(function(f){ const v=qeVal(x,f[0]);
+      return '<label style="display:block;font-size:.8rem;font-weight:800;margin:10px 0 4px">'+qeE(f[1])+'</label>'+
+        (f[2]<=1?'<input data-k="'+f[0]+'" value="'+qeE(v)+'" style="width:100%;padding:8px 10px;border-radius:8px;border:1px solid var(--line);background:'+ib+';color:inherit;font:inherit">'
+                :'<textarea data-k="'+f[0]+'" rows="'+f[2]+'" style="width:100%;padding:9px 11px;border-radius:8px;border:1px solid var(--line);background:'+ib+';color:inherit;font:inherit;font-size:.88rem;line-height:1.65;resize:vertical">'+qeE(v)+'</textarea>');
+    }).join("")+
+    '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px"><span id="qeMsg" class="sub" style="margin-right:auto"></span>'+
+    '<button class="mini" onclick="document.getElementById(\'qeModal\').remove()">취소</button>'+
+    '<button class="mini" style="background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:800" onclick="qxSave('+x.id+')">💾 저장</button></div></div>';
+  ov.onclick=function(e){ if(e.target===ov&&confirm("저장하지 않고 닫을까요?")) ov.remove(); };
+  document.body.appendChild(ov);
+};
+window.qxSave=async function(id){
+  const x=QE.rows[id]; const ov=document.getElementById("qeModal"); if(!x||!ov) return;
+  const up={}; let bad="";
+  ov.querySelectorAll("[data-k]").forEach(function(el){
+    const k=el.getAttribute("data-k"); let v=el.value;
+    if(k==="choices"){ const a=v.split("\n").map(function(s){ return s.trim(); }).filter(Boolean); up[k]=a.length?a:null; return; }
+    if(k==="question"&&!v.trim()) bad="문제(질문)는 비울 수 없습니다.";
+    if(k==="answer"&&x.qtype==="OX"){ v=v.trim().toUpperCase(); if(v!=="O"&&v!=="X") bad="OX 정답은 O 또는 X입니다."; }
+    if(k==="answer"&&(x.qtype==="5지택일"||x.qtype==="콤보형")&&!/^[1-5]$/.test(v.trim())) bad="정답은 1~5 중 하나입니다.";
+    up[k]=(v.trim()===""&&k!=="question")?null:(k==="answer"?v.trim():v);
+  });
+  if(bad){ alert(bad); return; }
+  if(x.qtype==="주관식"&&up.grid){ const tot=(up.grid.match(/\|\s*(\d+(?:\.\d+)?)\s*$/gm)||[]).reduce(function(a,s){ return a+parseFloat(s.replace(/[|\s]/g,"")); },0);
+    if(tot&&!confirm("매칭채점표 배점 합계: "+tot+"점\n\n이대로 저장할까요?")) return; }
+  up.edited_at=new Date().toISOString();
+  try{ const s=await sb.auth.getSession(); up.edited_by=(s&&s.data&&s.data.session&&s.data.session.user&&s.data.session.user.email)||null; }catch(e){}
+  const msg=document.getElementById("qeMsg"); if(msg) msg.textContent="저장하는 중…";
+  let r=await sb.from("cc_questions").update(up).eq("id",id).select("*").maybeSingle();
+  if(r.error&&/edited_(at|by)/.test(r.error.message||"")){ delete up.edited_at; delete up.edited_by; r=await sb.from("cc_questions").update(up).eq("id",id).select("*").maybeSingle();
+    if(!r.error) toast("저장했습니다 — 수정한 날짜를 남기려면 nomusa_qedit.sql을 실행해 주세요"); }
+  if(r.error){ if(msg) msg.textContent=""; alert("저장하지 못했습니다 — "+ccErr(r.error)); return; }
+  if(r.data){ QE.rows[id]=r.data; }
+  try{ CC_QB_P={}; CC_QB={}; }catch(e){}
+  ov.remove(); toast("✏️ 저장했습니다 — #"+id);
+  if(document.getElementById("qxModal")){ try{ const sc=document.getElementById("qxModal").scrollTop; Promise.resolve(qxView(x.lec)).then(function(){ const m=document.getElementById("qxModal"); if(m) m.scrollTop=sc; }); }catch(e){} }
+  if(document.getElementById("qeOne")) qxOne(id);
+};
+/* 문항 하나의 전체 해설 창 (첨삭 제출 목록 → 🔍) */
+window.qxOne=async function(id){
+  let x=null; try{ const r=await sb.from("cc_questions").select("*").eq("id",id).maybeSingle(); if(r.error) throw r.error; x=r.data; }catch(e){ alert("문제를 불러오지 못했습니다 — "+ccErr(e)); return; }
+  if(!x){ alert("문제 은행에서 이 문제를 찾지 못했습니다 (삭제되었을 수 있습니다)."); return; }
+  QE.rows[id]=x;
+  const LT=qeLight(), bg=LT?"#ffffff":"#0f1b33", fg=LT?"#14213d":"#eef2fa";
+  let ov=document.getElementById("qeOne"); if(ov) ov.remove();
+  ov=document.createElement("div"); ov.id="qeOne";
+  ov.style.cssText="position:fixed;inset:0;z-index:9850;background:rgba(0,0,0,.55);display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:28px 12px";
+  ov.onclick=function(e){ if(e.target===ov) ov.remove(); };
+  const box=function(t,v,pre){ return v?'<div style="font-weight:800;margin-top:12px">'+t+'</div><div style="white-space:pre-wrap;font-size:.9rem;line-height:1.7;'+(pre?'padding:8px 10px;border-radius:8px;background:rgba(127,127,127,.08);':'')+'">'+qeE(v)+'</div>':''; };
+  ov.innerHTML='<div style="background:'+bg+';color:'+fg+';border:1px solid var(--line);border-radius:14px;max-width:920px;width:100%;padding:18px 22px">'+
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><h3 style="margin:0">🔍 문제 · 해설 <small style="font-weight:400;font-size:.8rem;color:var(--mute)">'+qeE(x.track)+' '+qeE(x.subject)+' · '+qeE(x.stage)+' '+x.lec+'강'+(x.chapter?' · '+qeE(x.chapter):'')+' · #'+x.id+'</small></h3>'+
+    '<span>'+qxEB(x)+' <button class="mini" onclick="document.getElementById(\'qeOne\').remove()">✕ 닫기</button></span></div>'+
+    (x.topic?'<div style="margin-top:6px;color:var(--gold);font-weight:700">'+qeE(x.topic)+'</div>':'')+
+    box("문제",(x.case_text&&x.qtype==="주관식"?x.case_text+"\n\n":"")+(x.question||""),true)+
+    box("모범답안",x.model_answer||x.explanation)+box("매칭채점표 (채점자용 · 수강생 비공개)",x.grid,true)+box("핵심논리",x.logic)+box("핵심 키워드",x.keywords)+'</div>';
+  document.body.appendChild(ov);
+};
+/* 첨삭 제출 목록에 🔍 문제 · 해설 보기 */
+(function(){
+  const o=window.ccRenderSubs; if(typeof o!=="function") return;
+  window.ccRenderSubs=function(){
+    o.apply(this,arguments);
+    try{ document.querySelectorAll("#ccSubs details.ccsub").forEach(function(d,i){
+      const s=ccSubs[i]; if(!s||!s.q_id) return;
+      const bar=d.querySelector('button[onclick^="ccFbPack"]'); if(!bar||d.querySelector(".qeOneBtn")) return;
+      bar.insertAdjacentHTML("afterend",'<button class="mini qeOneBtn" onclick="qxOne('+s.q_id+')">🔍 문제 · 해설 보기</button>');
+    }); }catch(e){}
+  };
+})();
 
 </script>
 </body>
