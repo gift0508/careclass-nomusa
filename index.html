@@ -1143,16 +1143,16 @@ var CASE_CATS=[
 ];
 var TEUK_CATS=[{name:"최종마무리특강",d:"시험 직전 전범위 압축"},{name:"최신판례특강",d:"최근 판례 집중 정리"},{name:"위크포인트특강",d:"취약 쟁점 집중 보강"},{name:"답안작성특강",d:"현출·논증·배점 훈련"}];
 function pickTeukgang(){
-  document.getElementById("ecKicker").textContent="특강 · 선택 상품";
+  document.getElementById("ecKicker").textContent="특강";
   document.getElementById("ecTitle").textContent="특강을 고르세요";
   var banner=document.getElementById("ecBanner");
-  if(banner) banner.innerHTML='특강은 정규 과정과 별개의 <b style="color:#fff">선택 상품</b>입니다. <b style="color:#C9A227">바로합격반도 무료가 아니라 할인가</b>로 이용합니다 · 가격은 컨펌 후 확정.';
+  if(banner) banner.innerHTML='';
   document.getElementById("ecGrid").innerHTML=TEUK_CATS.map(function(c){
-    return '<button class="eccard blank" onclick="teukPick(\''+c.name+'\')"><span class="ecnm">'+c.name+'</span><span class="ecsub">'+c.d+'</span><span class="ecwait">단과 미정 · 종합 할인가 미정</span></button>';
+    return '<button class="eccard blank" onclick="teukPick(\''+c.name+'\')"><span class="ecnm">'+c.name+'</span><span class="ecsub">'+c.d+'</span></button>';
   }).join("");
   document.getElementById("engChooser").classList.add("open");
 }
-function teukPick(nm){ if(window.toast)toast(nm+" — 단과 정가 / 종합 할인가는 컨펌 후 결정됩니다."); else alert(nm+" — 가격 컨펌 후 결정"); }
+function teukPick(nm){ if(window.toast)toast(nm+" — 강의선택의 특강 칸에서 골라 담으세요"); }
 function pickSelType(){ openChooser("sel","과목별실전문제풀이 · 객관식","1차 5과목 · 문항은 컨펌 후 실기출로 등록됩니다", SEL_CATS); }
 function pickCaseType(){ openChooser("case","사례형 진도별 학습엔진","2차 4과목 · 문항은 컨펌 후 실기출로 등록됩니다", CASE_CATS); }
 function openChooser(k, kicker, title, cats){
