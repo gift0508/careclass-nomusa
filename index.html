@@ -7942,5 +7942,52 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
 })();
 
 </script>
+<script>
+/* ═══ 📂 내 공부기록 → 구성요소 → 바로 돌아오기 (2026-11-04)
+   · 내 공부기록에서 노트 · 오답노트 · 재오답 · 답안 · 첨삭 · 조언 버튼으로 다른 화면을 열면, 그 화면을 닫을 때 내 공부기록(보던 탭)으로 바로 돌아옴
+   · 학습엔진 화면: 왼쪽 위 단추가 「← 내 공부기록으로 돌아가기」로 바뀜
+   · 내 공부기록 자체를 닫으면 평소처럼 내 화면으로 ═══ */
+(function(){
+  if(typeof CC_REC==="undefined") return;
+  CC_REC.ret=null; CC_REC.leaving=false;
+  const on=function(id){ const e=document.getElementById(id); return !!(e&&e.classList.contains("on")); };
+  const engOpen=function(){ const e=document.getElementById("engview"); return !!(e&&e.classList.contains("open")); };
+  const recShown=function(){ const b=document.getElementById("nmRvBody"); return !!(on("nmRvModal")&&b&&b.querySelector("[data-recmark]")); };
+  /* 내 공부기록 화면에 표시 붙이기 */
+  const dr=window.ccRecDraw;
+  if(dr) window.ccRecDraw=ccRecDraw=function(){ const r=dr.apply(this,arguments); const b=document.getElementById("nmRvBody"); if(b&&!b.querySelector("[data-recmark]")) b.insertAdjacentHTML("afterbegin",'<span data-recmark="1" style="display:none"></span>'); return r; };
+  const od=window.ccOpenRecords;
+  if(od) window.ccOpenRecords=function(){ CC_REC.ret=null; return od.apply(this,arguments); };
+  /* 내 공부기록 안에서 다른 화면을 여는 단추를 누르면 「돌아올 곳」을 기억 */
+  const GO=/nmRvClose\(\)\s*;\s*\S|nmRvNoteOpen|nmThStart|ccOpenQB|ccOpenNote|nmAnsView|nmFbOpen|nmSubj/;
+  document.addEventListener("click",function(e){
+    const b=e.target&&e.target.closest&&e.target.closest("#nmRvBody button"); if(!b||!recShown()) return;
+    if(b.closest(".nmrvtabs")) return;
+    const oc=b.getAttribute("onclick")||""; if(!GO.test(oc)) return;
+    CC_REC.ret=CC_REC.tab||"note"; CC_REC.leaving=true; setTimeout(function(){ CC_REC.leaving=false; },0);
+  },true);
+  window.ccRecBack=function(){
+    if(!CC_REC.ret) return;
+    if(engOpen()||on("nmRvModal")||on("nmSeModal")) return;      /* 아직 다른 화면이 열려 있음 → 그 화면을 닫을 때 돌아감 */
+    const t=CC_REC.ret; CC_REC.ret=null; window.ccOpenRecords(t);
+  };
+  /* 문제 복습 창(오답노트 · 재오답 · 답안해설 …)을 닫을 때 */
+  const oc=window.nmRvClose;
+  if(oc) window.nmRvClose=nmRvClose=function(){
+    const wasRec=recShown(); const r=oc.apply(this,arguments);
+    if(wasRec){ if(!CC_REC.leaving) CC_REC.ret=null; return r; }   /* 내 공부기록 자체를 닫음 → 평소처럼 */
+    if(CC_REC.ret) setTimeout(window.ccRecBack,0);
+    return r;
+  };
+  /* 1차 과목 고르기 창을 그냥 닫을 때 */
+  if(typeof nmSeClose==="function"){ const sc=nmSeClose; window.nmSeClose=nmSeClose=function(){ const r=sc.apply(this,arguments); if(CC_REC.ret) setTimeout(window.ccRecBack,0); return r; }; }
+  /* 학습엔진 화면: 돌아가기 단추 */
+  if(typeof engBackLabel==="function"){ const lb=engBackLabel; window.engBackLabel=engBackLabel=function(){ lb.apply(this,arguments);
+    if(CC_REC.ret&&typeof ENG_STACK!=="undefined"&&!ENG_STACK.length){ const b=document.querySelector(".engback"); if(b) b.textContent="← 📂 내 공부기록으로 돌아가기"; } }; }
+  if(typeof engBack==="function"){ const eb=engBack; window.engBack=engBack=function(){
+    if(CC_REC.ret&&typeof ENG_STACK!=="undefined"&&!ENG_STACK.length){ closeEngine(); setTimeout(window.ccRecBack,0); return; }
+    return eb.apply(this,arguments); }; }
+})();
+</script>
 </body>
 </html>
