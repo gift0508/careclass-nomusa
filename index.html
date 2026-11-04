@@ -8179,13 +8179,53 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
     const t=TRACK, pl=ccPlanOf(t), f=ccFlat(t,pl), Tm=ccISO(ccToday()), as=pl.asg||{}, tot={}, hd={};
     (CC_LAWS[t]||[]).forEach(function(l){ tot[l]=0; hd[l]=0; });
     f.forEach(function(o){ if(tot[o.l]==null) return; tot[o.l]++; const a=as[o.key]; if(a&&a<Tm) hd[o.l]++; });
-    let sh=0, st2=0;
-    A.innerHTML=(CC_LAWS[t]||[]).map(function(l){ const n=tot[l], h=hd[l]; sh+=h; st2+=n; const pc=n?Math.round(h/n*100):0;
+    let sh=0, st2=0; const LL=(CC_LAWS[t]||[]).filter(function(l){ return tot[l]>0; });   /* 담은 강의가 없는 과목(고르지 않은 2차 선택과목 등)은 빼고 */
+    A.innerHTML=LL.map(function(l){ const n=tot[l], h=hd[l]; sh+=h; st2+=n; const pc=n?Math.round(h/n*100):0;
       return '<div class="ccacc"><div class="h">'+E(l)+'<span>'+h+' / '+n+'강'+(n?' · '+pc+'%':'')+'</span></div><div class="tr"><div class="fl" style="width:'+pc+'%"></div></div></div>'; }).join("");
-    if(AT) AT.innerHTML=(dual?E(t)+' ':'')+(CC_LAWS[t]||[]).length+'과목 합계 — 들은 강의 <b>'+sh+'</b> / '+st2+'강';
+    if(AT) AT.innerHTML=(dual?E(t)+' ':'')+LL.length+'과목 합계 — 들은 강의 <b>'+sh+'</b> / '+st2+'강';
   };
   const hook=function(name){ const o=window[name]; if(typeof o!=="function") return; window[name]=function(){ const r=o.apply(this,arguments); try{ ccTodayRender(); }catch(e){} return r; }; };
   ["showRoadmap","ccPlanBar"].forEach(hook);
+})();
+</script>
+<script>
+/* ═══ (2026-11-04) E: 밀림 안내를 「📈 내 페이스 점검」 한 곳으로 · F: 맨 위에 수강 완료일 · 시험일 · 최종정리기간 ═══ */
+(function(){
+  /* E — 계획 막대 · 오늘할당된학습하기 맨 위의 밀림 안내: 한 줄 + 페이스 점검으로 이동 */
+  window.ccGoPace=function(){
+    try{ while(window.ENG_STACK&&ENG_STACK.length) ENG_STACK.pop(); }catch(e){}
+    try{ closeEngine(); }catch(e){}
+    try{ showRoadmap(); }catch(e){}
+    setTimeout(function(){ const b=document.getElementById("s4"); if(b) b.scrollIntoView({block:"start",behavior:"smooth"}); },150);
+  };
+  window.ccMissedHTML=ccMissedHTML=function(t,ms,per,inFrame){
+    const P=inFrame?"parent.":"";
+    let D=null; try{ D=ccPaceData(t); }catch(e){}
+    const n=D?D.missN:0, d=D?D.missDays.length:ms.length;
+    return '<div class="ccmiss">⚠️ <b>학습이 밀렸습니다'+(n?' — '+n+'강 ('+d+'일)':'')+'</b>'+(ccIsDual()?' · '+t:'')+
+      '<span class="ccmb"><button onclick="'+P+'ccGoPace()">📈 내 페이스 점검에서 다시 짜기 →</button></span></div>';
+  };
+  /* F — 맨 위 숫자: 수강 완료 예정일 · 시험일(D-day) · 그 사이 = 최종정리기간 */
+  const top=document.querySelector(".wrap .top-stats");
+  if(top&&!document.getElementById("ccExamSt")){
+    const first=top.querySelector(".tstat");
+    first.insertAdjacentHTML("afterend",'<div class="tstat" id="ccExamSt"><div class="v"><em id="ccExamD">–</em></div><div class="l" id="ccExamL">시험</div></div>'+
+      '<div class="tstat" id="ccFinSt"><div class="v"><em id="ccFinD">–</em></div><div class="l">최종정리기간</div></div>');
+  }
+  const DAY=86400000;
+  if(typeof ccTopStats==="function"){ const ot=ccTopStats; window.ccTopStats=ccTopStats=function(){ const r=ot.apply(this,arguments);
+    try{ if(!user) return r;
+      const t=TRACK, c=ccPlanCalc(t), td=ccToday(), ex=ccExamDate(t,td), T=function(id,v){ const e=document.getElementById(id); if(e) e.innerHTML=v; };
+      const md=function(d){ return (d.getMonth()+1)+"/"+d.getDate(); };
+      /* 첫 칸: 수강 완료 예정일 */
+      const dv=document.getElementById("dday"); if(dv&&dv.parentNode) dv.parentNode.innerHTML='<em id="dday">'+(c.per&&c.end?md(c.end):"–")+'</em>';
+      T("ddayLabel",c.per&&c.end?"수강 완료 예정"+(c.left?" · "+c.left+"일 남음":""):"하루 수강량 미정");
+      T("ccExamD","D-"+Math.max(0,Math.round((ex-td)/DAY)));
+      T("ccExamL",(t==="2차"?"2차":"1차")+" 시험 "+md(ex));
+      if(c.per&&c.end){ const g=Math.round((ex-c.end)/DAY); T("ccFinD",g>=0?g+"일":'<span style="color:#e0685a">부족</span>'); const L=document.querySelector("#ccFinSt .l"); if(L) L.textContent=g>=0?"최종정리기간":"시험 전에 수강을 못 끝냄"; }
+      else T("ccFinD","–");
+    }catch(e){ console.warn(e); }
+    return r; }; }
 })();
 </script>
 </body>
