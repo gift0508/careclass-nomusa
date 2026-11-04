@@ -1004,7 +1004,7 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
     </div>
     <div class="pairlabel" id="pairlabel">일일 과업을 실행하는 학습엔진</div>
     <div class="pairrow" id="pairrow">
-      <a class="realbtn" href="#" onclick="openEngine('mission');return false">✅ 오늘할당된학습하기 — 오늘의 학습 체크 <small>· 강의 수강·학습 체크 → 향상 시 문제로</small></a> <a class="realbtn" href="#" onclick="ccOpenQB();return false">📝 과목별실전문제풀이 <small>· 5지택일 · 선다형 · 진도별 · 검색</small></a>
+      <a class="realbtn" href="#" onclick="openEngine('mission');return false">✅ 오늘할당된학습하기에서 공부 시작 →</a> <a class="realbtn" href="#" onclick="ccOpenQB();return false">📝 과목별실전문제풀이 <small>· 5지택일 · 선다형 · 진도별 · 검색</small></a>
     </div>
   </section>
 
@@ -4193,8 +4193,8 @@ function applyTrackChrome(track){
   T("accumTotLabel", two?"4과목 합계":"5과목 합계");
   S("pairlabel", two?`일일 과업을 실행하는 학습엔진`:`일일 과업을 실행하는 학습엔진`);
   S("pairrow", two
-   ? `<a class="realbtn" href="#" onclick="openEngine('mission');return false">✅ 오늘할당된학습하기 — 오늘의 학습 체크 <small>· 수강 → 필수암기 → 주관식 → 실전답안</small></a> <a class="realbtn" href="#" onclick="ccOpenQB();return false">📝 과목별실전문제풀이 <small>· 주관식 · 진도별 · 검색</small></a>`
-   : `<a class="realbtn" href="#" onclick="openEngine('mission');return false">✅ 오늘할당된학습하기 — 오늘의 학습 체크 <small>· 강의 수강·학습 체크 → 향상 시 문제로</small></a> <a class="realbtn" href="#" onclick="ccOpenQB();return false">📝 과목별실전문제풀이 <small>· 5지택일 · 선다형 · 진도별 · 검색</small></a>`);
+   ? `<a class="realbtn" href="#" onclick="openEngine('mission');return false">✅ 오늘할당된학습하기에서 공부 시작 →</a> <a class="realbtn" href="#" onclick="ccOpenQB();return false">📝 과목별실전문제풀이 <small>· 주관식 · 진도별 · 검색</small></a>`
+   : `<a class="realbtn" href="#" onclick="openEngine('mission');return false">✅ 오늘할당된학습하기에서 공부 시작 →</a> <a class="realbtn" href="#" onclick="ccOpenQB();return false">📝 과목별실전문제풀이 <small>· 5지택일 · 선다형 · 진도별 · 검색</small></a>`);
   S("s4lede", two?`지난 1주간 내가 푼 엔진 실행 데이터입니다. 버튼을 누르면 이 데이터가 위 28칸 전체학습계획을 실제로 고칩니다 — 위로 스크롤하면 부동산등기법·형사소송법 행의 날짜가 바뀌어 있습니다.`:`지난 1주간 내가 푼 엔진 실행 데이터입니다. 버튼을 누르면 이 데이터가 위 32칸 전체학습계획을 실제로 고칩니다 — 위로 스크롤하면 상법·헌법 행의 날짜가 바뀌어 있습니다.`);
   T("weekTitle", two?"주간 데이터 — 과목별 주관식 답안 일치정도":"주간 데이터 — 과목별 객관식 정답률"); T("avgTitle", two?"전체 수준 종합 — 과목별 평균 답안 일치정도":"전체 수준 종합 — 과목별 평균 정답률"); T("avgSub", two?"최근 2주 주관식 답안 일치정도 집계 · 65% 미만은 전사적 보강 후보":"최근 2주 선택형 집계 · 65% 미만은 전사적 보강 후보");
   T("weekSub", two?"7/25 ~ 7/31 · 주관식 답안 일치정도 집계 (배점 대비 일치정도)":"7/25 ~ 7/31 · OX 단계별 + 5지택일 엔진 집계");
@@ -8142,6 +8142,51 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
   /* 계획이 바뀔 때마다(수강량 · 계획 조정 · 차수 전환) 함께 다시 그림 */
   if(typeof ccPlanBar==="function"){ const pb=ccPlanBar; window.ccPlanBar=ccPlanBar=function(){ const r=pb.apply(this,arguments); try{ ccPaceRender(); }catch(e){} return r; }; }
   if(typeof showRoadmap==="function"){ const sr=showRoadmap; window.showRoadmap=showRoadmap=function(){ const r=sr.apply(this,arguments); try{ ccPaceRender(); }catch(e){} return r; }; }
+})();
+</script>
+<script>
+/* ═══ 전체학습계획 「오늘 해야 할 공부」 칸 (2026-11-04) — 옛 시안(소화량 · 문항 누적) 자리를 바꿈
+   · 왼쪽: 진행 중인 강의 — 오늘 수강 · 복습 +2 · +4 · +8 (오늘할당된학습하기와 같은 목록) 과목별 강의 수
+   · 오른쪽: 과목별 누적수강현황 — 들은 강의 / 들을 강의 (담은 강의) 막대 ═══ */
+(function(){
+  const box=document.querySelector("#s3 .today"); if(!box) return;
+  box.innerHTML='<div class="panel"><h3>진행 중인 강의</h3><div class="sub">오늘할당된학습하기와 같은 목록입니다 · 줄을 누르면 바로 열립니다</div><div id="ccTodayL"></div>'+
+      '</div>'+
+    '<div class="panel"><h3>과목별 누적수강현황</h3><div class="sub">들은 강의 / 들을 강의(담은 강의)</div><div id="ccAccL"></div><div id="ccAccT" style="margin-top:10px;font-weight:700"></div></div>'+
+    '<div style="display:none"><h3 id="todayTitle"></h3><div id="lectures"></div><b id="todayDigest"></b><div id="accumSub"></div><div id="accum"></div><span id="accumTotLabel"></span><b id="accumTotal"></b><span id="todayAdd"></span></div>';
+  const lede=document.getElementById("s3lede"); if(lede) lede.textContent="오늘 들을 강의와 복습할 강의, 과목별로 지금까지 들은 강의를 한눈에 봅니다.";
+  const st=document.createElement("style"); st.textContent=
+    '.cctl{display:grid;grid-template-columns:96px 1fr;gap:6px 10px;align-items:baseline;margin-top:10px;font-size:14.5px;line-height:1.6}.cctl .k{font-weight:800;color:var(--gold)}.cctl .k small{display:block;font-weight:500;font-size:11.5px;color:var(--mute,#8a8f99)}'+
+    '.cctl .v b{font-weight:800}.cctl .none{color:var(--mute,#8a8f99)}.cctl .rw{display:contents;cursor:pointer}.cctl .rw:hover>div{color:var(--gold)}'+
+    '.cctgo{display:block;margin-top:14px;padding:11px 14px;border-radius:12px;text-align:center;font-weight:800;text-decoration:none;background:var(--gold);color:var(--navy,#0D1F3C)}.cctgo:hover{filter:brightness(1.05)}'+
+    '.ccacc{margin-top:10px}.ccacc .h{display:flex;justify-content:space-between;font-size:14px;font-weight:700}.ccacc .h span{font-weight:600;color:var(--mute,#8a8f99)}'+
+    '.ccacc .tr{height:10px;border-radius:999px;background:rgba(127,127,127,.18);overflow:hidden;margin-top:4px}.ccacc .fl{height:100%;border-radius:999px;background:var(--gold);transition:width .6s}';
+  document.head.appendChild(st);
+  const E=function(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); };
+  window.ccTodayRender=function(){
+    const L=document.getElementById("ccTodayL"), A=document.getElementById("ccAccL"), AT=document.getElementById("ccAccT"); if(!L||!A) return;
+    if(typeof user==="undefined"||!user){ L.innerHTML=""; A.innerHTML=""; if(AT) AT.textContent=""; return; }
+    const ld=document.getElementById("s3lede"); if(ld) ld.textContent="오늘 들을 강의와 복습할 강의, 과목별로 지금까지 들은 강의를 한눈에 봅니다 · 공부는 아래 ✅ 오늘할당된학습하기에서 합니다.";
+    /* 왼쪽: 오늘 · 복습 */
+    let S=null; try{ S=ccMissionStack(); }catch(e){}
+    const dual=typeof ccIsDual==="function"&&ccIsDual();
+    const row=function(d){ const arr=((S&&S[d])||[]).filter(function(o){ return !o.rv; }), by={}, ord=[];
+      arr.forEach(function(o){ const k=(dual?o.track+" ":"")+o.subj; if(!by[k]){ by[k]=0; ord.push(k); } by[k]++; });
+      return ord.length?ord.map(function(k){ return E(k)+' <b>'+by[k]+'강</b>'; }).join(" · "):'<span class="none">없음</span>'; };
+    if(!S){ L.innerHTML='<div class="sub" style="margin-top:10px">하루 수강량을 정하면 오늘 들을 강의가 여기에 나옵니다.</div>'; }
+    else { const R=function(k,sub,d){ return '<div class="rw" onclick="openEngine(\'mission\')" title="오늘할당된학습하기 열기"><div class="k">'+k+(sub?'<small>'+sub+'</small>':'')+'</div><div class="v">'+row(d)+'</div></div>'; };
+      L.innerHTML='<div class="cctl">'+R("오늘 수강","",0)+R("복습 +2일","2일 전 강의",2)+R("복습 +4일","6일 전 강의",4)+R("복습 +8일","14일 전 강의",8)+'</div>'; }
+    /* 오른쪽: 과목별 들은 / 들을 강의 */
+    const t=TRACK, pl=ccPlanOf(t), f=ccFlat(t,pl), Tm=ccISO(ccToday()), as=pl.asg||{}, tot={}, hd={};
+    (CC_LAWS[t]||[]).forEach(function(l){ tot[l]=0; hd[l]=0; });
+    f.forEach(function(o){ if(tot[o.l]==null) return; tot[o.l]++; const a=as[o.key]; if(a&&a<Tm) hd[o.l]++; });
+    let sh=0, st2=0;
+    A.innerHTML=(CC_LAWS[t]||[]).map(function(l){ const n=tot[l], h=hd[l]; sh+=h; st2+=n; const pc=n?Math.round(h/n*100):0;
+      return '<div class="ccacc"><div class="h">'+E(l)+'<span>'+h+' / '+n+'강'+(n?' · '+pc+'%':'')+'</span></div><div class="tr"><div class="fl" style="width:'+pc+'%"></div></div></div>'; }).join("");
+    if(AT) AT.innerHTML=(dual?E(t)+' ':'')+(CC_LAWS[t]||[]).length+'과목 합계 — 들은 강의 <b>'+sh+'</b> / '+st2+'강';
+  };
+  const hook=function(name){ const o=window[name]; if(typeof o!=="function") return; window[name]=function(){ const r=o.apply(this,arguments); try{ ccTodayRender(); }catch(e){} return r; }; };
+  ["showRoadmap","ccPlanBar"].forEach(hook);
 })();
 </script>
 </body>
