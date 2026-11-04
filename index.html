@@ -1029,8 +1029,7 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
   </section>
 
   <footer>
-    본 화면은 수험생이 로그인하면 실제로 맞닥뜨리는 운영 화면입니다. 표시된 수강생·수치는 실제 데이터가 아닌 예시값이며, 엔진(수강신청·강의선택·선택형)은 실제 구동되는 검증 자산입니다.<br>
-    시대에듀 노무사 · 바로합격반 · 제안 자료 · 2026. 8. · BUILD v2026-10-19 · 노무사 빌드 1 · 서버 careclass-nomusa
+    시대에듀 노무사 · 바로합격반 · 바른관리 | 단기합격
   </footer>
 </div>
 
@@ -3481,7 +3480,7 @@ function ccTopStats(){
   const c=ccPlanCalc(TRACK), T=function(id,v){ const el=document.getElementById(id); if(el) el.textContent=v; };
   let done=0; laws.forEach(function(l){ const n=STAGEMAP[l]; if(n>0) done+=n; });
   T("dday",c.per?String(c.left):"–"); T("ddayLabel",c.per?"수강 완료까지 ("+TRACK+")":"하루 수강량 미정");
-  T("cellsDone",done); T("cellsTot",laws.length*ccNS(TRACK));
+  T("cellsDone",done); T("cellsTot",laws.length*(ccNS(TRACK)-(ccAutoSI(TRACK)>=0?1:0)));   /* 자율선택 「특강」 칸은 정규 칸 수에서 뺌 */
   T("pace",c.per?String(c.per):"–");
   const pl=document.querySelector("#pace"); if(pl&&pl.parentNode&&pl.parentNode.nextElementSibling) pl.parentNode.nextElementSibling.textContent="하루 수강량";
   const u=pl&&pl.parentNode; if(u&&u.lastChild&&u.lastChild.nodeType===3) u.lastChild.nodeValue="강";
