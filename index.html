@@ -921,7 +921,7 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
     </div>
     <div class="top-stats">
       <div class="tstat"><div class="v">D-<em id="dday">164</em></div><div class="l" id="ddayLabel">노무사 1차</div></div>
-      <div class="tstat"><div class="v"><em id="cellsDone">6</em>/<em id="cellsTot">32</em></div><div class="l">통과 칸</div></div>
+      <div class="tstat"><div class="v"><em id="cellsDone">6</em>/<em id="cellsTot">32</em></div><div class="l">현재통과칸</div></div>
       <div class="tstat"><div class="v"><em id="pace">5.9</em>일</div><div class="l">남은 일수÷남은 칸</div></div>
     </div>
   </div>
@@ -8212,6 +8212,8 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
     first.insertAdjacentHTML("afterend",'<div class="tstat" id="ccExamSt"><div class="v"><em id="ccExamD">–</em></div><div class="l" id="ccExamL">시험</div></div>'+
       '<div class="tstat" id="ccFinSt"><div class="v"><em id="ccFinD">–</em></div><div class="l">최종정리기간</div></div>');
   }
+  /* 하루 수강량 칸은 맨 위에서 뺌 (전체학습계획 「📅 나의 수강 계획」에서 보고 바꿈) */
+  try{ const pv=document.getElementById("pace"); const st=pv&&pv.closest(".tstat"); if(st) st.style.display="none"; }catch(e){}
   const DAY=86400000;
   if(typeof ccTopStats==="function"){ const ot=ccTopStats; window.ccTopStats=ccTopStats=function(){ const r=ot.apply(this,arguments);
     try{ if(!user) return r;
@@ -8219,9 +8221,9 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
       const md=function(d){ return (d.getMonth()+1)+"/"+d.getDate(); };
       /* 첫 칸: 수강 완료 예정일 */
       const dv=document.getElementById("dday"); if(dv&&dv.parentNode) dv.parentNode.innerHTML='<em id="dday">'+(c.per&&c.end?md(c.end):"–")+'</em>';
-      T("ddayLabel",c.per&&c.end?"수강 완료 예정"+(c.left?" · "+c.left+"일 남음":""):"하루 수강량 미정");
-      T("ccExamD","D-"+Math.max(0,Math.round((ex-td)/DAY)));
-      T("ccExamL",(t==="2차"?"2차":"1차")+" 시험 "+md(ex));
+      T("ddayLabel",c.per&&c.end?"수강완료예정일"+(c.left?" · "+c.left+"일 남음":""):"하루 수강량 미정");
+      T("ccExamD","D-"+md(ex));
+      T("ccExamL",(t==="2차"?"2차":"1차")+"시험일 · "+Math.max(0,Math.round((ex-td)/DAY))+"일 남음");
       if(c.per&&c.end){ const g=Math.round((ex-c.end)/DAY); T("ccFinD",g>=0?g+"일":'<span style="color:#e0685a">부족</span>'); const L=document.querySelector("#ccFinSt .l"); if(L) L.textContent=g>=0?"최종정리기간":"시험 전에 수강을 못 끝냄"; }
       else T("ccFinD","–");
     }catch(e){ console.warn(e); }
