@@ -5068,16 +5068,16 @@ window.nmRvMission=function(doc){
       (doc.head||doc.documentElement).appendChild(st); }
     let box=doc.getElementById("nmRvSlot");
     if(!box){ const s0=doc.getElementById("slot0"); if(!s0) return; box=doc.createElement("div"); box.id="nmRvSlot"; box.className="rvslot"; s0.parentNode.insertBefore(box,s0); }
-    box.innerHTML='<div class="rvh">🔁 문제 복습 <small style="font-weight:600;color:#7a7186">· 1차 문제풀이</small></div><div class="rvs">불러오는 중…</div>';
+    box.innerHTML='<div class="rvh">🎯 이것만은 반드시 해결 <small style="font-weight:600;color:#7a7186">· 🔁 문제 복습 · 1차 문제풀이</small></div><div class="rvs">불러오는 중…</div>';
   }catch(e){ console.warn(e); return; }
   Promise.all([nmRvLoad(true),nmRvBank().catch(function(){})]).then(nmRvMissionRefresh,nmRvMissionRefresh);
 };
 function nmRvMissionRefresh(){
   const doc=NM_RV.doc; let box=null; try{ box=doc&&doc.getElementById("nmRvSlot"); }catch(e){}
   if(!box||!box.isConnected) return;
-  if(NM_RV.err){ box.innerHTML='<div class="rvh">🔁 문제 복습 <small style="font-weight:600;color:#7a7186">· 1차 문제풀이</small></div><div class="rverr">'+nmRvEsc(nmRvErrText())+'</div>'; return; }
+  if(NM_RV.err){ box.innerHTML='<div class="rvh">🎯 이것만은 반드시 해결 <small style="font-weight:600;color:#7a7186">· 🔁 문제 복습 · 1차 문제풀이</small></div><div class="rverr">'+nmRvEsc(nmRvErrText())+'</div>'; return; }
   const p=nmRvPlan(), notes=nmRvNotes(), any=Object.keys(NM_RV.rows).length;
-  let h=(window.nmFinalCard?nmFinalCard():'')+'<div class="rvh">🔁 문제 복습 <small style="font-weight:600;color:#7a7186">· 1차 문제풀이</small></div>';
+  let h=(window.nmFinalCard?nmFinalCard():'')+'<div class="rvh">🎯 이것만은 반드시 해결 <small style="font-weight:600;color:#7a7186">· 🔁 문제 복습 · 1차 문제풀이</small></div>';
   h+='<div class="rvn">오늘 복습 <b>'+p.list.length+'</b>문항'+(p.done?' <small>· 오늘 '+p.done+'문항 풀었음</small>':'')+'</div>';
   h+='<div class="rvs">'+(p.rest?'하루 최대 '+p.cap+'문항 — 남은 <b>'+p.rest+'</b>문항은 내일로 넘어갑니다 (오래된 것부터)':(any?'헷갈리거나 틀린 문제를 강의 날부터 2일째(+2일) · 6일째(다시 +4일)에 다시 풉니다 · 6일째에도 틀리면 오답노트':'1차 문제풀이 강의에서 틀리거나 헷갈린 문제가 2일째 · 6일째(당일 → +2일 → +4일)에 여기에 올라옵니다'))+'</div>';
   h+='<div class="rvbt"><button class="p" onclick="parent.nmRvStart(\'due\')"'+(p.list.length?'':' disabled')+'>🔁 복습 시작 →</button><button onclick="parent.nmRvNoteOpen()">📒 오답노트 '+notes.length+'</button></div>';
