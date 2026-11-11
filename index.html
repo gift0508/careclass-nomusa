@@ -8220,14 +8220,14 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
    · 오른쪽: 과목별 누적수강현황 — 들은 강의 / 들을 강의 (담은 강의) 막대 ═══ */
 (function(){
   const box=document.querySelector("#s3 .today"); if(!box) return;
-  box.innerHTML='<div class="panel"><h3>진행 중인 강의</h3><div class="sub">오늘할당된학습하기와 같은 목록입니다 · 줄을 누르면 바로 열립니다</div><div id="ccTodayL"></div>'+
+  box.innerHTML='<div class="panel"><h3>진행 중인 강의</h3><div class="sub">오늘할당된학습하기와 같은 목록입니다</div><div id="ccTodayL"></div>'+
       '</div>'+
     '<div class="panel"><h3>과목별 누적수강현황</h3><div class="sub">들은 강의 / 들을 강의(담은 강의)</div><div id="ccAccL"></div><div id="ccAccT" style="margin-top:10px;font-weight:700"></div></div>'+
     '<div style="display:none"><h3 id="todayTitle"></h3><div id="lectures"></div><b id="todayDigest"></b><div id="accumSub"></div><div id="accum"></div><span id="accumTotLabel"></span><b id="accumTotal"></b><span id="todayAdd"></span></div>';
   const lede=document.getElementById("s3lede"); if(lede) lede.textContent="오늘 들을 강의와 복습할 강의, 과목별로 지금까지 들은 강의를 한눈에 봅니다.";
   const st=document.createElement("style"); st.textContent=
     '.cctl{display:grid;grid-template-columns:96px 1fr;gap:6px 10px;align-items:baseline;margin-top:10px;font-size:14.5px;line-height:1.6}.cctl .k{font-weight:800;color:var(--gold)}.cctl .k small{display:block;font-weight:500;font-size:11.5px;color:var(--mute,#8a8f99)}'+
-    '.cctl .v b{font-weight:800}.cctl .none{color:var(--mute,#8a8f99)}.cctl .rw{display:contents;cursor:pointer}.cctl .rw:hover>div{color:var(--gold)}'+
+    '.cctl .v b{font-weight:800}.cctl .none{color:var(--mute,#8a8f99)}.cctl .rw{display:contents}'+
     '.cctgo{display:block;margin-top:14px;padding:11px 14px;border-radius:12px;text-align:center;font-weight:800;text-decoration:none;background:var(--gold);color:var(--navy,#0D1F3C)}.cctgo:hover{filter:brightness(1.05)}'+
     '.ccacc{margin-top:10px}.ccacc .h{display:flex;justify-content:space-between;font-size:14px;font-weight:700}.ccacc .h span{font-weight:600;color:var(--mute,#8a8f99)}'+
     '.ccacc .tr{height:10px;border-radius:999px;background:rgba(127,127,127,.18);overflow:hidden;margin-top:4px}.ccacc .fl{height:100%;border-radius:999px;background:var(--gold);transition:width .6s}';
@@ -8244,7 +8244,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
       arr.forEach(function(o){ const k=(dual?o.track+" ":"")+o.subj; if(!by[k]){ by[k]=0; ord.push(k); } by[k]++; });
       return ord.length?ord.map(function(k){ return E(k)+' <b>'+by[k]+'강</b>'; }).join(" · "):'<span class="none">없음</span>'; };
     if(!S){ L.innerHTML='<div class="sub" style="margin-top:10px">하루 수강량을 정하면 오늘 들을 강의가 여기에 나옵니다.</div>'; }
-    else { const R=function(k,sub,d){ return '<div class="rw" onclick="openEngine(\'mission\')" title="오늘할당된학습하기 열기"><div class="k">'+k+(sub?'<small>'+sub+'</small>':'')+'</div><div class="v">'+row(d)+'</div></div>'; };
+    else { const R=function(k,sub,d){ return '<div class="rw"><div class="k">'+k+(sub?'<small>'+sub+'</small>':'')+'</div><div class="v">'+row(d)+'</div></div>'; };
       L.innerHTML='<div class="cctl">'+R("오늘 수강","",0)+R("복습 +2일","2일 전 강의",2)+R("복습 +4일","6일 전 강의",4)+R("복습 +8일","14일 전 강의",8)+'</div>'; }
     /* 오른쪽: 과목별 들은 / 들을 강의 */
     const t=TRACK, pl=ccPlanOf(t), f=ccFlat(t,pl), Tm=ccISO(ccToday()), as=pl.asg||{}, tot={}, hd={};
