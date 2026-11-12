@@ -6886,7 +6886,7 @@ function ccRecDraw(){
   const view=!!window.ccViewUid;
   let h='<h3>📂 내 공부기록'+(view?' <small class="nmrvpos">관리자 열람 — '+ccRecE(user&&user.name)+'</small>':'')+'</h3>'+
     '<div class="tkuse">내가 쓰고 풀어 온 기록이 모두 여기에 모입니다 · 계정에 저장되어 어느 기기에서나 그대로 보입니다</div>'+
-    '<div class="nmrvtabs">'+tabs.map(function(t){ return '<button class="'+(CC_REC.tab===t[0]?'on':'')+'" onclick="CC_REC.tab=\''+t[0]+'\';ccRecDraw()">'+t[1]+' <small>'+t[2]+'</small></button>'; }).join("")+'</div>';
+    '<div class="nmrvtabs ccrectabs">'+tabs.map(function(t){ return '<button class="'+(CC_REC.tab===t[0]?'on':'')+'" onclick="CC_REC.tab=\''+t[0]+'\';ccRecDraw()">'+t[1]+' <small>'+t[2]+'</small></button>'; }).join("")+'</div>';
   const q=CC_REC.q.trim(), hit=function(s){ return !q||String(s||"").indexOf(q)>=0; };
   const search='<div style="margin:8px 0"><input id="ccRecQ" placeholder="검색 (과목 · 강의 · 내용)" value="'+ccRecE(q)+'" oninput="CC_REC.q=this.value;clearTimeout(window.__ccRecT);window.__ccRecT=setTimeout(function(){ccRecDraw();var e=document.getElementById(\'ccRecQ\');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},250)" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #d9d4c6;border-radius:9px;font:inherit"></div>';
   const empty=function(t){ return '<div class="tksub" style="padding:14px 2px">'+t+'</div>'; };
@@ -8535,5 +8535,13 @@ window.nmGoalSigs=function(L,D1){
   document.head.appendChild(st);
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(go,0); }); else setTimeout(go,0);
 })();
-</script></body>
+</script><style>
+/* 📂 내 공부기록 탭: 넓은 화면에서는 한 줄로 (2026-11-12) */
+@media (min-width:760px){
+  .nmrvtabs.ccrectabs{flex-wrap:nowrap!important;gap:4px!important}
+  .nmrvtabs.ccrectabs button{flex:1 1 auto;white-space:nowrap;font-size:11.5px!important;padding:5px 6px!important;letter-spacing:-.02em;justify-content:center}
+  .nmrvtabs.ccrectabs button small{font-size:10.5px}
+  .tkbox:has(.ccrectabs){max-width:min(700px,94vw)!important;width:min(700px,94vw)}
+}
+</style></body>
 </html>
