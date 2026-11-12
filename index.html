@@ -6877,7 +6877,7 @@ function ccRecTheme(){ const S=ccRecJ("nm_theme_v1"); return Object.keys(S).map(
   .sort(function(a,b){ return String(b.date).localeCompare(String(a.date)); }); }
 function ccRecCase(){ const S=ccRecJ("cc_case3_v1"), P=(S&&S.p)||{}; let qb=window.__ccRec2||[]; try{ if(!qb.length) qb=(typeof CC_QB!=="undefined"&&CC_QB["2차"])||[]; }catch(e){}
   const by={}; qb.forEach(function(q){ by[String(q.id)]=q; });
-  return Object.keys(P).filter(function(id){ return P[id]&&(P[id].tries||[]).length; }).map(function(id){ const x=P[id], t=x.tries[x.tries.length-1]||{}; return {id:id,q:by[id],x:x,t:t}; })
+  return Object.keys(P).filter(function(id){ return P[id]&&(P[id].tries||[]).length; }).map(function(id){ const x=P[id], t=x.tries[x.tries.length-1]||{}; return {id:id,q:by[id]||by[String(id).replace(/^q/,"")],x:x,t:t}; })
   .sort(function(a,b){ return String(b.t.at||"").localeCompare(String(a.t.at||"")); }); }
 function ccRecDraw(){
   const body=document.getElementById("nmRvBody"); if(!body) return;
@@ -6913,10 +6913,13 @@ function ccRecDraw(){
     h+=search;
     const L=cs.filter(function(x){ return hit(x.q&&x.q.subject)||hit(x.q&&x.q.question)||hit(x.t.ans); });
     h+=L.length?L.map(function(x){ const q=x.q||{}, n=x.x.tries.length, pct=x.t.pct;
-      return '<details class="nmrvitem"><summary style="cursor:pointer"><b>'+ccRecE(q.subject||"2차")+'</b> '+ccRecE(q.stage||"")+(q.lec?' '+q.lec+'강':'')+' · '+n+'회 작성'+(pct!=null?' · 마지막 '+Math.round(pct)+'%':'')+(x.x.box==="rw"?' · 재작성하기에 모음':x.x.box==="dn"?' · 풀이 끝':'')+
+      const tries=x.x.tries.slice().reverse();
+      return '<details class="nmrvitem"><summary style="cursor:pointer"><b>'+ccRecE(q.subject||"(지금은 없는 문제)")+'</b> '+ccRecE(q.stage||"")+(q.lec?' '+q.lec+'강':'')+(q.topic?' · '+ccRecE(q.topic):'')+' · '+n+'회 작성'+(pct!=null?' · 마지막 '+Math.round(pct)+'%':'')+(x.x.box==="rw"?' · 재작성하기에 모음':x.x.box==="dn"?' · 풀이 끝':'')+
         '<div class="tksub" style="margin:4px 0 0">'+ccRecE(String(q.question||"").slice(0,120))+'</div></summary>'+
-        '<div class="nmrvcase" style="white-space:pre-wrap;margin-top:8px">'+(x.t.ans?ccRecE(x.t.ans):'(답안 내용이 저장되어 있지 않습니다)')+'</div>'+
-        '<div class="nmrvnav" style="justify-content:flex-start"><button onclick="nmRvClose();ccOpenQB(\''+ccRecE(q.subject||"").replace(/'/g,"\\'")+'\',null,null,null,\'2차\')">✍️ 과목별실전문제풀이에서 열기</button></div></details>'; }).join("")
+        tries.map(function(tr,k){ return '<details'+(k===0?' open':'')+' style="margin-top:8px"><summary style="cursor:pointer;font-size:13px;color:#6b5a2e"><b>'+(n-k)+'회차</b>'+(tr.at?' · '+ccRecE(ccRecWhen(tr.at)):'')+(tr.pct!=null?' · 점수 '+Math.round(tr.pct)+'%':'')+(tr.ans&&tr.ans.mode==="guide"?' · 목차 제공':tr.ans&&tr.ans.mode==="free"?' · 목차 없이':'')+'</summary>'+
+          '<div class="nmrvcase" style="white-space:pre-wrap;margin-top:6px">'+ccRecAns(tr.ans,q)+'</div>'+
+          '<div style="text-align:right;margin-top:4px"><button class="ccrecdel" onclick="ccRecCaseDel(\''+ccRecE(String(x.id)).replace(/'/g,"\\'")+'\','+(n-1-k)+')">🗑 이 회차 지우기</button></div></details>'; }).join("")+
+        '<div class="nmrvnav" style="justify-content:flex-start"><button onclick="nmRvClose();ccOpenCase2Q(\''+ccRecE(String(x.id)).replace(/'/g,"\\'")+'\')">✍️ 과목별실전문제풀이에서 이 문제 열기</button><button class="ccrecdel" style="margin-left:auto" onclick="ccRecCaseDel(\''+ccRecE(String(x.id)).replace(/'/g,"\\'")+'\',-1)">🗑 이 문제 답안 모두 지우기</button></div></details>'; }).join("")
       :empty(cs.length?'검색 결과가 없습니다.':'아직 작성한 2차 답안이 없습니다 · 과목별실전문제풀이(2차 주관식)에서 답안을 쓰면 여기에 모입니다.');
   }
   h+='<div class="nmrvnav"><button class="nmrvnext" onclick="nmRvClose()">닫기</button></div>';
@@ -8594,5 +8597,39 @@ window.ccQUpdate=async function(id,up){
 (function(){ const o=window.qxSave; if(typeof o!=="function") return;
   window.qxSave=async function(id){ const r=await o.apply(this,arguments); try{ const x=QE.rows[id]; if(x&&!document.getElementById("qeModal")) ccQBroadcast(x); }catch(e){} return r; }; })();
 </script>
+<script>
+/* ═══ 내 공부기록 「2차 제출답안」 (2026-11-12): 답안 원문을 목차와 함께 보여 줌 · 회차별 점수 · 그 문제로 바로 열기 ═══ */
+function ccRecWhen(at){ try{ const d=new Date(at); if(isNaN(d)) return String(at).slice(0,16); const p=function(n){ return (n<10?"0":"")+n; }; return (d.getMonth()+1)+"/"+d.getDate()+" "+p(d.getHours())+":"+p(d.getMinutes()); }catch(e){ return ""; } }
+function ccRecGridHeads(q){ const out=[]; String((q&&q.grid)||"").split("\n").forEach(function(l){ l=l.trim(); if(!l||/^(핵심필수현출문구|금지표현)\s*[:：|]/.test(l)||/^※/.test(l)) return; const p=l.split("|").map(function(x){ return x.trim(); }); if(p.length<3||!(parseFloat(p[p.length-1])>=0)) return; out.push((p[0]?p[0].replace(/[.．]+$/,"")+". ":"")+(p[1]||"")); }); return out; }
+function ccRecAns(a,q){
+  if(a==null||a==="") return '(답안 내용이 저장되어 있지 않습니다)';
+  if(typeof a==="string") return ccRecE(a);
+  if(a.mode==="free"||typeof a.text==="string") return a.text&&a.text.trim()?ccRecE(a.text):'(빈 답안)';
+  if(Array.isArray(a.vals)){ const H=ccRecGridHeads(q);
+    const parts=a.vals.map(function(v,i){ v=String(v||"").trim(); return v?'<b>'+ccRecE(H[i]||("목차 "+(i+1)))+'</b>\n'+ccRecE(v):""; }).filter(Boolean);
+    return parts.length?parts.join("\n\n"):'(빈 답안)'; }
+  try{ return ccRecE(JSON.stringify(a)); }catch(e){ return ''; }
+}
+/* 기록에서 그 문제로 바로 — 과목별실전문제풀이(2차)를 열고 그 문제의 「답안 작성」으로 (「이전 답안 넣기」로 원문을 다시 불러올 수 있음) */
+window.ccOpenCase2Q=function(id){
+  const qid=+String(id).replace(/^q/,""); let q=null; try{ q=(window.__ccRec2||[]).find(function(x){ return x.id===qid; })||((typeof CC_QB!=="undefined"&&CC_QB["2차"])||[]).find(function(x){ return x.id===qid; }); }catch(e){}
+  try{ if(TRACK!=="2차"&&typeof ccIsDual==="function"&&ccIsDual()) ccSwitchTrack("2차"); }catch(e){}
+  if(q){ window.matchSubject=q.subject; window.qbJump={subj:q.subject,stage:q.stage,lec:q.lec,qid:q.id}; } else window.qbJump=null;
+  window.qbMode=null; openEngine("case2");
+};
+</script>
+<script>
+/* 2차 제출답안 지우기 — 수강생 본인 기록(cc_case3_v1, 계정 동기화)에서 회차 하나 또는 그 문제 전부 */
+window.ccRecCaseDel=function(id,k){
+  let S={}; try{ S=JSON.parse(localStorage.getItem("cc_case3_v1")||"{}")||{}; }catch(e){}
+  const P=S.p||{}, x=P[id]; if(!x||!x.tries) return;
+  if(k<0){ if(!confirm("이 문제에 쓴 답안 "+x.tries.length+"회를 모두 지울까요?\n\n지운 답안은 되살릴 수 없고, 「풀이한 문제들」 · 「재작성하기」 목록에서도 빠집니다.")) return; delete P[id]; }
+  else { if(!confirm((k+1)+"회차 답안을 지울까요?\n\n지운 답안은 되살릴 수 없습니다.")) return; x.tries.splice(k,1); if(!x.tries.length) delete P[id]; }
+  S.p=P; try{ localStorage.setItem("cc_case3_v1",JSON.stringify(S)); }catch(e){ alert("지우지 못했습니다"); return; }
+  try{ toast("🗑 지웠습니다"); }catch(e){}
+  try{ ccRecDraw(); }catch(e){}
+};
+</script>
+<style>.ccrecdel{font-size:12px;padding:4px 10px;border:1px solid #e3c9c9;border-radius:7px;background:#fff;color:#a33;cursor:pointer}.ccrecdel:hover{background:#fdf2f2}</style>
 </body>
 </html>
