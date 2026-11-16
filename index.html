@@ -8631,5 +8631,17 @@ window.ccRecCaseDel=function(id,k){
 };
 </script>
 <style>.ccrecdel{font-size:12px;padding:4px 10px;border:1px solid #e3c9c9;border-radius:7px;background:#fff;color:#a33;cursor:pointer}.ccrecdel:hover{background:#fdf2f2}</style>
+<script>
+/* ═══ 1차 입문특강 학습도구 (2026-11-16): 학습도구를 올린 입문특강은 기본이론과 같은 흐름(🧠 뇌각인 → 🔘 OX풀이 → 📚 5지택일·선다형 풀이)
+   · 26년 대비 민법 1~6강 · 노동법Ⅰ·Ⅱ 공동 1~5강(문항은 노동법Ⅰ에 저장) · 나머지 입문특강은 지금처럼 강의노트 ═══ */
+window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법Ⅱ":[1,2,3,4,5]};
+(function(){
+  const o=window.ccIsLight;
+  window.ccIsLight=function(t,si,l,i){
+    try{ if(t==="1차"&&CC_STAGES[t][si]==="입문특강"&&i!=null){ const L=(window.CC_IP_TOOLS||{})[l]; if(L&&L.indexOf(i+1)>=0) return false; } }catch(e){}
+    return o?o(t,si,l,i):false;
+  };
+})();
+</script>
 </body>
 </html>
