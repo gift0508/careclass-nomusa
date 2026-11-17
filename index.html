@@ -579,7 +579,7 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
 .ccsub summary::-webkit-details-marker{display:none}
 .ccans{white-space:pre-wrap;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:9px;padding:12px;margin-top:8px;line-height:1.7;max-height:420px;overflow:auto}
 /* 홈: 제목은 위 가운데 · 채팅방과 가상 강의실은 같은 높이의 카드 두 개 */
-#homeHero{display:grid;grid-template-columns:380px minmax(0,1fr);grid-template-areas:"logo logo" "tag tag" "chat room" "sub sub";column-gap:24px;align-items:stretch;max-width:1120px;margin:0 auto;min-height:0;padding:34px 24px 40px;text-align:center}
+#homeHero{display:grid;grid-template-columns:380px minmax(0,1fr);grid-template-areas:"tag tag" "chat room" "sub sub";column-gap:24px;align-items:stretch;max-width:1120px;margin:0 auto;min-height:0;padding:34px 24px 40px;text-align:center}
 #homeHero .hero-inner{display:contents}
 #homeHero .hero-logo{grid-area:logo;margin-bottom:12px}
 #homeHero .hero-tag{grid-area:tag;font-size:46px;margin:0 0 30px}
@@ -630,7 +630,7 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
 .ccpop button{display:block;width:100%;text-align:left;background:none;border:none;color:var(--ink);font-family:inherit;font-size:.8rem;padding:8px 10px;border-radius:7px;cursor:pointer;white-space:nowrap}
 .ccpop button:hover{background:rgba(232,185,60,.15)}
 .ccbanrow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 4px;border-top:1px solid rgba(255,255,255,.06);font-size:.78rem}
-@media(max-width:980px){#homeHero{grid-template-columns:1fr;grid-template-areas:"logo" "tag" "room" "chat" "sub";row-gap:18px}#homeHero .hero-tag{font-size:34px;margin-bottom:6px}#homeHero .ccside{height:70vh}#homeHero .classroom{min-height:340px}.ccadmgrid{grid-template-columns:1fr}}
+@media(max-width:980px){#homeHero{grid-template-columns:1fr;grid-template-areas:"tag" "room" "chat" "sub";row-gap:18px}#homeHero .hero-tag{font-size:34px;margin-bottom:6px}#homeHero .ccside{height:70vh}#homeHero .classroom{min-height:340px}.ccadmgrid{grid-template-columns:1fr}}
 .crtabs{display:flex;gap:6px;margin:0 0 10px}
 .crtab{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:8px;color:var(--sub);font-family:inherit;font-size:12px;font-weight:800;padding:6px 4px;cursor:pointer}
 .crtab small{font-weight:500;color:var(--mute);margin-left:2px}
@@ -935,7 +935,6 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
   <div id="homeHero">
   <aside class="ccside" id="ccChatStu"></aside>
   <div class="hero-inner">
-    <div class="hero-logo">PASS:ON</div>
     <h1 class="hero-tag">당신의 <em class="hero-gold">합격 동반자</em></h1>
     <div class="classroom">
       <div class="cboard">시대에듀 노무사 · 바로합격반 · 가상 강의실 <span class="crlive">● LIVE</span></div>
@@ -6928,7 +6927,7 @@ function ccRecDraw(){
 /* 메뉴에 「📂 내 공부기록」 */
 (function(){
   const add=function(){ const em=document.getElementById("engmenu"); if(!em||em.querySelector("[data-rec]")) return;
-    em.insertAdjacentHTML("beforeend",'<span class="fa" style="opacity:.45">|</span><button class="mini" data-rec="1" onclick="ccOpenRecords()">📂 내 공부기록</button><button class="mini" data-out="1" onclick="logout()" style="margin-left:6px">로그아웃</button>'); };  /* 로그아웃은 상단 띠 「내 공부기록」 옆 (2026-11-11) */
+    em.insertAdjacentHTML("beforeend",'<span class="fa" style="opacity:.45">|</span><button class="mini" data-rec="1" onclick="ccOpenRecords()">📂 내 공부기록</button>'); };  /* 로그아웃은 「🎯 300점 합격 진단」 옆으로 옮김 (2026-11-18) */
   try{ new MutationObserver(add).observe(document.getElementById("engmenu"),{childList:true}); }catch(e){}
   add();
 })();
@@ -8375,6 +8374,8 @@ body.qd-on #qaDock{display:flex}
 #heroMe #nmdBtn{margin:0;font-size:14px;padding:6px 12px}
 #heroMe #nmAdvHero{margin:0!important;font-size:14px!important;font-weight:700!important;padding:6px 12px!important;border-width:1px!important;border-radius:8px!important;letter-spacing:0!important;width:auto!important;display:inline-flex!important}
 #heroMe #nmAdvHero b{font-size:11px;line-height:17px;min-width:17px;padding:0 5px}
+#heroMe #hmOut{margin:0;font-family:inherit;font-size:14px;font-weight:500;padding:6px 12px;border:1px solid #c9cdd6;border-radius:8px;background:#fff;color:#4a5875;cursor:pointer}
+#heroMe #hmOut:hover{border-color:#0D1F3C;color:#0D1F3C}
 #heroMe #uinfo{font-size:13.5px;color:var(--mute,#7a7f8c)}
 #heroMe #uinfo b{color:var(--ink,#0D1F3C)}
 @media(max-width:980px){#heroMe{display:flex;margin:10px auto 0;align-items:center}#heroMe .hm-row{justify-content:center}}
@@ -8390,6 +8391,11 @@ body.qd-on #qaDock{display:flex}
     /* 윗줄: 💬 오늘의 합격조언 · 🎯 300점 합격 진단 — 같은 크기로 나란히 */
     var adv=document.getElementById("nmAdvHero"); if(adv&&adv.parentNode!==top) top.insertBefore(adv,top.firstChild);
     var d=document.getElementById("nmdBtn"); if(d&&d.parentNode!==top) top.appendChild(d);
+    /* 로그아웃 — 🎯 300점 합격 진단 바로 옆 (2026-11-18) */
+    var lo=document.getElementById("hmOut");
+    if(!lo){ lo=document.createElement("button"); lo.id="hmOut"; lo.type="button"; lo.textContent="로그아웃"; lo.onclick=function(){ logout(); }; }
+    if(lo.parentNode!==top||lo.nextSibling) top.appendChild(lo);
+    var old=document.querySelector("#engmenu [data-out]"); if(old) old.remove();
     var ui=document.getElementById("uinfo"); if(ui&&ui.parentNode!==bot) bot.appendChild(ui);
     var bd=document.querySelector("#userchip .ubadge"); if(bd) bot.appendChild(bd);
     var u=document.getElementById("userchip"); box.style.display=(u&&u.style.display!=="none")?"":"none";
