@@ -4826,7 +4826,7 @@ function nmSeRender(){
   const el=document.getElementById("nmSeBody"); if(!el) return;
   const prev=!!window.ccPreview, c=NM_SE.cost;
   let h='<h3>📚 1차 과목별실전문제풀이</h3>'+
-    '<div class="tkuse">과목마다 따로 여는 학습엔진입니다 · 5지택일 · 선다형 · 교재기출 · 진도별 레벨 게이지<br>'+
+    '<div class="tkuse">5지택일 · 선다형 · 교재기출 · 진도별 레벨 게이지 학습엔진<br>'+
     (prev?'관리자 미리보기 — 이용권 없이 열어 봅니다':'처음 여는 과목은 <b>이용권 '+c+'장</b> · 한 번 연 과목은 <b>계속</b> 쓸 수 있습니다')+'</div>'+
     /* 이용권 현황은 이 창 안에서 (상단 칩에서 옮김 · 2026-11-11) */
     (prev?'':'<button class="tkchip nmsetk" onclick="ccTkOpen()" style="display:flex;align-items:center;gap:8px;width:100%;margin:2px 0 12px;padding:10px 14px;border-radius:12px;justify-content:space-between;font:inherit;cursor:pointer"><span>🎫 내 이용권 <b>'+(NM_SE.n!=null?NM_SE.n:"–")+'</b>장</span><span style="font-size:.85em;opacity:.85">이용권 현황 · 충전 · 사용 내역 →</span></button>');
@@ -6884,7 +6884,6 @@ function ccRecDraw(){
   const tabs=[["note","📝 강의노트",notes.length],["wrong","📒 오답노트",wrong.length],["theme","🔁 테마특강 암기노트",th.filter(function(x){ return x.left; }).length],["case","✍️ 2차 제출답안",cs.length]];
   const view=!!window.ccViewUid;
   let h='<h3>📂 내 공부기록'+(view?' <small class="nmrvpos">관리자 열람 — '+ccRecE(user&&user.name)+'</small>':'')+'</h3>'+
-    '<div class="tkuse">내가 쓰고 풀어 온 기록이 모두 여기에 모입니다 · 계정에 저장되어 어느 기기에서나 그대로 보입니다</div>'+
     '<div class="nmrvtabs ccrectabs">'+tabs.map(function(t){ return '<button class="'+(CC_REC.tab===t[0]?'on':'')+'" onclick="CC_REC.tab=\''+t[0]+'\';ccRecDraw()">'+t[1]+' <small>'+t[2]+'</small></button>'; }).join("")+'</div>';
   const q=CC_REC.q.trim(), hit=function(s){ return !q||String(s||"").indexOf(q)>=0; };
   const search='<div style="margin:8px 0"><input id="ccRecQ" placeholder="검색 (과목 · 강의 · 내용)" value="'+ccRecE(q)+'" oninput="CC_REC.q=this.value;clearTimeout(window.__ccRecT);window.__ccRecT=setTimeout(function(){ccRecDraw();var e=document.getElementById(\'ccRecQ\');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},250)" style="width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #d9d4c6;border-radius:9px;font:inherit"></div>';
@@ -8369,8 +8368,9 @@ body.qd-on #qaDock{display:flex}
 </script>
 <style>
 /* 🎯 300점 합격 진단 · 내 정보 — 「💬 오늘의 합격조언」 옆에 위아래 2단 (2026-11-11) */
-#heroMe{display:inline-flex;flex-direction:column;align-items:flex-start;gap:6px;vertical-align:middle;margin-left:14px;text-align:left;font-size:14px;font-weight:500;letter-spacing:0;line-height:1.4}
-#heroMe .hm-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+/* 3단 정렬 (2026-11-18): 상단 「당신의 합격 동반자」 가운데 · 하단 버튼줄 · 최하단 내 정보 — 오른쪽 정렬 */
+#heroMe{display:flex;flex-direction:column;align-items:flex-end;gap:6px;width:100%;margin:14px 0 0;text-align:right;font-size:14px;font-weight:500;letter-spacing:0;line-height:1.4}
+#heroMe .hm-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 #heroMe #nmdBtn{margin:0;font-size:14px;padding:6px 12px}
 #heroMe #nmAdvHero{margin:0!important;font-size:14px!important;font-weight:700!important;padding:6px 12px!important;border-width:1px!important;border-radius:8px!important;letter-spacing:0!important;width:auto!important;display:inline-flex!important}
 #heroMe #nmAdvHero b{font-size:11px;line-height:17px;min-width:17px;padding:0 5px}
@@ -8378,7 +8378,7 @@ body.qd-on #qaDock{display:flex}
 #heroMe #hmOut:hover{border-color:#0D1F3C;color:#0D1F3C}
 #heroMe #uinfo{font-size:13.5px;color:var(--mute,#7a7f8c)}
 #heroMe #uinfo b{color:var(--ink,#0D1F3C)}
-@media(max-width:980px){#heroMe{display:flex;margin:10px auto 0;align-items:center}#heroMe .hm-row{justify-content:center}}
+@media(max-width:980px){#heroMe{margin:10px 0 0}}
 </style>
 <script>
 (function(){
