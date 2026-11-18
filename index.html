@@ -949,7 +949,7 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
 <button class="homebtn" onclick="showHome()">← 홈으로</button>
 <!-- ① -->
   <section id="s1">
-    <div class="step-tag">STEP ① 나의 수강신청</div>
+    <div class="step-tag">STEP ① 합격을 향해 뛰는 나</div>
     <div class="profiles">
       <div class="pcard on">
         <h3 id="profName">노무사 1차 · 직장 병행</h3>
@@ -964,8 +964,8 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
   <section id="s2">
     <div class="matrix-head">
       <div>
-        <div class="step-tag">STEP ② 합격경로 한눈에 보기 — 과목별 독립 진행 · 통과한 과목만 다음 칸으로</div>
-        <p class="lede" id="rmLede">칸을 누르면 그 칸의 객관식 학습 레이어가 열립니다. 5과목 × 6단계(입문특강·기본이론·문제풀이·테마특강·핵지총특강·기출특강)를 과목별로 독립 진행합니다 · 전체학습계획 밖 특강은 맨 오른쪽 「특강」 칸에서 골라 듣습니다.</p>
+        <div class="step-tag">STEP ② 현재 진행되는 학습</div>
+        <p class="lede" id="rmLede">칸을 클릭하면 바로 밑에 학습소개가 나옵니다 · 전체학습계획 밖 특강은 맨 오른쪽 「특강」 칸에서 골라 듣습니다.</p>
       </div>
       <div class="legend">
         <span><span class="chip c-done"></span>통과</span>
@@ -2985,9 +2985,9 @@ function ccPathSummary(){
   const wait=diag.filter(function(l){ return !CC_DIAG[l]; });
   const T=function(id,v){ const el=document.getElementById(id); if(el) el.innerHTML=v; };
   T("profName","노무사 "+TRACK+" · "+(user.type||"바로합격반"));
-  T("profDesc","응시 경험 — 1차 <b>"+(user.exp1||"미입력")+"</b> · 2차 <b>"+(user.exp2||"미입력")+"</b>. 과목마다 처음부터 따라가거나, 이미 공부한 단계를 건너뛰고 원하는 단계부터 시작합니다. 건너뛴 단계도 <b>면제 · 수강 가능</b>으로 열려 있어 언제든 들을 수 있습니다.");
+  T("profDesc","1차 <b>"+(user.exp1||"미입력")+"</b> · 2차 <b>"+(user.exp2||"미입력")+"</b>.");
   T("profDiag", CC_PATH_SET
-    ? ("수강신청 — "+(start.length?"<b>처음부터</b> "+start.join("·"):"")+(start.length&&diag.length?" · ":"")+(diag.length?"<b>진단</b> "+diag.join("·"):"")+(wait.length?" · <b style=\"color:#ffb347\">진단 대기 "+wait.length+"과목</b> (자가진단에서 진행)":"")+(skip.length?" · <b>선택 안 함</b> "+skip.join("·"):""))
+    ? ("수강신청 — "+(start.length?"<b>처음부터</b> "+start.join("·"):"")+(start.length&&diag.length?" · ":"")+(diag.length?"<b>진단</b> "+diag.join("·"):"")+(wait.length?" · <b style=\"color:#ffb347\">진단 대기 "+wait.length+"과목</b> (자가진단에서 진행)":"")+(skip.length?" | <b>선택 안 함</b> "+skip.join("·"):""))
     : "아직 수강신청을 하지 않았습니다 — <b>수강신청</b>을 눌러 주세요");
   if(ccIsDual()){ const el=document.getElementById("profDiag"); if(el) el.innerHTML="<b>["+TRACK+" 전체학습계획]</b> "+el.innerHTML; }
 }
@@ -4235,7 +4235,7 @@ function applyTrackChrome(track){
   S("profDesc", two?`2차 4과목(노동법 · 행정쟁송법 · 인사노무관리론 · 선택 1과목)을 사례형 답안 중심으로 준비하는 트랙입니다.`:`1차 5과목(노동법Ⅰ · 노동법Ⅱ · 민법 · 사회보험법 · 경영학개론)을 객관식 중심으로 준비하는 트랙입니다.`);
   S("profDiag", two?`진단 결과 — 민법·형법 기본 · 형사소송법·민사소송법 문풀 · <b>부동산등기법·등기신청서류의작성는 미진입</b>(강의선택에서 신청하면 기본으로 진입) · 강의선택한 지점까지만 전체학습계획에 반영됩니다`:`진단 결과 — 헌법 핵심 · 민법·상법 문풀 · <b>민사집행법·상업등기및비송은 미진입</b>(강의선택에서 신청하면 기본으로 진입) · 강의선택한 지점까지만 전체학습계획에 반영됩니다`);
   T("rmTitle", two?"나의 28칸 전체학습계획":"나의 32칸 전체학습계획");
-  S("rmLede", two?`칸을 누르면 그 칸의 사례형 학습 레이어가 열립니다. 4과목 × 4단계(핵심이론·답안작성특강·문제풀이·테마특강)를 과목별로 독립 진행합니다.`:`칸을 누르면 그 칸의 객관식 학습 레이어가 열립니다. 5과목 × 6단계(입문특강·기본이론·문제풀이·테마특강·핵지총특강·기출특강)를 과목별로 독립 진행합니다 · 전체학습계획 밖 특강은 맨 오른쪽 「특강」 칸에서 골라 듣습니다.`);
+  S("rmLede", two?`칸을 클릭하면 바로 밑에 학습소개가 나옵니다.`:`칸을 클릭하면 바로 밑에 학습소개가 나옵니다 · 전체학습계획 밖 특강은 맨 오른쪽 「특강」 칸에서 골라 듣습니다.`);
   T("fbTag", two?"파이널 · 자신의 선택":"특강 · 자율수행"); var _fb=document.querySelector(".finalbar"); if(_fb) _fb.style.display=two?"none":"";
   S("fbTitle", two?`28칸(핵심·문풀·파이널·특강)을 마친 뒤 — 파이널은 스스로 여는 단계입니다`:`32칸(기본·문풀·핵심·기출실전)을 마친 뒤 — 특강은 스스로 여는 단계입니다`);
   S("fbSub", two?`파이널은 28칸 안에 배치되지 않습니다. 핵심·문풀·파이널·특강를 통과하면 <b>전범위를 압축하는 파이널</b>이 열리고, 원하는 시점에 <b>스스로 선택</b>해 들어갑니다. 실전 채점·모의와 연결되는 지점입니다.`:`특강은 합격경로상에 없는 별도의 과정입니다. 시험 직전 자신의 약점을 없애는 과정입니다.`);
@@ -4293,7 +4293,7 @@ function startTour(){
   after(t+=2800,()=>{setProfile('B');});
   // ② 전체학습계획
   after(t+=1400,()=>{hlOff("pB");nodeOn(2);go("grid");hlOn("s2");
-    narr("STEP ② 합격경로 한눈에 보기","진단이 <b>전체학습계획을 재배열</b>했습니다. 면제 칸(빗금)과 취약 과목의 압축 재수강 칸이 생기고, 모든 칸에 날짜가 박힙니다. 전체학습계획은 이제 매일 아침 \u2018오늘\u2019을 낳습니다.");});
+    narr("STEP ② 현재 진행되는 학습","진단이 <b>전체학습계획을 재배열</b>했습니다. 면제 칸(빗금)과 취약 과목의 압축 재수강 칸이 생기고, 모든 칸에 날짜가 박힙니다. 전체학습계획은 이제 매일 아침 \u2018오늘\u2019을 낳습니다.");});
   // ③ 일일 과업
   after(t+=3600,()=>{hlOff("s2");nodeOn(3);go("s3");hlOn("s3");
     narr("STEP ③ 강의별 해소","전체학습계획의 현재 칸이 <b>해소 총량</b>으로 내려왔습니다. 총량과 기한은 시스템이 지키고, 오늘 몇 문을 소화할지는 학생이 정합니다.");});
