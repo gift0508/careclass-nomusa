@@ -533,6 +533,7 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
 .hero-hint{background:#C9A227;color:#0D1F3C;border:none;font-weight:800;padding:5px 13px;border-radius:8px;cursor:pointer;font-size:14px}
 .homebtn{background:transparent;border:1px solid rgba(255,255,255,.25);color:#c7cedc;font-weight:700;font-size:13px;padding:8px 15px;border-radius:9px;cursor:pointer;margin:14px 0 4px}
 .homebtn:hover{border-color:#C9A227;color:#C9A227}
+#dashSections > .homebtn{display:none!important}   /* 상단 메뉴로 옮김 (2026-11-19) */
 
 .cellmatch{margin-top:12px;width:100%;background:#0D1F3C;color:#fff;border:1px solid var(--gold,#C9A227);font-weight:800;font-size:13px;padding:11px;border-radius:9px;cursor:pointer}
 .cellmatch:hover{background:#16305c}
@@ -6926,7 +6927,10 @@ function ccRecDraw(){
 /* 메뉴에 「📂 내 공부기록」 */
 (function(){
   const add=function(){ const em=document.getElementById("engmenu"); if(!em||em.querySelector("[data-rec]")) return;
-    em.insertAdjacentHTML("beforeend",'<span class="fa" style="opacity:.45">|</span><button class="mini" data-rec="1" onclick="ccOpenRecords()">📂 내 공부기록</button>'); };  /* 로그아웃은 「🎯 300점 합격 진단」 옆으로 옮김 (2026-11-18) */
+    em.insertAdjacentHTML("beforeend",'<span class="fa" style="opacity:.45">|</span><button class="mini" data-rec="1" onclick="ccOpenRecords()">📂 내 공부기록</button><button class="mini" data-home="1" onclick="showHome()" style="margin-left:6px">← 홈으로</button>'); homeVis(); };
+  /* 「← 홈으로」 — 아래 화면에서 상단 「내 공부기록」 옆으로 옮김 (2026-11-19) · 홈 화면에서는 숨김 */
+  const homeVis=function(){ const b=document.querySelector("#engmenu [data-home]"), d=document.getElementById("dashSections"); if(b&&d) b.style.display=(d.style.display==="none")?"none":""; };
+  try{ new MutationObserver(homeVis).observe(document.getElementById("dashSections"),{attributes:true,attributeFilter:["style"]}); }catch(e){}  /* 로그아웃은 「🎯 300점 합격 진단」 옆으로 옮김 (2026-11-18) */
   try{ new MutationObserver(add).observe(document.getElementById("engmenu"),{childList:true}); }catch(e){}
   add();
 })();
