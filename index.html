@@ -966,7 +966,7 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
   <section id="s2">
     <div class="matrix-head">
       <div>
-        <div class="step-tag">STEP ② 현재 진행되는 학습상황</div>
+        <div class="step-tag">STEP ② 현재 나의 학습성과</div>
         <p class="lede" id="rmLede">칸을 클릭하면 그 칸의 구체적인 학습상황을 알 수 있습니다.</p>
       </div>
       <div class="legend">
@@ -4339,7 +4339,7 @@ function startTour(){
   after(t+=2800,()=>{setProfile('B');});
   // ② 전체학습계획
   after(t+=1400,()=>{hlOff("pB");nodeOn(2);go("grid");hlOn("s2");
-    narr("STEP ② 현재 진행되는 학습상황","진단이 <b>전체학습계획을 재배열</b>했습니다. 면제 칸(빗금)과 취약 과목의 압축 재수강 칸이 생기고, 모든 칸에 날짜가 박힙니다. 전체학습계획은 이제 매일 아침 \u2018오늘\u2019을 낳습니다.");});
+    narr("STEP ② 현재 나의 학습성과","진단이 <b>전체학습계획을 재배열</b>했습니다. 면제 칸(빗금)과 취약 과목의 압축 재수강 칸이 생기고, 모든 칸에 날짜가 박힙니다. 전체학습계획은 이제 매일 아침 \u2018오늘\u2019을 낳습니다.");});
   // ③ 일일 과업
   after(t+=3600,()=>{hlOff("s2");nodeOn(3);go("s3");hlOn("s3");
     narr("STEP ③ 강의별 해소","전체학습계획의 현재 칸이 <b>해소 총량</b>으로 내려왔습니다. 총량과 기한은 시스템이 지키고, 오늘 몇 문을 소화할지는 학생이 정합니다.");});
