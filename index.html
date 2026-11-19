@@ -9125,8 +9125,9 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
     const k=v?ccCap(v):null;
     h+='<div class="ccprh" style="margin-top:14px">🗓 나의 학습플랜</div><div class="ccpkv">'+
       (function(){ const r=v?ccEndByCap(v):null;
-        return '<span>완료예정일</span><b>'+(r&&r.end?ccYMD(r.end):'–')+'</b>'+
-          (r&&r.end?'<span></span><small style="opacity:.7">수강신청한 총강의수: '+r.total+'강 / 남은 강의수: '+r.left+'강</small>':''); })()+'</div></div>';
+        let exd=""; try{ const ex=ccExamDate(t,ccToday()); if(r&&r.end&&ex){ const dd=Math.round((ex-r.end)/86400000); exd='<span style="font-weight:400;opacity:.65;margin:0 6px 0 18px">시험일까지 남은 날</span><span style="color:'+(dd<0?'#b0391f':'#8a6a12')+'">'+(dd<0?'시험일보다 '+(-dd)+'일 늦음':dd+'일')+'</span>'; }   /* 완료예정일과 같은 줄 */ }catch(e){}   /* 완료예정일 → 시험일까지 (2026-11-19) */
+        return '<span>완료예정일</span><b style="white-space:nowrap">'+(r&&r.end?ccYMD(r.end):'–')+exd+'</b>'+
+          (r&&r.end?'<small style="opacity:.7;grid-column:1/-1;text-align:right">수강신청한 총강의수: '+r.total+'강 / 남은 강의수: '+r.left+'강</small>':''); })()+'</div></div>';
     return h;
   }
   function wrap(){
