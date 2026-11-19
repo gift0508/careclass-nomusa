@@ -115,7 +115,8 @@ h2{font-family:'Noto Serif KR',serif;font-weight:900;font-size:1.7rem;margin:10p
   border:1px solid var(--line);background:rgba(255,255,255,.02);transition:.25s;
 }
 .cell:hover{border-color:var(--gold-dim)}
-.cell .period{font-size:.7rem;color:var(--mute);letter-spacing:.02em}
+.cell .period{font-size:.74rem;color:var(--ink,#1a2540);font-weight:600;letter-spacing:.02em;opacity:.9}
+.grid .gl small.gend,.gl .gend{display:block!important;visibility:visible!important;margin-top:2px;font-size:.66rem;font-weight:700;color:#8a6a12;white-space:nowrap}
 .cell .st{font-size:.76rem;font-weight:500;margin-top:3px}
 .cell .dots{position:absolute;right:9px;top:9px;display:flex;gap:4px}
 .dot{width:7px;height:7px;border-radius:50%}
@@ -1099,7 +1100,8 @@ function grid(){
   const g=document.getElementById("grid");
   let h='<div class="gh"></div>'+stages.map((s,si)=>`<div class="gh${(window.ccIsAuto?ccIsAuto(window.TRACK,si):(window.TRACK==='2차'&&si===3))?' gh-auto':''}">${s}${(window.ccIsAuto?ccIsAuto(window.TRACK,si):(window.TRACK==='2차'&&si===3))?' <small>· 자율선택</small>':''}</div>`).join("");
   P[cur].cells.forEach((row,li)=>{
-    h+=`<div class="gl">${laws[li]}${typeof ccPathBadge==="function"?ccPathBadge(laws[li]):""}</div>`;
+    let gEnd=""; try{ const cc=ccPlanCalc(typeof TRACK!=="undefined"?TRACK:window.TRACK), e=cc.endL&&cc.endL[laws[li]]; if(e) gEnd='<small class="gend">완료예정 '+ccYMD(e)+'</small>'; }catch(e){}
+    h+=`<div class="gl">${laws[li]}${typeof ccPathBadge==="function"?ccPathBadge(laws[li]):""}${gEnd}</div>`;
     row.forEach((c,si)=>{
       const dots=(CASE_MODE&&typeMap)?`<div class="dots">${typeMap[si].map((on,t)=>on?`<span class="dot ${["d-sel","d-case","d-rec"][t]}"></span>`:"").join("")}</div>`:"";
       const stTxt={done:"수강완료",now:"수강중",todo:"예정",skip:"면제",credit:"면제 · 수강 가능",none:"미진입"}[c.s];
@@ -3369,6 +3371,11 @@ function ccPlanCalc(t){
   });
   f.forEach(function(o){ const w=when[o.key]; if(!lo[o.si]||w<lo[o.si]) lo[o.si]=w; if(!hi[o.si]||w>hi[o.si]) hi[o.si]=w; if(!r.end||w>r.end) r.end=w; });
   for(let si=0;si<NS;si++) if(lo[si]) r.rng[si]=ccMD(lo[si])+"–"+ccMD(hi[si]);
+  /* 과목별 단계 범위 · 과목별 완료예정일 (2026-11-19) */
+  r.rngL={}; r.endL={}; const LL={};
+  f.forEach(function(o){ const w=when[o.key]; if(!w) return; const a=LL[o.l]=LL[o.l]||{lo:{},hi:{}};
+    if(!a.lo[o.si]||w<a.lo[o.si]) a.lo[o.si]=w; if(!a.hi[o.si]||w>a.hi[o.si]) a.hi[o.si]=w; if(!r.endL[o.l]||w>r.endL[o.l]) r.endL[o.l]=w; });
+  r.endLS={}; Object.keys(LL).forEach(function(l){ r.rngL[l]={}; Object.keys(LL[l].lo).forEach(function(si){ r.rngL[l][si]=ccMD(LL[l].lo[si])+"–"+ccMD(LL[l].hi[si]); r.endLS[l+"|"+si]=LL[l].hi[si]; }); });
   r.days=Math.ceil(total/per);
   r.left=Math.max(0,Math.ceil((total-r.pos)/per));
   if(r.end) r.endTxt=ccYMD(r.end)+(r.pending?" (공개 일정에 따라)":"");
@@ -3389,13 +3396,14 @@ function ccBuildCells(){
       if(sk&&!cnt) return {p:"선택 안 함 · 듣지 않음",s:"none"};
       if(fo!=null){
         /* 수강생이 단계를 옮긴 과목: 옮긴 단계 = 진행 중 · 듣다가 멈춘 단계 = 진행 일시정지 */
-        const h=H[k]||0, pr=(c.rng[k]?c.rng[k]+" · ":"")+cnt+"강"+(h?" · "+h+"강 들음":""), fc=ccCount(ccSel(t,l,fo,pl)), fdone=fc>0&&(H[fo]||0)>=fc;
+        const h=H[k]||0, pr=(((c.rngL&&c.rngL[l]&&c.rngL[l][k])||c.rng[k])?((c.rngL&&c.rngL[l]&&c.rngL[l][k])||c.rng[k])+" · ":"")+cnt+"강"+(h?" · "+h+"강 들음":""), fc=ccCount(ccSel(t,l,fo,pl)), fdone=fc>0&&(H[fo]||0)>=fc;
         if(cnt&&h>=cnt) return {p:pr,s:"done"};
         if(!fdone&&k===fo) return {p:pr,s:"now"};
         if(h>0&&h<cnt) return {p:pr,s:fdone?"now":"paused"};
       }
       const s=(n==null||n<0)?"none":(k<cr?"credit":(k<n?"done":(k===n?"now":"todo")));
-      const p=cnt?((c.rng[k]?c.rng[k]+" · ":"")+cnt+"강"):(ccIsAuto(t,k)?"자율선택 · 담은 강의 없음":"담은 강의 없음");
+      const rg=(c.rngL&&c.rngL[l]&&c.rngL[l][k])||c.rng[k];
+      const p=cnt?((rg?rg+" · ":"")+cnt+"강"):(ccIsAuto(t,k)?"자율선택 · 담은 강의 없음":"담은 강의 없음");
       return {p:p,s:s};
     });
   });
@@ -8113,6 +8121,15 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
     try{ ccPlanBar(); }catch(e){}
     toast("밀린 강의 "+D.missN+"강을 오늘부터 다시 배정했습니다"+(c.endTxt?" — 완료 예정 "+c.endTxt:""));
   };
+  window.__ccReassign=reassign;
+  window.ccPaceChg=function(t,iso){
+    const D=ccPaceData(t); if(!D||!D.missN) return;
+    /* 수정사항은 익일부터: 오늘 배정은 그대로 · 내일 밀린 강의를 다시 배정 */
+    const pl=ccPlanOf(t); pl.pend=Object.assign({},pl.pend||{},{from:ccISO(ccAddDays(ccToday(),1)),re:true}); pl.chEnd=iso; ccPlanWrite(t,pl);
+    window.__ccChgMsg=ccMD(ccToday())+" → "+ccMD(ccParse(iso));
+    try{ ccPlanBar(); }catch(e){} try{ ccPaceRender(); }catch(e){}
+    toast("내일부터 적용됩니다 — 밀린 강의 다시 배정 · 완료예정일 "+ccYMD(ccParse(iso)));
+  };
   window.ccPaceKeep=function(t){
     const D=ccPaceData(t); if(!D||!D.missN) return;
     const c0=ccPlanCalc(t), end=c0.end; if(!end) return ccPaceRe(t);
@@ -8161,39 +8178,74 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
     if(!D){ box.innerHTML='<div class="sub">하루 수강량을 정하면 그날부터 내 속도를 점검합니다 — 위 「📅 나의 수강 계획」에서 하루 수강량을 정해 주세요.</div>'; return; }
     const c=ccPlanCalc(t), T=ccISO(ccToday());
     let ex=null; try{ ex=ccExamDate(t,ccToday()); }catch(e){}
-    const head='<h3>'+(ccIsDual()?E(t)+' · ':'')+'일정 짠 날 '+md(D.pl.start)+' ~ 오늘 '+md(T)+'</h3>';
+    /* 일정의 대상 과목(지금 듣는 과목·단계) 표시 (2026-11-19) */
+    /* 과목 고르기: 수강신청 과목(과목+단계) 중 골라 그 과목의 계획·실제·진단을 봄 — 배정 순서는 그대로 (2026-11-19) */
+    const SJ=(function(){ try{ const f=D.f||ccFlat(t,D.pl), A=D.pl.asg||{}, nm={}, list=[], cnt={};
+        const nmOf=function(o){ return o.l+" "+CC_STAGES[t][o.si]; };
+        f.forEach(function(o){ const k=nmOf(o); if(!nm[k]){ nm[k]=1; list.push(k); } });
+        let cur=null; f.forEach(function(o){ if(!cur&&A[o.key]===T) cur=nmOf(o); });
+        if(!cur){ const o=f.find(function(o){ return !A[o.key]||A[o.key]>=T; }); if(o) cur=nmOf(o); }
+        const W=window.__ccPaceSubj=window.__ccPaceSubj||{};
+        let pick=W[t]; if(pick!=="__all"&&list.indexOf(pick)<0) pick=cur||list[0]||"__all";
+        const key={}; f.forEach(function(o){ key[nmOf(o)]=o.l+"|"+o.si; });
+        return {list:list,pick:pick,nmOf:nmOf,key:key}; }catch(e){ return {list:[],pick:"__all",nmOf:function(){return "";}}; } })();
+    window.ccPaceSubj=function(tt,v){ (window.__ccPaceSubj=window.__ccPaceSubj||{})[tt]=v; ccPaceRender(); };
+    let P=D.plan, RL=D.real, MN=D.missN;
+    /* ③ 완료 목표일 직접 고르기 — 수강생이 스스로 학습플랜을 짬 (2026-11-19) */
+    const left3=D.total-(D.posAll-D.missN), wk3=(function(){ const v=ccProfGet(); return v?ccCap(v).wk:D.pl.per*7; })();
+    window.__ccGoal=function(iso){ const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||""); if(!m) return null;
+      const d=new Date(+m[1],+m[2]-1,+m[3]), days=Math.round((d-ccToday())/DAY);
+      if(days<1) return {err:"내일 이후 날짜를 골라 주세요"};
+      const per=Math.max(1,Math.ceil(left3/days)); if(per>CC_PER_MAX) return {err:"이 날짜까지는 하루 "+per+"강이 필요해 최대 "+CC_PER_MAX+"강을 넘습니다 — 더 뒤의 날짜를 골라 주세요"};
+      return {per:per,wk:Math.ceil(left3*7/days),iso:iso}; };
+    window.__ccGoalTxt=function(iso){ const r=__ccGoal(iso); if(!r) return "날짜를 골라 주세요"; if(r.err) return '<span style="color:#e0685a">'+r.err+'</span>';
+      return '날짜 <b>'+md(T)+' → <span style="color:#e0685a">'+ccMD(ccParse(r.iso))+'</span></b> · 1주 수강강의수 <b>'+wk3+'강 → <span style="color:#e0685a">'+r.wk+'강</span></b> <small style="opacity:.75">· 익일부터 적용</small>'; };
+    const goalRow=function(top){ const mn=ccISO(ccAddDays(ccToday(),1)), mx=ex?ccISO(ex):"", d0=(D.pl.chEnd&&D.pl.chEnd>mn)?D.pl.chEnd:(c.end&&ccISO(c.end)>mn?ccISO(c.end):(mx||mn));
+      return '<div style="'+(top?'margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)':'')+'">'+
+        '<div style="font-weight:700">③ 완료 목표일 직접 고르기 '+
+        '<input id="ccGoalD" type="date" min="'+mn+'"'+(mx?' max="'+mx+'"':'')+' value="'+d0+'" style="padding:3px 6px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:14px;background:transparent;color:inherit;vertical-align:middle">'+
+        ' <button type="button" class="mini" style="vertical-align:middle" onclick="ccPaceGoal(\''+t+'\')">계산</button></div>'+
+        '<div id="ccGoalR" style="display:'+(window.__ccGoalMsg?'block':'none')+';font-size:14px;margin-top:6px;line-height:1.9">'+(window.__ccGoalMsg||'')+'</div></div>'; };
+    if(SJ.pick!=="__all"){ const A=D.pl.asg||{}, mk={}; Object.keys(D.miss||{}).forEach(function(d){ D.miss[d].forEach(function(k){ mk[k]=1; }); });
+      P=0; MN=0; (D.f||[]).forEach(function(o){ if(SJ.nmOf(o)!==SJ.pick) return; const d=A[o.key]; if(!d||d>=T||d<D.pl.start) return; P++; if(mk[o.key]) MN++; }); RL=P-MN; }
+    const sjSel=SJ.list.length?('<select class="ccsel" style="font:inherit;font-weight:800;font-size:inherit;padding:2px 6px;margin-right:6px" onchange="ccPaceSubj(\''+t+'\',this.value)">'+
+      SJ.list.map(function(k){ return '<option value="'+E(k)+'"'+(k===SJ.pick?' selected':'')+'>'+E(k)+'</option>'; }).join("")+
+      '<option value="__all"'+(SJ.pick==="__all"?' selected':'')+'>전체 과목</option></select>'):'';
+    let sjEnd=null; try{ sjEnd=(SJ.pick==="__all")?c.end:(c.endLS&&c.endLS[SJ.key[SJ.pick]]); }catch(e){}
+    const head='<h3>'+(ccIsDual()?E(t)+' · ':'')+sjSel+'계획하기 '+md(D.pl.start)+' ~ '+(D.pl.chEnd&&D.pl.chEnd>=T?'<span style="color:#e0685a">'+md(D.pl.chEnd)+'</span>':'오늘 '+md(T))+(sjEnd?' <span style="font-size:.8em;font-weight:700;color:#8a6a12;margin-left:6px">완료예정 '+ccYMD(sjEnd)+'</span>':'')+'</h3>';
     if(!D.plan){ box.innerHTML=head+'<div class="sub">오늘 일정을 짰습니다 — 내일부터 계획과 실제를 비교해 드립니다.</div>'; return; }
-    const loose=!D.missN&&D.pl.pace==="loose";
-    const st=D.missN?["밀림","#e0685a","🔴"]:(loose?["느슨함","#2d5aa0","🔵"]:["딱 맞음","#2f7d4f","🟢"]);
+    const loose=!MN&&D.pl.pace==="loose";
+    const st=MN?["밀림","#e0685a","🔴"]:(loose?["느슨함","#2d5aa0","🔵"]:["딱 맞음","#2f7d4f","🟢"]);
     const pills='<div style="display:flex;gap:6px;margin:8px 0 2px">'+[["밀림","#e0685a"],["딱 맞음","#2f7d4f"],["느슨함","#2d5aa0"]].map(function(x){ const on=x[0]===st[0];
-      const pick=!D.missN&&x[0]!=="밀림";   /* 밀림은 기록으로 자동 · 딱 맞음/느슨함은 수강생이 고름 */
+      const pick=!MN&&x[0]!=="밀림";   /* 밀림은 기록으로 자동 · 딱 맞음/느슨함은 수강생이 고름 */
       const cl="ccpp"+(on?" on "+({"밀림":"r","딱 맞음":"g","느슨함":"b"})[x[0]]:"");
       return '<'+(pick?'button type="button" onclick="ccPaceLoose(\''+t+'\','+(x[0]==="느슨함")+')" title="눌러서 고르기"':'span')+' class="'+cl+'"'+(pick?' style="cursor:pointer"':'')+'>'+x[0]+'</'+(pick?'button':'span')+'>'; }).join("")+'</div>';
-    let h=head+pills+'<div style="display:flex;flex-wrap:wrap;gap:18px;align-items:baseline;margin:10px 0 6px;font-size:15px">'+
-      '<span>계획: 어제까지 <b style="font-size:20px">'+D.plan+'강</b></span><span>실제: <b style="font-size:20px">'+D.real+'강</b></span>'+
-      '<span style="font-weight:800;color:'+st[1]+'">'+st[2]+' '+st[0]+(D.missN?' — '+D.missN+'강 ('+D.missDays.length+'일)':'')+'</span></div>'+
-      '<div class="sub">하루 '+D.pl.per+'강 · 완료 예정 <b>'+E(c.endTxt||"–")+'</b>'+
-        (ex&&c.end&&c.end>ex?' · <b style="color:#e0685a">지금 속도로는 시험 전에 다 듣지 못합니다</b>':'')+'</div>'+
-      '';
+    let h=head+'<div class="ccdiag" style="border:1.5px solid #C9A227;border-radius:12px;padding:10px 14px;margin:10px 0 6px"><div style="display:flex;flex-wrap:wrap;gap:18px;align-items:baseline;margin:0 0 6px;font-size:15px">'+
+      '<span>수강계획 어제예정 <b style="font-size:20px">'+P+'강</b></span><span>실제수강 <b style="font-size:20px">'+RL+'강</b></span>'+
+      '<span style="font-weight:800;color:'+st[1]+'">진단: '+st[2]+' '+st[0]+(MN?' — '+MN+'강':'')+'</span></div>'+
+      pills+'</div>';   /* 진단 숫자줄+버튼줄을 실선박스로 묶음 · 진단 숫자줄 위 · 밀림/딱 맞음/느슨함 아래로 위치 교체 (2026-11-19) · 「하루 n강 · 완료 예정」 줄 삭제 (2026-11-19) — 완료예정일은 오른쪽 나의 학습플랜에서 */
     const btn=function(fn,txt,sub,gold){ return '<button class="btn" style="margin:8px 8px 0 0;'+(gold?'':'background:transparent;color:inherit;border:1px solid var(--line)')+'" onclick="'+fn+'">'+txt+(sub?'<br><small style="font-weight:500;opacity:.8">'+sub+'</small>':'')+'</button>'; };
-    if(D.missN){
+    if(MN){   /* 고른 과목에 밀린 강의가 있을 때만 「나의 수정」 */
       let n=null; try{ if(c.end) n=needPer(t,D,c.end); }catch(e){}
-      h+='<div style="margin-top:10px;font-weight:700">어떻게 다시 짤까요?</div>'+
-        btn("ccPaceRe('"+t+"')","① 밀린 강의를 오늘부터 다시 배정","하루 "+D.pl.per+"강 그대로 · 완료 예정일은 자동으로 다시 계산",true)+
-        (function(){ const left=D.total-(D.posAll-D.missN);
-          window.__ccTgt=function(iso){ const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||""); if(!m) return null; const d=new Date(+m[1],+m[2]-1,+m[3]), days=Math.round((d-ccToday())/DAY)+1;
-            if(days<1) return {err:"오늘 이후 날짜를 골라 주세요"}; const need=Math.ceil(left/days), per=Math.max(need,D.pl.per);
-            if(need>CC_PER_MAX) return {err:"이 날짜까지는 하루 "+need+"강이 필요해 최대 "+CC_PER_MAX+"강을 넘습니다 — 더 뒤의 날짜를 골라 주세요"};
-            return {per:per,need:need,end:ccAddDays(ccToday(),Math.max(1,Math.ceil(left/per))-1)}; };
-          window.__ccTgtTxt=function(iso){ const r=__ccTgt(iso); if(!r) return ""; if(r.err) return r.err;
-            return ""; };  /* 「필요한 하루 수강량 n강 → 실제 완료 예정」 문구 삭제 (2026-11-18) · 날짜가 너무 이를 때의 안내만 남김 */
-          const d0=(c.end&&(!ex||c.end<=ex))?ccISO(c.end):(ex?ccISO(ex):ccISO(ccAddDays(ccToday(),30))), mn=ccISO(ccToday()), mx=ex?ccISO(ex):"";
-          return '<div style="margin-top:10px;padding:10px 14px;border:1px solid var(--line);border-radius:12px"><div style="font-weight:700">② 완료 목표일 정하기 · 하루 수강량 자동 계산</div>'+
-            '<div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px;font-weight:700">완료 목표일 '+
-            '<input id="ccTgtD" type="date" min="'+mn+'"'+(mx?' max="'+mx+'"':'')+' value="'+d0+'" oninput="document.getElementById(\'ccTgtTx\').innerHTML=__ccTgtTxt(this.value)" style="padding:6px 8px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:15px;background:transparent;color:inherit">까지 '+
-            '<button class="btn" style="margin:0" onclick="ccPaceTarget(\''+t+'\')">이대로 다시 짜기</button></div>'+
-            '<div class="sub" id="ccTgtTx" style="margin-top:6px;font-size:14px">'+__ccTgtTxt(d0)+'</div>'+
-            '</div>'; })();
+      /* 나의 수정 (2026-11-19): 제목 옆 「계산하기」 → ① 늘어날 1주 수강강의수 / ② 바뀔 완료예정일 — 실선박스로 묶음 */
+      (function(){
+        const v=ccProfGet(), per=D.pl.per, wkNow=v?ccCap(v).wk:per*7, left=D.total-(D.posAll-D.missN);
+        let wk1=null; try{ if(c.end){ const days=Math.max(1,Math.round((c.end-ccToday())/DAY)+1); wk1=Math.ceil(left*7/days); } }catch(e){}
+        let end2=null; try{ let d=ccToday(), r=left, g=0, k=v?ccCap(v):null;
+          while(r>0&&g<4000){ d=ccAddDays(d,1); const w=d.getDay(); r-=k?((w===0||w===6)?k.we:k.wd)||per:per; g++; } end2=d; }catch(e){}   /* 오른쪽 완료예정일과 같은 방식: 내일부터 셈 */
+        const box='border:1.5px solid #C9A227;border-radius:12px;padding:10px 14px;margin-top:8px';
+        const calc=function(id,lb,act){ return ' <button type="button" class="mini" style="margin-left:6px;vertical-align:middle" onclick="'+(act?act+';setTimeout(function(){var e=document.getElementById(\''+id+'\');if(e)e.style.display=\'block\';},0);':'var e=document.getElementById(\''+id+'\');e.style.display=e.style.display===\'none\'?\'block\':\'none\'')+'">'+lb+'</button>'; };
+        const row=function(no,title,id,res,tail,lb,act){ return '<div style="'+(no==="②"?'margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)':'')+'">'+
+          '<div style="font-weight:700">'+no+' '+title+calc(id,lb,act)+'</div>'+
+          '<div id="'+id+'" style="display:none;font-size:14px;margin-top:6px;line-height:1.7">'+res+'</div>'+(tail||'')+'</div>'; };
+        h+='<div style="'+box+'"><div style="font-weight:800;margin-bottom:6px">나의 수정</div>'+
+          row("①","계획된 완료예정일 고정 · 1주 수강강의수 조정","ccMy1",
+            '1주 수강강의수 <b>'+wkNow+'강 → <span style="color:#e0685a">'+(wk1!=null?wk1:'–')+'강</span></b>',
+            '<div style="font-size:14px;margin-top:4px">1주 공부가능시간을 조정하거나 학습스타일 조정필요</div>',"조정")+
+          row("②","기존의 1주 수강강의수 유지 · 계획된 완료예정일 변경","ccMy2",
+            '<b>'+md(T)+' → <span style="color:#e0685a">'+(end2?ccMD(end2):'–')+'</span></b> <small style="opacity:.75">· 익일부터 적용</small>','',"변경",(end2?"ccPaceChg('"+t+"','"+ccISO(end2)+"')":""))+goalRow(true)+
+          '</div>';
+      })();
     } else if(loose){
       const left=D.total-D.posAll, endOf=function(m){ return ccYMD(ccAddDays(ccToday(),Math.max(1,Math.ceil(left/m))-1)); };
       h+='<div style="margin-top:10px">공부가 느슨하다고 느끼면 하루 수강량을 올려 완료 예정일을 앞당기세요.</div>';
@@ -8210,7 +8262,22 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
         '<div class="ccpch1">최선을 다하는 당신의 미래는 곧 합격입니다</div>'+
         '<div class="sub" style="margin-top:2px">느슨하다고 느끼면 위 「느슨함」을 눌러 일정을 다시 짜세요</div></div>';
     }
+    if(!MN) h+='<div style="border:1.5px solid #C9A227;border-radius:12px;padding:10px 14px;margin-top:10px"><div style="font-weight:800;margin-bottom:6px">나의 수정</div>'+
+      (window.__ccChgMsg?'<div style="font-weight:700;margin-bottom:8px">② 완료예정일 변경 <span style="color:#e0685a">'+__ccChgMsg+'</span> <small style="font-weight:500;opacity:.75">· 익일부터 적용</small></div>':'')+goalRow(!!window.__ccChgMsg)+'</div>';
     box.innerHTML=h;
+  };
+  /* ③ 완료 목표일로 다시 짜기: 밀린 강의가 있으면 오늘부터 다시 배정 + 하루 강의 수 = 목표일에 맞춤 · 제목 날짜 연동 */
+  window.ccPaceGoal=function(t){
+    const D=ccPaceData(t); if(!D) return;
+    const el=document.getElementById("ccGoalD"), r=window.__ccGoal&&__ccGoal(el&&el.value);
+    if(!r){ toast("완료 목표일을 골라 주세요"); return; }
+    if(r.err){ const g=document.getElementById("ccGoalR"); if(g){ g.innerHTML=__ccGoalTxt(el.value); g.style.display="block"; } return; }
+    window.__ccGoalMsg=__ccGoalTxt(el.value);
+    /* 수정사항은 익일부터: 오늘 배정은 그대로 · 내일부터 하루 강의 수 변경(+밀린 강의 다시 배정) */
+    const pl=ccPlanOf(t); pl.pend={from:ccISO(ccAddDays(ccToday(),1)),re:!!D.missN,per:r.per}; pl.chEnd=r.iso; delete pl.pace; delete pl.perNext; delete pl.perFrom;
+    ccPlanWrite(t,pl);
+    try{ ccPlanBar(); }catch(e){} try{ ccPaceRender(); }catch(e){}
+    toast("내일부터 적용됩니다 — 완료 목표일 "+ccYMD(ccParse(r.iso))+" · 1주 수강강의수 "+r.wk+"강");
   };
   /* 하루 수강량을 바꾸면 「느슨함」 표시는 풀림 */
   if(typeof ccPlanSetPer==="function"){ const sp=ccPlanSetPer; window.ccPlanSetPer=ccPlanSetPer=function(t){ try{ const pl=ccPlanOf(t); if(pl.pace){ delete pl.pace; ccPlanWrite(t,pl); } }catch(e){} return sp.apply(this,arguments); }; }
@@ -8670,9 +8737,16 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
     '#s3lede{display:none!important}#ccGoQB,#pairlabel{display:none!important}'+
     '.ccstudy{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(201,162,39,.45);font-size:13px;display:flex;flex-wrap:wrap;align-items:center;gap:8px}'+
     '.ccstudy .tot{color:#8a6a12;font-weight:700}.ccstudy .emp{color:#b5531b;font-weight:700}'+
+    '.ccsel{height:28px;border:1.5px solid rgba(201,162,39,.7);border-radius:7px;padding:0 4px;margin:0 3px;font:inherit;font-size:13px;font-weight:700;background:rgba(255,255,255,.7);color:inherit;cursor:pointer}'+
+    '.ccsnote{font-size:12px;opacity:.75}'+
+    '.ccpwkl div{padding-left:3px!important;padding-right:3px!important}.ccpwkl small{white-space:nowrap;font-size:10px;letter-spacing:-.4px}'+
+    '.cclate{margin-top:6px;padding:6px 10px;border:1.5px solid #C0392B;border-radius:8px;color:#C0392B;font-size:12.5px;font-weight:700;line-height:1.5}'+
+    '.ccsep{opacity:.4;margin:0 2px}.cccapl{color:#8a6a12;margin-left:4px}'+
+    '#ccStudy.ccstudy{flex-direction:column;align-items:flex-start;gap:6px;margin:0 0 12px;padding:12px 16px}.ccsrow{display:flex;flex-wrap:wrap;align-items:center;gap:2px}'+
     '.ccsedit{font-size:11.2px!important;padding:4px 9px!important;border-radius:7px!important;border:1px solid #C9A227!important;background:rgba(232,185,60,.10)!important;color:#7a5a00!important;font-weight:700!important;cursor:pointer}'+
     '.ccp2{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:22px}'+
     '.ccp2>.ccpr{border-left:1px solid var(--line);padding-left:22px}'+
+    '.cccap{margin-top:14px;padding:12px 14px;border:1.5px solid rgba(201,162,39,.55);border-radius:12px;background:rgba(232,185,60,.07)}'+
     '.ccprh{font-size:13px;font-weight:700;margin:0 0 6px;display:flex;align-items:center;justify-content:space-between;gap:8px}'+
     '.ccpkv{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;font-size:13.5px;margin-bottom:14px}.ccpkv span{opacity:.7}'+
     '.ccpwk{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:6px}'+
@@ -8691,17 +8765,95 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
   const F=function(h){ h=+h||0; return (h%1?h.toFixed(1):String(h))+'시간'; };
   window.ccProfGet=function(){ try{ const v=JSON.parse(localStorage.getItem("cc_prof")||"null"); return (v&&v.wd!=null&&v.we!=null)?v:null; }catch(e){ return null; } };
   const tot=function(v){ return v.wd*5+v.we*2; };
+  /* 강의 : 복습 비율 (2026-11-19) · 1강 = 1시간으로 셈 (강의 40~50분 + 필기) */
+  const RT={"12":{n:"복습 중심형",r:"1 : 2",sh:1/3,d:"처음 듣는 과목 · 2차 사례형 — 점수는 복습에서 나옵니다"},
+            "11":{n:"강의수강:복습균형형",r:"1 : 1",sh:1/2,d:"이미 공부한 과목을 빠르게 한 바퀴 · 시험이 임박해 진도를 끝내야 할 때"},
+            "21":{n:"강의수강중심형",r:"2 : 1",sh:2/3,d:"진도를 먼저 끝내야 할 때 — 복습이 밀리지 않게 주의"}};
+  const rk=function(v){ return (v&&RT[v.r])?v.r:"12"; };
+  window.ccCap=function(v){ const R=RT[rk(v)], a=Math.floor(v.wd*R.sh+1e-9), b=Math.floor(v.we*R.sh+1e-9); return {R:R,wd:a,we:b,wk:a*5+b*2}; };
 
   /* STEP ① 줄 */
   window.ccStudyRender=function(){
-    const dg=document.getElementById("profDiag"); if(!dg) return;
+    /* 내 페이스 점검의 첫 번째 실선박스: 1주 공부가능시간 · 학습스타일 (2026-11-19 STEP ①에서 옮김) */
+    const pc=document.getElementById("ccPace"); if(!pc) return;
     let el=document.getElementById("ccStudy");
-    if(!el){ el=document.createElement("div"); el.id="ccStudy"; el.className="ccstudy"; dg.parentNode.insertBefore(el,dg.nextSibling); }
-    const v=ccProfGet();
-    el.innerHTML=v
-      ? '⏱ 공부 가능 시간 — 주중(월~금) 하루 <b>'+F(v.wd)+'</b> · 주말(토~일) 하루 <b>'+F(v.we)+'</b> · <span class="tot">한 주 총 '+F(tot(v))+'</span> <button type="button" class="ccsedit" onclick="ccStudyOpen()">✏️ 수정</button>'
-      : '⏱ 공부 가능 시간 — <span class="emp">아직 입력하지 않았습니다</span> <button type="button" class="ccsedit" onclick="ccStudyOpen()">✏️ 입력하기</button>';
+    if(!el){ el=document.createElement("div"); el.id="ccStudy"; }
+    el.className="ccstudy panel";
+    if(el.nextSibling!==pc||el.parentNode!==pc.parentNode) pc.parentNode.insertBefore(el,pc);
+    /* 고르는 중이면 다시 그리지 않음 */
+    if(el.contains(document.activeElement)&&document.activeElement.tagName==="SELECT") return;
+    const v=ccProfGet(), cur=v?rk(v):"12";
+    const hs=function(id,val){ let h='<select id="'+id+'" class="ccsel" onchange="ccStudyInline()">'+(val==null?'<option value="" selected>선택</option>':'');
+      for(let x=0;x<=16;x+=0.5) h+='<option value="'+x+'"'+(val!=null&&x===+val?' selected':'')+'>'+(x%1?x.toFixed(1):x)+'</option>'; return h+'</select>'; };
+    const rs='<select id="ccStRi" class="ccsel" onchange="ccStudyInline()">'+["12","11","21"].map(function(k){ return '<option value="'+k+'"'+(k===cur?' selected':'')+'>'+RT[k].n+' '+RT[k].r+(k==="12"?' (추천)':'')+'</option>'; }).join("")+'</select>';
+    /* 윗줄: 1주 공부가능시간 · 아랫줄: 학습스타일 → 한 주 강의 수 (2026-11-19) */
+    let out='<div class="ccsrow">⏱ 1주 공부가능시간 — 주중(월~금) 하루 '+hs("ccStWdi",v?v.wd:null)+'시간 · 주말(토~일) 하루 '+hs("ccStWei",v?v.we:null)+'시간'+(v?' · <span class="tot">한 주 총 '+F(tot(v))+'</span>':'')+'</div>'+
+      '<div class="ccsrow">📚 학습스타일 '+rs;
+    if(v){ const c=ccCap(v); let pn=null; try{ pn=ccPlanOf(TRACK).perNext; }catch(e){}
+      out+=' <span class="cccapl">※ 수정사항은 익일부터 적용됩니다.</span>'; }
+    else out+=' <span class="emp">주중·주말 시간을 고르면 저장됩니다</span>';
+    el.innerHTML=out+'</div>'+(v?ccLateWarn(ccPerOf(v)):'');
   };
+  window.ccStudyInline=function(){
+    const wd=document.getElementById("ccStWdi").value, we=document.getElementById("ccStWei").value, r=document.getElementById("ccStRi").value;
+    const old=ccProfGet();
+    if(wd===""||we===""){ if(old){ /* 둘 다 있던 값은 유지 */ } return; }
+    if(window.ccPreview){ try{ toast("관리자 미리보기 — 저장하지 않습니다"); }catch(e){} return; }
+    const v={wd:+wd,we:+we,r:r,at:new Date().toISOString()};
+    try{ localStorage.setItem("cc_prof",JSON.stringify(v)); }catch(e){}
+    try{ document.activeElement.blur(); }catch(e){}
+    const msg=ccCapAuto(v);
+    ccStudyRender(); try{ ccPaceRender(); }catch(e){} try{ ccPlanBar(); }catch(e){}
+    try{ toast("저장했습니다 — "+ccCap(v).R.n+" "+ccCap(v).R.r+" 기준 한 주 "+ccCap(v).wk+"강"+(msg?" · "+msg:"")); }catch(e){}
+  };
+  /* 공부가능시간 · 학습스타일 → 하루 강의 수 자동 (2026-11-19) · 수정사항은 익일부터 적용 (오늘 배정은 그대로) */
+  window.ccPerOf=function(v){ return Math.max(1,Math.min(CC_PER_MAX,Math.round(ccCap(v).wk/7))); };
+  window.ccEndByCap=function(v){
+    try{ const c=ccPlanCalc(TRACK), k=ccCap(v), all=Math.max(0,c.total-c.pos); let left=all;
+      if(!left||!k.wk) return {left:all,total:c.total,end:null};
+      let d=ccToday(), g=0;
+      while(left>0&&g<4000){ d=ccAddDays(d,1); const w=d.getDay(); left-=(w===0||w===6)?k.we:k.wd; g++; }
+      return {left:all,total:c.total,end:d}; }catch(e){ return {left:0,end:null}; }
+  };
+  window.ccLateWarn=function(n){
+    try{ const t=TRACK, v=ccProfGet(); if(!v) return ""; const end=ccEndByCap(v).end, ex=ccExamDate(t,ccToday()); if(!end) return "";
+      return (ex&&end>ex)?'<div class="cclate">⚠️ 현재 학습일정으로는 시험 전에 끝내지 못합니다 — 학습시간을 늘리거나 강의수강중심형의 변경을 고려하세요</div>':""; }catch(e){ return ""; }
+  };
+  window.ccCapAuto=function(v){
+    try{
+      const t=TRACK, n=ccPerOf(v), pl=ccPlanSync(t,true);
+      if(!pl.per){ ccPlanSetPer(t,n); return "하루 "+n+"강으로 일정을 짰습니다"; }
+      if(pl.per===n){ if(pl.perNext!=null){ delete pl.perNext; delete pl.perFrom; ccPlanWrite(t,pl); } return "하루 "+n+"강 그대로입니다"; }
+      pl.perNext=n; pl.perFrom=ccISO(ccAddDays(ccToday(),1)); if(pl.pend) delete pl.pend.per; ccPlanWrite(t,pl);
+      return "내일("+ccMD(ccAddDays(ccToday(),1))+")부터 하루 "+n+"강";
+    }catch(e){ console.warn(e); return ""; }
+  };
+  /* 예약해 둔 하루 강의 수: 그날이 되면 적용 */
+  (function(){
+    if(typeof ccPlanSync!=="function"||ccPlanSync.__nx) return;
+    const o=ccPlanSync;
+    ccPlanSync=function(t){ try{ const pl=ccPlanOf(t), T=ccISO(ccToday());
+        if(pl&&pl.perNext!=null&&pl.perFrom&&T>=pl.perFrom){ pl.per=pl.perNext; delete pl.perNext; delete pl.perFrom; ccPlanWrite(t,pl); }
+        /* 나의 수정 ②③ 예약분: 그날이 되면 하루 강의 수 변경 · 밀린 강의 다시 배정 */
+        const p2=ccPlanOf(t), pd=p2&&p2.pend;
+        if(pd&&pd.from&&T>=pd.from){ delete p2.pend; if(pd.per!=null) p2.per=pd.per; ccPlanWrite(t,p2);
+          if(pd.re&&window.__ccReassign){ const D=ccPaceData(t); if(D&&D.missN) ccPlanWrite(t,__ccReassign(t,D)); } }
+      }catch(e){ console.warn(e); }
+      return o.apply(this,arguments); };
+    ccPlanSync.__nx=true; window.ccPlanSync=ccPlanSync;
+  })();
+  /* 「📅 나의 수강 계획」 하루 수강량: 공부가능시간을 정했으면 직접 고르지 않고 결과만 보여 줌 */
+  (function(){
+    if(typeof ccPlanBar!=="function"||ccPlanBar.__cap) return;
+    const o=ccPlanBar;
+    ccPlanBar=function(){ const r=o.apply(this,arguments);
+      try{ const v=ccProfGet(), sel=document.getElementById("ccPerSel"); if(v&&sel){ sel.disabled=true; sel.title="내 페이스 점검의 1주 공부가능시간 · 학습스타일로 정해집니다";
+        const pl=ccPlanOf(TRACK), nb=sel.closest(".pbar,div")&&document.querySelector(".pbn");
+        if(nb) nb.innerHTML="하루 수강량은 「내 페이스 점검」의 <b>1주 공부가능시간 · 학습스타일</b>로 정해집니다 · 수정사항은 익일부터 적용됩니다"+(pl&&pl.perNext!=null?" (내일부터 하루 "+pl.perNext+"강)":"");
+      } }catch(e){}
+      return r; };
+    ccPlanBar.__cap=true; window.ccPlanBar=ccPlanBar;
+  })();
 
   /* 입력 창 */
   window.ccStudyOpen=function(){
@@ -8710,6 +8862,7 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
       m.innerHTML='<div class="bx"><h3>⏱ 공부 가능 시간</h3><div style="font-size:12.5px;opacity:.75">하루에 실제로 공부할 수 있는 시간을 넣어 주세요 · 언제든 바꿀 수 있습니다</div>'+
         '<label>주중 (월~금) 하루</label><div><select id="ccStWd"></select> 시간</div>'+
         '<label>주말 (토~일) 하루</label><div><select id="ccStWe"></select> 시간</div>'+
+        '<label>학습스타일</label><div id="ccStR"></div>'+
         '<div class="calc" id="ccStCalc"></div>'+
         '<div class="bt"><button type="button" class="mini" onclick="ccStudyClose()">취소</button><button type="button" class="mini" style="background:#0D1F3C;color:#fff;border-color:#0D1F3C;font-weight:700" onclick="ccStudySave()">저장</button></div></div>';
       m.onclick=function(e){ if(e.target===m) ccStudyClose(); };
@@ -8717,19 +8870,33 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
       document.getElementById("ccStWd").onchange=document.getElementById("ccStWe").onchange=calc; }
     const v=ccProfGet()||{wd:3,we:6};
     const op=function(id,val){ let h=''; for(let x=0;x<=16;x+=0.5) h+='<option value="'+x+'"'+(x===+val?' selected':'')+'>'+(x%1?x.toFixed(1):x)+'</option>'; document.getElementById(id).innerHTML=h; };
-    op("ccStWd",v.wd); op("ccStWe",v.we); calc(); m.style.display="flex";
+    op("ccStWd",v.wd); op("ccStWe",v.we);
+    const cur=rk(v);
+    document.getElementById("ccStR").innerHTML=["12","11","21"].map(function(k){ const R=RT[k];
+      return '<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0;font-weight:500;cursor:pointer"><input type="radio" name="ccStRr" value="'+k+'"'+(k===cur?' checked':'')+' style="margin-top:3px"><span><b>'+R.n+' '+R.r+'</b>'+(k==="12"?' <small style="color:#8a6a12;font-weight:700">기본·추천</small>':'')+'<br><small style="opacity:.75">'+R.d+'</small></span></label>'; }).join("");
+    document.querySelectorAll('#ccStR input').forEach(function(x){ x.onchange=calc; });
+    calc(); m.style.display="flex";
   };
-  function calc(){ const wd=+document.getElementById("ccStWd").value, we=+document.getElementById("ccStWe").value;
-    document.getElementById("ccStCalc").innerHTML='주중 총 <b>'+F(wd*5)+'</b> (하루 '+F(wd)+' × 5일) · 주말 총 <b>'+F(we*2)+'</b> (하루 '+F(we)+' × 2일)<br>한 주 총 <b>'+F(wd*5+we*2)+'</b>'; }
+  function rSel(){ const x=document.querySelector('#ccStR input:checked'); return x?x.value:"12"; }
+  function calc(){ const wd=+document.getElementById("ccStWd").value, we=+document.getElementById("ccStWe").value, c=ccCap({wd:wd,we:we,r:rSel()});
+    document.getElementById("ccStCalc").innerHTML='주중 총 <b>'+F(wd*5)+'</b> (하루 '+F(wd)+' × 5일) · 주말 총 <b>'+F(we*2)+'</b> (하루 '+F(we)+' × 2일) · 한 주 총 <b>'+F(wd*5+we*2)+'</b>'+
+      '<br>📌 '+c.R.n+' '+c.R.r+' → 주중 하루 <b>'+c.wd+'강</b> · 주말 하루 <b>'+c.we+'강</b> → <b>한 주 '+c.wk+'강</b> <small style="opacity:.7">(1강 = 1시간)</small>'; }
   window.ccStudyClose=function(){ const m=document.getElementById("ccStM"); if(m) m.style.display="none"; };
   window.ccStudySave=function(){
     if(window.ccPreview){ ccStudyClose(); try{ toast("관리자 미리보기 — 저장하지 않습니다"); }catch(e){} return; }
-    const v={wd:+document.getElementById("ccStWd").value, we:+document.getElementById("ccStWe").value, at:new Date().toISOString()};
+    const v={wd:+document.getElementById("ccStWd").value, we:+document.getElementById("ccStWe").value, r:rSel(), at:new Date().toISOString()};
     try{ localStorage.setItem("cc_prof",JSON.stringify(v)); }catch(e){}
     ccStudyClose(); ccStudyRender(); try{ ccPaceRender(); }catch(e){}
-    try{ toast("공부 가능 시간을 저장했습니다 — 한 주 총 "+F(tot(v))); }catch(e){}
+    try{ toast("공부 가능 시간을 저장했습니다 — 한 주 총 "+F(tot(v))+" · "+ccCap(v).R.n+" 한 주 "+ccCap(v).wk+"강"); }catch(e){}
   };
 
+  /* 「내 공부시간에 맞춰 다시 짜기」: 밀린 강의가 있으면 먼저 오늘부터 다시 배정 → 하루 수강량을 공부시간 기준으로 */
+  window.ccCapApply=function(n){
+    if(window.ccPreview){ try{ toast("관리자 미리보기 — 저장하지 않습니다"); }catch(e){} return; }
+    const t=TRACK; try{ const D=ccPaceData(t); if(D&&D.missN&&window.ccPaceRe) ccPaceRe(t); }catch(e){}
+    try{ ccPlanSetPer(t,n); }catch(e){ console.warn(e); }
+    try{ ccPaceRender(); }catch(e){} try{ ccStudyRender(); }catch(e){}
+  };
   /* 📈 페이스 점검: 두 칸 */
   function right(){
     const t=TRACK, v=ccProfGet(); let pl=null, c=null, ex=null;
@@ -8738,15 +8905,22 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
     try{ c=ccPlanCalc(t); }catch(e){}
     try{ ex=ccExamDate(t,ccToday()); }catch(e){}
     const dd=ex?Math.round((ex-ccToday())/86400000):null;
-    let h='<div class="ccprh">🗓 나의 학습예정일정</div><div class="ccpkv">'+
-      '<span>일정 짠 날</span><b>'+((pl&&pl.start)?ccYMD(ccParse(pl.start)):'–')+'</b>'+
-      '<span>하루 수강</span><b>'+((pl&&pl.per)?pl.per+'강':'–')+'</b>'+
-      '<span>처음 완료 예정</span><b>'+((c&&c.endTxt)||'–')+'</b>'+
-      '<span>시험일</span><b>'+(ex?ccYMD(ex)+(dd!=null&&dd>=0?' · D-'+dd:''):'–')+'</b></div>';
-    h+='<div class="ccprh">⏱ 공부 가능 시간 <button type="button" class="ccsedit" onclick="ccStudyOpen()">✏️ '+(v?'입력·수정':'입력하기')+'</button></div>';
+    let h='';
+    if(v){ const k=ccCap(v);   /* 📌 나의 학습스타일 — 맨 위, 학습스타일과 1주 수강예정강의수만 */
+      h+='<div class="cccap" style="margin:0 0 12px"><div class="ccprh" style="margin:0 0 4px">📌 나의 학습스타일</div>'+
+        '<div class="ccpkv" style="margin:0"><span>학습스타일</span><b>'+k.R.n+'</b><span>1주 수강예정강의수</span><b>'+k.wk+'강</b></div></div>';
+    }
+    /* 두 번째 칸: 위 ⏱ 공부 가능 시간(주중/주말) · 아래 🗓 나의 학습플랜(완료예정일 · 수강강의수) */
+    h+='<div class="ccpbox" style="border:1.5px solid #C9A227;border-radius:12px;padding:12px 14px">';
+    h+='<div class="ccprh" style="margin-top:0">⏱ 공부 가능 시간</div>';
     h+=v?('<div class="ccpkv" style="margin-bottom:6px"><span>주중 (월~금)</span><b>하루 '+F(v.wd)+'</b><span>주말 (토~일)</span><b>하루 '+F(v.we)+'</b></div>'+
-         '<div class="ccpwk"><div><small>주중 총</small><b>'+F(v.wd*5)+'</b></div><div><small>주말 총</small><b>'+F(v.we*2)+'</b></div><div class="t"><small>한 주 총</small><b>'+F(tot(v))+'</b></div></div>')
-       :'<div style="font-size:12.5px;opacity:.75;line-height:1.7">아직 입력하지 않았습니다.<br>주중·주말 하루 공부 가능 시간을 넣으면 한 주 총 공부시간이 여기에 나옵니다.</div>';
+         (function(){ const q=ccCap(v); return '<div class="ccpwk ccpwkl"><div><small>주중 수강강의수 총</small><b>'+(q.wd*5)+'강</b></div><div><small>주말 수강강의수 총</small><b>'+(q.we*2)+'강</b></div><div class="t"><small>한주 총 수강강의수</small><b>'+q.wk+'강</b></div></div>'; })())
+       :'<div style="font-size:12.5px;opacity:.75;line-height:1.7">아직 입력하지 않았습니다 — 위에서 1주 공부가능시간과 학습스타일을 고르세요.</div>';
+    const k=v?ccCap(v):null;
+    h+='<div class="ccprh" style="margin-top:14px">🗓 나의 학습플랜</div><div class="ccpkv">'+
+      (function(){ const r=v?ccEndByCap(v):null;
+        return '<span>완료예정일</span><b>'+(r&&r.end?ccYMD(r.end):'–')+'</b>'+
+          (r&&r.end?'<span></span><small style="opacity:.7">수강신청한 총강의수: '+r.total+'강 / 남은 강의수: '+r.left+'강</small>':''); })()+'</div></div>';
     return h;
   }
   function wrap(){
