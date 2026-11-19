@@ -2,6 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta name="cc-build" content="2026-11-19 17:12 조정유지">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -8199,7 +8200,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
     const D=ccPaceData(t); if(!D||!D.missN) return;
     /* 수정사항은 익일부터: 오늘 배정은 그대로 · 내일 밀린 강의를 다시 배정 */
     const pl=ccPlanOf(t); pl.pend=Object.assign({},pl.pend||{},{from:ccISO(ccAddDays(ccToday(),1)),re:true}); pl.chEnd=iso; ccPlanWrite(t,pl);
-    window.__ccChgMsg=ccMD(ccToday())+" → "+ccMD(ccParse(iso)); window.__ccGoalMsg=null;   /* 나중에 고친 것만 남김 */
+    window.__ccChgMsg=ccMD(ccToday())+" → "+ccMD(ccParse(iso)); window.__ccGoalMsg=null; window.__ccGoalPrev=null; window.__ccApplied1=null; (window.__ccOpen=window.__ccOpen||{}).ccMy2=true;   /* 나중에 고친 것만 남김 */
     try{ ccPlanBar(); }catch(e){} try{ ccPaceRender(); }catch(e){}
     toast("내일부터 적용됩니다 — 밀린 강의 다시 배정 · 완료예정일 "+ccYMD(ccParse(iso)));
   };
@@ -8321,6 +8322,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
           '<div id="'+id+'" style="display:'+((window.__ccOpen||{})[id]?'block':'none')+';font-size:14px;margin-top:6px;line-height:1.7">'+res+'</div>'+(tail||'')+'</div>'; };
         h+='<div style="'+box+'"><div style="font-weight:800;margin-bottom:6px">나의 수정</div>'+
           row("①","계획된 완료예정일 고정 · 1주 수강강의수 조정","ccMy1",
+            (window.__ccApplied1?'<div style="color:#2f7d4f;font-weight:800;margin-bottom:4px">✅ 적용됨 (익일부터): '+window.__ccApplied1+(window.__ccPrevProf?' <button type="button" class="mini" style="margin-left:8px;padding:2px 10px" onclick="ccUndo1()">되돌리기</button>':'')+'</div>':'')+
             (function(){ if(wk1==null) return '–'; const gap=MN>0?1:0;
               const hrs=[["12","복습 중심형",1/3],["11","강의수강:복습균형형",1/2],["21","강의수강중심형",2/3]].map(function(x){ return '<span style="white-space:nowrap">'+x[1]+' 약 <b>'+Math.ceil(wk1/x[2])+'시간</b></span>'; }).join(' · ');
               const d1=function(x){ x=Math.round(x*10)/10; return x%1?x.toFixed(1):x; };
@@ -8329,7 +8331,12 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
                   const v=ccProfGet(); if(!v) return ''; const ok=function(o){ return ccCap(Object.assign({},v,o)).wk>=wk1; }, f=function(x){ return (x%1?x.toFixed(1):x)+'시간'; };
                   let a=null,b=null; for(let h=0.5;h<=16;h+=0.5){ if(a==null&&v.we+h<=16&&ok({we:v.we+h})) a=h; if(b==null&&v.wd+h<=16&&ok({wd:v.wd+h})) b=h; }
                   const st=[["12","복습중심형"],["11","강의수강:복습균형형"],["21","강의수강중심형"]].filter(function(x){ return ok({r:x[0]}); }).map(function(x){ return x[1]; })[0];
-                  if(ok({})) return '<div style="margin-top:3px;color:#2f7d4f;font-weight:700">👉 지금 공부시간 · 학습스타일로 충족됩니다</div>';
+                  const RN0={"12":"복습중심형","11":"균형형","21":"강의수강중심형"};
+                  if(ok({})){ window.__ccNeedWk=wk1;
+                    const sel0='<select class="ccsel" style="font:inherit;font-size:.92em;font-weight:700;padding:2px 6px;vertical-align:middle;width:auto;min-width:0" onchange="ccStylePeek(this.value)"><option value="">선택</option>'+
+                      ["12","11","21"].map(function(k){ return '<option value="'+k+'"'+(window.__ccPeekR===k?' selected':'')+'>'+RN0[k]+(k===(v.r||"12")?' (현재)':'')+'</option>'; }).join("")+'</select>';
+                    return '<div style="margin-top:3px;color:#2f7d4f;font-weight:700">👉 지금 공부시간 · 학습스타일로 충족됩니다</div>'+
+                      '<div style="margin-top:3px">👉 학습스타일 다시 고르기 '+sel0+'</div><div id="ccStylePk" style="margin-top:3px"></div>'; }
                   const opts=[];
 
                   /* 👉 주중 혹은 주말 (n)시간 추가하거나 학습스타일 변경[선택] → 고르면 매일 몇 강인지 미리 보기 (2026-11-19) */
@@ -8347,7 +8354,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
                     '<div style="margin-top:3px">👉 또는 학습스타일 변경 '+sel+'</div><div id="ccStylePk" style="margin-top:3px"></div>'; })():''); })(),
             '',"조정")+
           row("②","기존의 1주 수강강의수 유지 · 계획된 완료예정일 변경확인","ccMy2",
-            '<b>'+md(T)+' → <span style="color:#e0685a">'+(end2?ccMD(end2):'–')+'</span></b>'+(end2?'<button type="button" class="mini" style="margin-left:8px;padding:2px 12px;font-weight:800;border-color:#C9A227;color:#8a6a12" onclick="ccPaceChg(\''+t+'\',\''+ccISO(end2)+'\')">적용</button>':''),'',"변경확인")+goalRow(true)+
+            '<b>'+md(T)+' → <span style="color:#e0685a">'+(end2?ccMD(end2):'–')+'</span></b>'+(window.__ccChgMsg?'<span style="color:#2f7d4f;font-weight:800;margin-left:8px">✅ 적용됨 (익일부터)</span>':(end2?'<button type="button" class="mini" style="margin-left:8px;padding:2px 12px;font-weight:800;border-color:#C9A227;color:#8a6a12" onclick="ccPaceChg(\''+t+'\',\''+ccISO(end2)+'\')">적용</button>':'')),'',"변경확인")+goalRow(true)+
           '</div>';
       })();
     } else if(loose){
@@ -8377,7 +8384,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
     const el=document.getElementById("ccGoalD"); if(el&&window.__ccGoalPrev) el.value=window.__ccGoalPrev; const r=window.__ccGoal&&__ccGoal(el&&el.value);
     if(!r){ toast("완료 목표일을 골라 주세요"); return; }
     if(r.err){ const g=document.getElementById("ccGoalR"); if(g){ g.innerHTML=__ccGoalTxt(el.value); g.style.display="block"; } return; }
-    window.__ccGoalMsg=__ccGoalTxt(el.value); window.__ccChgMsg=null; window.__ccGoalPrev=null;   /* ③으로 다시 고치면 ② 결과 줄은 지움 — 나중에 고친 것만 적용 */
+    window.__ccGoalMsg=__ccGoalTxt(el.value); window.__ccChgMsg=null; window.__ccGoalPrev=null; window.__ccApplied1=null;   /* ③으로 다시 고치면 ② 결과 줄은 지움 — 나중에 고친 것만 적용 */
     /* 수정사항은 익일부터: 오늘 배정은 그대로 · 내일부터 하루 강의 수 변경(+밀린 강의 다시 배정) */
     const pl=ccPlanOf(t); pl.pend={from:ccISO(ccAddDays(ccToday(),1)),re:!!D.missN,per:r.per}; pl.chEnd=r.iso; delete pl.pace; delete pl.perNext; delete pl.perFrom;
     ccPlanWrite(t,pl);
@@ -9026,16 +9033,23 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
         return A.length&&B.length&&A.every(function(x){ const d=pl.asg[x.key]; return d&&d<T; })&&!B.every(function(x){ const d=pl.asg[x.key]; return d&&d<T; }); }); }catch(e){ return false; } };
   /* 학습스타일 미리 보기: 고른 학습스타일로 매일 몇 강 · 완료예정일까지 필요한 매일 강의 수와 비교 */
   window.ccAddHours=function(which){ const H=window.__ccAddH||{}, h=H[which]; if(h==null) return; if(window.ccPreview){ try{ toast("관리자 미리보기 — 저장하지 않습니다"); }catch(e){} return; }
-    const v=ccProfGet(); if(!v) return; v[which]=Math.min(16,(+v[which]||0)+h); v.at=new Date().toISOString(); try{ localStorage.setItem("cc_prof",JSON.stringify(v)); }catch(e){}
+    const v=ccProfGet(); if(!v) return; window.__ccPrevProf=JSON.stringify(v); try{ localStorage.setItem("cc_prof_prev",window.__ccPrevProf); }catch(e){} v[which]=Math.min(16,(+v[which]||0)+h); v.at=new Date().toISOString(); try{ localStorage.setItem("cc_prof",JSON.stringify(v)); }catch(e){}
+    window.__ccApplied1=(which==="wd"?"주중":"주말")+" 하루 공부시간 "+v[which]+"시간"; try{ localStorage.setItem("cc_applied1",window.__ccApplied1); }catch(e){} window.__ccChgMsg=null; window.__ccGoalMsg=null; (window.__ccOpen=window.__ccOpen||{}).ccMy1=true;
     const msg=ccCapAuto(v); try{ ccStudyRender(); }catch(e){} try{ ccPaceRender(); }catch(e){} try{ ccPlanBar(); }catch(e){}
     try{ toast((which==="wd"?"주중":"주말")+" 하루 공부시간을 "+v[which]+"시간으로 늘렸습니다"+(msg?" · "+msg:"")); }catch(e){} };
+  /* ① 적용 되돌리기: 적용 전 공부시간 · 학습스타일로 */
+  try{ if(window.__ccPrevProf==null){ const a=localStorage.getItem("cc_prof_prev"), b=localStorage.getItem("cc_applied1"); if(a&&b){ window.__ccPrevProf=a; window.__ccApplied1=b; } } }catch(e){}
+  window.ccUndo1=function(){ const pv=window.__ccPrevProf; if(!pv) return; try{ localStorage.setItem("cc_prof",pv); }catch(e){}
+    const v=JSON.parse(pv); window.__ccPrevProf=null; window.__ccApplied1=null; try{ localStorage.removeItem("cc_prof_prev"); localStorage.removeItem("cc_applied1"); }catch(e){} const msg=ccCapAuto(v);
+    try{ ccStudyRender(); }catch(e){} try{ ccPaceRender(); }catch(e){} try{ ccPlanBar(); }catch(e){} try{ toast("적용을 되돌렸습니다"+(msg?" · "+msg:"")); }catch(e){} };
   window.ccStylePeek=function(r){ window.__ccPeekR=r||null; const el=document.getElementById("ccStylePk"); if(!el) return; if(!r){ el.innerHTML=""; return; }
     const v=ccProfGet(); if(!v) return; const k=ccCap(Object.assign({},v,{r:r})), nw=window.__ccNeedWk||0, ok=k.wk>=nw, d1=function(x){ const y=Math.round(x*10)/10; return (y%1?y.toFixed(1):y); };
     const RN={"12":"복습중심형","11":"균형형","21":"강의수강중심형"};
     el.innerHTML='→ <b>'+RN[r]+'</b>: '+(ok?'<span style="color:#2f7d4f;font-weight:800">✅ 충족</span>':'<span style="color:#b0391f;font-weight:800">매일 약 '+d1((nw-k.wk)/7)+'강 부족</span>')+
       (r===(v.r||"12")?' <small style="opacity:.7">(현재 학습스타일)</small>':' <button type="button" class="mini" style="margin-left:8px;padding:2px 12px;font-weight:800;border-color:#C9A227;color:#8a6a12" onclick="ccPickStyle(\''+r+'\')">적용</button>'); };
   window.ccPickStyle=function(r){ if(!r) return; if(window.ccPreview){ try{ toast("관리자 미리보기 — 저장하지 않습니다"); }catch(e){} return; }
-    const v=ccProfGet(); if(!v) return; v.r=r; v.at=new Date().toISOString(); window.__ccPeekR=null; try{ localStorage.setItem("cc_prof",JSON.stringify(v)); }catch(e){}
+    const v=ccProfGet(); if(!v) return; window.__ccPrevProf=JSON.stringify(v); try{ localStorage.setItem("cc_prof_prev",window.__ccPrevProf); }catch(e){} v.r=r; v.at=new Date().toISOString(); window.__ccPeekR=null; try{ localStorage.setItem("cc_prof",JSON.stringify(v)); }catch(e){}
+    window.__ccApplied1="학습스타일 "+({"12":"복습중심형","11":"균형형","21":"강의수강중심형"})[r]; try{ localStorage.setItem("cc_applied1",window.__ccApplied1); }catch(e){} window.__ccChgMsg=null; window.__ccGoalMsg=null; (window.__ccOpen=window.__ccOpen||{}).ccMy1=true;
     const msg=ccCapAuto(v); try{ ccStudyRender(); }catch(e){} try{ ccPaceRender(); }catch(e){} try{ ccPlanBar(); }catch(e){}
     try{ toast("학습스타일을 바꿨습니다 — "+ccCap(v).R.n+" · 한 주 "+ccCap(v).wk+"강"+(msg?" · "+msg:"")); }catch(e){} };
   window.ccPerOf=function(v){ return Math.max(1,Math.min(CC_PER_MAX,Math.round(ccCap(v).wk/7))); };
