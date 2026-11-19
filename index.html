@@ -8318,7 +8318,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
             (function(){ if(wk1==null) return '–'; const gap=MN>0?1:0;
               const hrs=[["12","복습 중심형",1/3],["11","강의수강:복습균형형",1/2],["21","강의수강중심형",2/3]].map(function(x){ return '<span style="white-space:nowrap">'+x[1]+' 약 <b>'+Math.ceil(wk1/x[2])+'시간</b></span>'; }).join(' · ');
               const d1=function(x){ x=Math.round(x*10)/10; return x%1?x.toFixed(1):x; };
-              return (gap>0?'<span style="color:#b0391f;font-weight:800">밀린 '+MN+'강</span> → 완료예정일('+ccYMD(c.end)+')까지 하루 수강강의수 <b>'+d1(perNow)+'강 → '+d1(perNow+Math.max(cuX,0.1))+'강</b> <span style="color:#b0391f;font-weight:800">(매일 약 '+(cuX<0.1?'0.1강 미만':d1(cuX)+'강')+' 추가)</span>':'<span style="color:#2f7d4f;font-weight:800">✅ 계획된 완료예정일을 지킬 수 있습니다</span>')+
+              return (gap>0?'<span style="color:#b0391f;font-weight:800">밀린 '+MN+'강</span> → 완료예정일('+ccYMD(c.end)+')까지 하루 수강강의수 <span style="color:#b0391f;font-weight:800">매일 약 '+(cuX<0.1?'0.1강 미만':d1(cuX)+'강')+' 추가</span>':'<span style="color:#2f7d4f;font-weight:800">✅ 계획된 완료예정일을 지킬 수 있습니다</span>')+
                 (gap>0?(function(){ /* 부족분 확보 방법 — 한 줄 (2026-11-19) */
                   const v=ccProfGet(); if(!v) return ''; const ok=function(o){ return ccCap(Object.assign({},v,o)).wk>=wk1; }, f=function(x){ return (x%1?x.toFixed(1):x)+'시간'; };
                   let a=null,b=null; for(let h=0.5;h<=16;h+=0.5){ if(a==null&&v.we+h<=16&&ok({we:v.we+h})) a=h; if(b==null&&v.wd+h<=16&&ok({wd:v.wd+h})) b=h; }
@@ -8331,7 +8331,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
                   window.__ccNeedWk=wk1;
                   const sel='<select class="ccsel" style="font:inherit;font-size:.92em;font-weight:700;padding:2px 6px;vertical-align:middle;width:auto;min-width:0" onchange="ccStylePeek(this.value)"><option value="">선택</option>'+
                     ["12","11","21"].map(function(k){ return '<option value="'+k+'"'+(window.__ccPeekR===k?' selected':'')+'>'+RN[k]+(k===(v.r||"12")?' (현재)':'')+'</option>'; }).join("")+'</select>';
-                  if(!st) return '<div style="margin-top:3px">👉 학습스타일 변경으로는 부족합니다 — 주중 혹은 주말 '+hh+' 추가를 권합니다</div>';   /* 어떤 학습스타일로도 안 될 때 */
+                  if(!st) return '<div style="margin-top:3px">👉 학습스타일 변경으로는 불가능: 주중 혹은 주말 '+hh+' 추가수강</div>';   /* 어떤 학습스타일로도 안 될 때 */
                   return '<div style="margin-top:3px">👉 주중 혹은 주말 '+hh+' 추가하거나 학습스타일 변경 '+sel+'</div><div id="ccStylePk" style="margin-top:3px"></div>'; })():''); })(),
             '',"조정")+
           row("②","기존의 1주 수강강의수 유지 · 계획된 완료예정일 변경","ccMy2",
