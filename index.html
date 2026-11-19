@@ -8277,7 +8277,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
       return '<div style="'+(top?'margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)':'')+'">'+
         '<div style="font-weight:700">③ 완료 목표일 변경에 따른 수강강의수변경계산 '+
         '<input id="ccGoalD" type="date" min="'+mn+'"'+(mx?' max="'+mx+'"':'')+' value="'+d0+'" style="padding:3px 6px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:14px;background:transparent;color:inherit;vertical-align:middle">'+
-        ' <button type="button" class="mini" style="vertical-align:middle" onclick="ccPaceGoal(\''+t+'\')">계산</button></div>'+
+        ' <button type="button" class="mini" style="vertical-align:middle" onclick="var g=document.getElementById(\'ccGoalR\');g.innerHTML=__ccGoalTxt(document.getElementById(\'ccGoalD\').value)+(__ccGoal(document.getElementById(\'ccGoalD\').value)&&!__ccGoal(document.getElementById(\'ccGoalD\').value).err?\'<button type=&quot;button&quot; class=&quot;mini&quot; style=&quot;margin-left:8px;padding:2px 12px;font-weight:800;border-color:#C9A227;color:#8a6a12&quot; onclick=&quot;ccPaceGoal(\\\''+t+'\\\')&quot;>적용</button>\':\'\');g.style.display=\'block\'">계산</button></div>'+
         '<div id="ccGoalR" style="display:'+(window.__ccGoalMsg?'block':'none')+';font-size:14px;margin-top:6px;line-height:1.9">'+(window.__ccGoalMsg||'')+'</div></div>'; };
     if(SJ.pick!=="__all"){ const A=D.pl.asg||{}, mk={}; Object.keys(D.miss||{}).forEach(function(d){ D.miss[d].forEach(function(k){ mk[k]=1; }); });
       P=0; MN=0; (D.f||[]).forEach(function(o){ if(SJ.nmOf(o)!==SJ.pick) return; const d=A[o.key]; if(!d||d>=T||d<D.pl.start) return; P++; if(mk[o.key]) MN++; }); RL=P-MN; }
@@ -8333,11 +8333,16 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
                   window.__ccNeedWk=wk1;
                   const sel='<select class="ccsel" style="font:inherit;font-size:.92em;font-weight:700;padding:2px 6px;vertical-align:middle;width:auto;min-width:0" onchange="ccStylePeek(this.value)"><option value="">선택</option>'+
                     ["12","11","21"].map(function(k){ return '<option value="'+k+'"'+(window.__ccPeekR===k?' selected':'')+'>'+RN[k]+(k===(v.r||"12")?' (현재)':'')+'</option>'; }).join("")+'</select>';
-                  if(!st) return '<div style="margin-top:3px">👉 학습스타일 변경으로는 불가능: 주중 혹은 주말 '+hh+' 추가수강</div>';   /* 어떤 학습스타일로도 안 될 때 */
-                  return '<div style="margin-top:3px">👉 주중 혹은 주말 '+hh+' 추가하거나 학습스타일 변경 '+sel+'</div><div id="ccStylePk" style="margin-top:3px"></div>'; })():''); })(),
+                  /* [적용] ① 공부시간 추가: 주중/주말 중 고른 쪽에 필요한 시간을 더함 */
+                  window.__ccAddH={wd:b,we:a};
+                  const hb=(a!=null||b!=null)?' <select id="ccAddWhich" class="ccsel" style="font:inherit;font-size:.92em;font-weight:700;padding:2px 6px;vertical-align:middle;width:auto;min-width:0">'+
+                    (b!=null?'<option value="wd">주중 +'+f(b)+'</option>':'')+(a!=null?'<option value="we">주말 +'+f(a)+'</option>':'')+'</select><button type="button" class="mini" style="margin-left:8px;padding:2px 12px;font-weight:800;border-color:#C9A227;color:#8a6a12" onclick="ccAddHours(document.getElementById(\'ccAddWhich\').value)">적용</button>':'';
+                  if(!st) return '<div style="margin-top:3px">👉 학습스타일 변경으로는 불가능: 주중 혹은 주말 '+hh+' 추가수강'+hb+'</div>';   /* 어떤 학습스타일로도 안 될 때 — 적용 버튼 1개 */
+                  return '<div style="margin-top:3px">👉 주중 혹은 주말 '+hh+' 추가수강'+hb+'</div>'+
+                    '<div style="margin-top:3px">👉 또는 학습스타일 변경 '+sel+'</div><div id="ccStylePk" style="margin-top:3px"></div>'; })():''); })(),
             '',"조정")+
           row("②","기존의 1주 수강강의수 유지 · 계획된 완료예정일 변경확인","ccMy2",
-            '<b>'+md(T)+' → <span style="color:#e0685a">'+(end2?ccMD(end2):'–')+'</span></b> <small style="opacity:.75">· 익일부터 적용</small>','',"변경확인",(end2?"ccPaceChg('"+t+"','"+ccISO(end2)+"')":""))+goalRow(true)+
+            '<b>'+md(T)+' → <span style="color:#e0685a">'+(end2?ccMD(end2):'–')+'</span></b>'+(end2?'<button type="button" class="mini" style="margin-left:8px;padding:2px 12px;font-weight:800;border-color:#C9A227;color:#8a6a12" onclick="ccPaceChg(\''+t+'\',\''+ccISO(end2)+'\')">적용</button>':''),'',"변경확인")+goalRow(true)+
           '</div>';
       })();
     } else if(loose){
@@ -8357,7 +8362,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
         '<div class="sub" style="margin-top:2px">느슨하다고 느끼면 위 「느슨함」을 눌러 일정을 다시 짜세요</div></div>';
     }
     if(!MN) h+='<div style="border:1.5px solid #C9A227;border-radius:12px;padding:10px 14px;margin-top:10px"><div style="font-weight:800;margin-bottom:6px">나의 수정</div>'+
-      (window.__ccChgMsg?'<div style="font-weight:700;margin-bottom:8px">② 완료예정일 변경 <span style="color:#e0685a">'+__ccChgMsg+'</span> <small style="font-weight:500;opacity:.75">· 익일부터 적용</small></div>':'')+goalRow(!!window.__ccChgMsg)+'</div>';
+      (window.__ccChgMsg?'<div style="font-weight:700;margin-bottom:8px">② 완료예정일 변경 <span style="color:#e0685a">'+__ccChgMsg+'</span></div>':'')+goalRow(!!window.__ccChgMsg)+'</div>';
     box.innerHTML=h;
     try{ if(window.__ccPeekR) ccStylePeek(window.__ccPeekR); }catch(e){}   /* 다시 그려도 학습스타일 미리 보기 유지 */
   };
@@ -9015,11 +9020,15 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
         const A=f.filter(function(x){ return x.si===si&&g.indexOf(x.l)>=0; }), B=f.filter(function(x){ return x.si===si&&g.indexOf(x.l)<0; });
         return A.length&&B.length&&A.every(function(x){ const d=pl.asg[x.key]; return d&&d<T; })&&!B.every(function(x){ const d=pl.asg[x.key]; return d&&d<T; }); }); }catch(e){ return false; } };
   /* 학습스타일 미리 보기: 고른 학습스타일로 매일 몇 강 · 완료예정일까지 필요한 매일 강의 수와 비교 */
+  window.ccAddHours=function(which){ const H=window.__ccAddH||{}, h=H[which]; if(h==null) return; if(window.ccPreview){ try{ toast("관리자 미리보기 — 저장하지 않습니다"); }catch(e){} return; }
+    const v=ccProfGet(); if(!v) return; v[which]=Math.min(16,(+v[which]||0)+h); v.at=new Date().toISOString(); try{ localStorage.setItem("cc_prof",JSON.stringify(v)); }catch(e){}
+    const msg=ccCapAuto(v); try{ ccStudyRender(); }catch(e){} try{ ccPaceRender(); }catch(e){} try{ ccPlanBar(); }catch(e){}
+    try{ toast((which==="wd"?"주중":"주말")+" 하루 공부시간을 "+v[which]+"시간으로 늘렸습니다"+(msg?" · "+msg:"")); }catch(e){} };
   window.ccStylePeek=function(r){ window.__ccPeekR=r||null; const el=document.getElementById("ccStylePk"); if(!el) return; if(!r){ el.innerHTML=""; return; }
     const v=ccProfGet(); if(!v) return; const k=ccCap(Object.assign({},v,{r:r})), nw=window.__ccNeedWk||0, ok=k.wk>=nw, d1=function(x){ const y=Math.round(x*10)/10; return (y%1?y.toFixed(1):y); };
     const RN={"12":"복습중심형","11":"균형형","21":"강의수강중심형"};
     el.innerHTML='→ <b>'+RN[r]+'</b>: '+(ok?'<span style="color:#2f7d4f;font-weight:800">✅ 충족</span>':'<span style="color:#b0391f;font-weight:800">매일 약 '+d1((nw-k.wk)/7)+'강 부족</span>')+
-      (r===(v.r||"12")?' <small style="opacity:.7">(현재 학습스타일)</small>':' <button type="button" class="mini" style="margin-left:6px;padding:2px 10px" onclick="ccPickStyle(\''+r+'\')">이대로 변경</button>'); };
+      (r===(v.r||"12")?' <small style="opacity:.7">(현재 학습스타일)</small>':' <button type="button" class="mini" style="margin-left:8px;padding:2px 12px;font-weight:800;border-color:#C9A227;color:#8a6a12" onclick="ccPickStyle(\''+r+'\')">적용</button>'); };
   window.ccPickStyle=function(r){ if(!r) return; if(window.ccPreview){ try{ toast("관리자 미리보기 — 저장하지 않습니다"); }catch(e){} return; }
     const v=ccProfGet(); if(!v) return; v.r=r; v.at=new Date().toISOString(); window.__ccPeekR=null; try{ localStorage.setItem("cc_prof",JSON.stringify(v)); }catch(e){}
     const msg=ccCapAuto(v); try{ ccStudyRender(); }catch(e){} try{ ccPaceRender(); }catch(e){} try{ ccPlanBar(); }catch(e){}
