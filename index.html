@@ -962,11 +962,35 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
     <!-- 「수강신청 다시 하기 → 강의선택 다시 하기 · 과목별 수강신청」 줄 삭제 (2026-11-19) — 상단 메뉴 📅 수강신청 · ▶️ 강의선택과 같은 기능 -->
   </section>
 
-  <!-- ② -->
+  <!-- ② 오늘 해야 할 공부 (2026-11-19 ②·③ 위치 교체) -->
+  <section id="s3">
+    <div class="step-tag">STEP ② 오늘 해야 할 공부</div>
+    <p class="lede" id="s3lede">✅ 오늘할당된학습하기를 클릭하여 학습하세요</p>
+    <div class="today">
+      <div class="panel">
+        <h3 id="todayTitle">현재 진행 중인 강의 — 노무사</h3>
+        <div class="sub">버튼으로 오늘의 소화량을 직접 정하세요 · 해소량은 즉시 누적탑에 쌓입니다</div>
+        <div id="lectures"></div>
+        <div class="mini-rate">오늘 소화 <b id="todayDigest">0문</b><span class="mini-note">· 기한 대비 정체 시 신호 → 3일 지속 시 1:1 상담 자동 제안(안전망)</span></div>
+      </div>
+      <div class="panel">
+        <h3>오늘까지 과목별 누적수강율</h3>
+        <div class="sub" id="accumSub">개강 이후 누적 — 객관식 문항 집계</div>
+        <div id="accum"></div>
+        <div class="accum-total"><span id="accumTotLabel">5과목 합계</span> <b id="accumTotal">0</b>문 <span id="todayAdd"></span></div>
+      </div>
+    </div>
+    <div class="pairlabel" id="pairlabel">일일 과업을 실행하는 학습엔진</div>
+    <div class="pairrow" id="pairrow">
+      <a class="realbtn" href="#" onclick="openEngine('mission');return false">✅ 오늘할당된학습하기에서 공부 시작 →</a> <a class="realbtn" href="#" onclick="ccOpenQB();return false">📝 과목별실전문제풀이 <small>· 5지택일 · 선다형 · 진도별 · 검색</small></a>
+    </div>
+  </section>
+
+  <!-- ③ 현재 나의 학습성과 -->
   <section id="s2">
     <div class="matrix-head">
       <div>
-        <div class="step-tag">STEP ② 현재 나의 학습성과</div>
+        <div class="step-tag">STEP ③ 현재 나의 학습성과</div>
         <p class="lede" id="rmLede">칸을 클릭하면 그 칸의 구체적인 학습상황을 알 수 있습니다.</p>
       </div>
       <div class="legend">
@@ -988,30 +1012,6 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
       </div>
       <p class="fsub" id="fbSub">특강은 합격경로상에 없는 별도의 과정입니다. 시험 직전 자신의 약점을 없애는 과정입니다.</p>
       <div class="finallaws" id="finallaws"></div>
-    </div>
-  </section>
-
-  <!-- ③ -->
-  <section id="s3">
-    <div class="step-tag">STEP ③④ 오늘 해야 할 공부</div>
-    <p class="lede" id="s3lede">✅ 오늘할당된학습하기를 클릭하여 학습하세요</p>
-    <div class="today">
-      <div class="panel">
-        <h3 id="todayTitle">진행 중인 강의 — 노무사</h3>
-        <div class="sub">버튼으로 오늘의 소화량을 직접 정하세요 · 해소량은 즉시 누적탑에 쌓입니다</div>
-        <div id="lectures"></div>
-        <div class="mini-rate">오늘 소화 <b id="todayDigest">0문</b><span class="mini-note">· 기한 대비 정체 시 신호 → 3일 지속 시 1:1 상담 자동 제안(안전망)</span></div>
-      </div>
-      <div class="panel">
-        <h3>과목별 누적수강현황</h3>
-        <div class="sub" id="accumSub">개강 이후 누적 — 객관식 문항 집계</div>
-        <div id="accum"></div>
-        <div class="accum-total"><span id="accumTotLabel">5과목 합계</span> <b id="accumTotal">0</b>문 <span id="todayAdd"></span></div>
-      </div>
-    </div>
-    <div class="pairlabel" id="pairlabel">일일 과업을 실행하는 학습엔진</div>
-    <div class="pairrow" id="pairrow">
-      <a class="realbtn" href="#" onclick="openEngine('mission');return false">✅ 오늘할당된학습하기에서 공부 시작 →</a> <a class="realbtn" href="#" onclick="ccOpenQB();return false">📝 과목별실전문제풀이 <small>· 5지택일 · 선다형 · 진도별 · 검색</small></a>
     </div>
   </section>
 
@@ -1196,7 +1196,7 @@ function setProfile(k){
   var _cd=document.getElementById("cellsDone");if(_cd)_cd.textContent=P[k].done;
   document.getElementById("pace").textContent=P[k].pace;
   try{ if(typeof ccTopStats==="function") ccTopStats(); }catch(e){}
-  document.getElementById("todayTitle").textContent="진행 중인 강의 — "+P[k].name.split(" ·")[0];
+  document.getElementById("todayTitle").textContent="현재 진행 중인 강의 — "+P[k].name.split(" ·")[0];
   document.getElementById("detail").classList.remove("open");
   grid(); initBoard();
 }
@@ -4339,7 +4339,7 @@ function startTour(){
   after(t+=2800,()=>{setProfile('B');});
   // ② 전체학습계획
   after(t+=1400,()=>{hlOff("pB");nodeOn(2);go("grid");hlOn("s2");
-    narr("STEP ② 현재 나의 학습성과","진단이 <b>전체학습계획을 재배열</b>했습니다. 면제 칸(빗금)과 취약 과목의 압축 재수강 칸이 생기고, 모든 칸에 날짜가 박힙니다. 전체학습계획은 이제 매일 아침 \u2018오늘\u2019을 낳습니다.");});
+    narr("STEP ③ 현재 나의 학습성과","진단이 <b>전체학습계획을 재배열</b>했습니다. 면제 칸(빗금)과 취약 과목의 압축 재수강 칸이 생기고, 모든 칸에 날짜가 박힙니다. 전체학습계획은 이제 매일 아침 \u2018오늘\u2019을 낳습니다.");});
   // ③ 일일 과업
   after(t+=3600,()=>{hlOff("s2");nodeOn(3);go("s3");hlOn("s3");
     narr("STEP ③ 강의별 해소","전체학습계획의 현재 칸이 <b>해소 총량</b>으로 내려왔습니다. 총량과 기한은 시스템이 지키고, 오늘 몇 문을 소화할지는 학생이 정합니다.");});
@@ -8361,13 +8361,13 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
 </script>
 <script>
 /* ═══ 전체학습계획 「오늘 해야 할 공부」 칸 (2026-11-04) — 옛 시안(소화량 · 문항 누적) 자리를 바꿈
-   · 왼쪽: 진행 중인 강의 — 오늘 수강 · 복습 +2 · +4 · +8 (오늘할당된학습하기와 같은 목록) 과목별 강의 수
-   · 오른쪽: 과목별 누적수강현황 — 들은 강의 / 들을 강의 (담은 강의) 막대 ═══ */
+   · 왼쪽: 현재 진행 중인 강의 — 오늘 수강 · 복습 +2 · +4 · +8 (오늘할당된학습하기와 같은 목록) 과목별 강의 수
+   · 오른쪽: 오늘까지 과목별 누적수강율 — 들은 강의 / 들을 강의 (담은 강의) 막대 ═══ */
 (function(){
   const box=document.querySelector("#s3 .today"); if(!box) return;
-  box.innerHTML='<div class="panel"><h3>진행 중인 강의</h3><div id="ccTodayL"></div>'+
+  box.innerHTML='<div class="panel"><h3>현재 진행 중인 강의</h3><div id="ccTodayL"></div>'+
       '</div>'+
-    '<div class="panel"><h3>과목별 누적수강현황</h3><div id="ccAccL"></div><div id="ccAccT" style="margin-top:10px;font-weight:700"></div></div>'+
+    '<div class="panel"><h3>오늘까지 과목별 누적수강율</h3><div id="ccAccL"></div><div id="ccAccT" style="margin-top:10px;font-weight:700"></div></div>'+
     '<div style="display:none"><h3 id="todayTitle"></h3><div id="lectures"></div><b id="todayDigest"></b><div id="accumSub"></div><div id="accum"></div><span id="accumTotLabel"></span><b id="accumTotal"></b><span id="todayAdd"></span></div>';
   const lede=document.getElementById("s3lede"); if(lede) lede.textContent="✅ 오늘할당된학습하기를 클릭하여 학습하세요";
   const st=document.createElement("style"); st.textContent=
@@ -8678,7 +8678,7 @@ window.nmGoalSigs=function(L,D1){
 })();
 </script>
 <script>
-/* 「✅ 오늘할당된학습하기에서 공부 시작 →」 단추를 「진행 중인 강의」 상자 맨 아래로 (2026-11-11) — 차수 전환 등으로 다시 그려져도 옮김 */
+/* 「✅ 오늘할당된학습하기에서 공부 시작 →」 단추를 「현재 진행 중인 강의」 상자 맨 아래로 (2026-11-11) — 차수 전환 등으로 다시 그려져도 옮김 */
 (function(){
   function mv(){ try{
     const row=document.getElementById("pairrow"), tl=document.getElementById("ccTodayL"); if(!row||!tl) return;
