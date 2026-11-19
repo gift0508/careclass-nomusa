@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-19 17:12 조정유지">
+<meta name="cc-build" content="2026-11-19 17:16 밀린강의안분적용">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -8326,7 +8326,8 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
             (function(){ if(wk1==null) return '–'; const gap=MN>0?1:0;
               const hrs=[["12","복습 중심형",1/3],["11","강의수강:복습균형형",1/2],["21","강의수강중심형",2/3]].map(function(x){ return '<span style="white-space:nowrap">'+x[1]+' 약 <b>'+Math.ceil(wk1/x[2])+'시간</b></span>'; }).join(' · ');
               const d1=function(x){ x=Math.round(x*10)/10; return x%1?x.toFixed(1):x; };
-              return (gap>0?'<span style="color:#b0391f;font-weight:800">밀린 '+MN+'강</span> → 완료예정일('+ccYMD(c.end)+')까지 하루 수강강의수 <span style="color:#b0391f;font-weight:800">매일 약 '+(cuX<0.1?'0.1강 미만':d1(cuX)+'강')+' 추가</span>':'<span style="color:#2f7d4f;font-weight:800">✅ 계획된 완료예정일을 지킬 수 있습니다</span>')+
+              return (gap>0?'<span style="color:#b0391f;font-weight:800">밀린 '+MN+'강</span> → 완료예정일('+ccYMD(c.end)+')까지 하루 수강강의수 <span style="color:#b0391f;font-weight:800">매일 약 '+(cuX<0.1?'0.1강 미만':d1(cuX)+'강')+' 추가</span>'+
+                (window.__ccApplied1&&window.__ccApplied1.indexOf('밀린')===0?'':'<button type="button" class="mini" style="margin-left:8px;padding:2px 12px;font-weight:800;border-color:#C9A227;color:#8a6a12" onclick="ccSpread(\''+t+'\',\''+ccISO(c.end)+'\')">적용</button>'):'<span style="color:#2f7d4f;font-weight:800">✅ 계획된 완료예정일을 지킬 수 있습니다</span>')+
                 (gap>0?(function(){ /* 부족분 확보 방법 — 한 줄 (2026-11-19) */
                   const v=ccProfGet(); if(!v) return ''; const ok=function(o){ return ccCap(Object.assign({},v,o)).wk>=wk1; }, f=function(x){ return (x%1?x.toFixed(1):x)+'시간'; };
                   let a=null,b=null; for(let h=0.5;h<=16;h+=0.5){ if(a==null&&v.we+h<=16&&ok({we:v.we+h})) a=h; if(b==null&&v.wd+h<=16&&ok({wd:v.wd+h})) b=h; }
@@ -9039,6 +9040,19 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
     try{ toast((which==="wd"?"주중":"주말")+" 하루 공부시간을 "+v[which]+"시간으로 늘렸습니다"+(msg?" · "+msg:"")); }catch(e){} };
   /* ① 적용 되돌리기: 적용 전 공부시간 · 학습스타일로 */
   try{ if(window.__ccPrevProf==null){ const a=localStorage.getItem("cc_prof_prev"), b=localStorage.getItem("cc_applied1"); if(a&&b){ window.__ccPrevProf=a; window.__ccApplied1=b; } } }catch(e){}
+  /* ① [적용] 밀린 강의 안분: 내일부터 완료예정일까지 날마다 추가 강의 수(xtra)를 고르게 나눠 배정 · 밀린 강의는 다시 앞으로 */
+  window.ccSpread=function(t,endIso){
+    const D=ccPaceData(t); if(!D||!D.missN) return; if(window.ccPreview){ try{ toast("관리자 미리보기 — 저장하지 않습니다"); }catch(e){} return; }
+    const pl=ccPlanOf(t), st=ccAddDays(ccToday(),1), end=ccParse(endIso), days=Math.max(1,Math.round((end-st)/86400000)+1), X={};
+    let acc=0; for(let i=0;i<days;i++){ const want=Math.round((i+1)*D.missN/days); const n=want-acc; acc=want; if(n>0) X[ccISO(ccAddDays(st,i))]=n; }
+    pl.xtra=X; pl.pend=Object.assign({},pl.pend||{},{from:ccISO(st),re:true}); ccPlanWrite(t,pl);
+    window.__ccApplied1="밀린 "+D.missN+"강을 완료예정일까지 나눠 추가"; window.__ccPrevProf=null; window.__ccChgMsg=null; window.__ccGoalMsg=null;
+    try{ localStorage.setItem("cc_applied1",window.__ccApplied1); localStorage.removeItem("cc_prof_prev"); }catch(e){}
+    (window.__ccOpen=window.__ccOpen||{}).ccMy1=true; try{ ccPaceRender(); }catch(e){} try{ ccPlanBar(); }catch(e){}
+    try{ toast("밀린 "+D.missN+"강을 "+ccYMD(end)+"까지 나눠 배정합니다 — 익일부터"); }catch(e){} };
+  (function(){ if(typeof ccDayFill!=="function"||ccDayFill.__x) return; const o=ccDayFill;
+    ccDayFill=function(t,pl,f,iso){ const x=(pl.xtra||{})[iso]||0; if(!x) return o.apply(this,arguments); const p0=pl.per; pl.per=p0+x; try{ return o.apply(this,arguments); } finally{ pl.per=p0; } };
+    ccDayFill.__x=true; window.ccDayFill=ccDayFill; })();
   window.ccUndo1=function(){ const pv=window.__ccPrevProf; if(!pv) return; try{ localStorage.setItem("cc_prof",pv); }catch(e){}
     const v=JSON.parse(pv); window.__ccPrevProf=null; window.__ccApplied1=null; try{ localStorage.removeItem("cc_prof_prev"); localStorage.removeItem("cc_applied1"); }catch(e){} const msg=ccCapAuto(v);
     try{ ccStudyRender(); }catch(e){} try{ ccPaceRender(); }catch(e){} try{ ccPlanBar(); }catch(e){} try{ toast("적용을 되돌렸습니다"+(msg?" · "+msg:"")); }catch(e){} };
