@@ -4793,8 +4793,14 @@ window.CC_STAGE_DESC={
       document.querySelectorAll("#grid .cell.paused .st").forEach(function(e){ e.textContent="진행 일시정지"; }); }catch(e){}
     return r; }; }
   const oc=window.openCell;
+  /* 칸 상세 접기: [접기 ▴] 버튼 · 같은 칸을 다시 클릭 (2026-11-19) */
+  window.ccDetailClose=function(){ const d=document.getElementById("detail"); if(d){ d.classList.remove("open"); d.removeAttribute("data-k"); }
+    document.querySelectorAll("#grid .cell.sel").forEach(function(e){ e.classList.remove("sel"); }); };
   if(oc){ window.openCell=openCell=function(li,si){
+    const d0=document.getElementById("detail"), k0=li+"-"+si;
+    if(d0&&d0.classList.contains("open")&&d0.getAttribute("data-k")===k0){ ccDetailClose(); return; }
     const r=oc.apply(this,arguments);
+    try{ if(d0) d0.setAttribute("data-k",k0); }catch(e){}
     try{
       const l=laws[li], c=P[cur].cells[li][si], d=document.getElementById("detail"), m=d&&d.querySelector(".meta");
       if(m&&c.s==="paused") m.innerHTML=m.innerHTML.replace(/상태: [^<]*/,"상태: 진행 일시정지 — 듣다가 다른 단계로 옮겨 멈춰 둔 단계입니다");
@@ -8945,6 +8951,7 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
       '#detail .ckv small{display:block;font-size:.72rem;opacity:.7;margin-bottom:3px}#detail .ckv b{font-size:1rem}#detail .ckv .cst b{color:#8a6a12}#detail .ckv .cst span{display:block;font-size:.7rem;opacity:.7;margin-top:2px}'+
       '@media(max-width:640px){#detail .ckv{grid-template-columns:1fr 1fr}}'+
       '#detail h3{font-size:1.25rem;margin-bottom:12px}#detail h3 span{color:#8a6a12}#detail .ckv b{font-size:1.1rem;font-weight:800}#detail .ckv>div{padding:12px 16px}'+
+      '#detail{position:relative}#detail .dclose{position:absolute;top:14px;right:16px;font:inherit;font-size:.78rem;font-weight:800;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:inherit;cursor:pointer}#detail .dclose:hover{border-color:#C9A227}'+
       '#ccOrdBox .ot{font-weight:800;font-size:.95rem;margin-bottom:10px}#ccOrdBox .ocmp{display:flex;gap:12px;align-items:stretch}#ccOrdBox .ocol{flex:1}#ccOrdBox .oh{font-size:.74rem;font-weight:800;color:#8a6a12;margin-bottom:6px}'+
       '#ccOrdBox .oarr{align-self:center;font-size:1.3rem;color:#8a6a12;font-weight:800}#ccOrdBox .oord{display:flex;flex-direction:column;gap:6px}'+
       '#ccOrdBox .oord>div{display:flex;align-items:center;gap:10px;min-height:40px;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--panel,#fff)}#ccOrdBox .oord.ro>div{opacity:.85}'+
