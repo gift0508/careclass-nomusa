@@ -8303,7 +8303,9 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
       /* 나의 수정 (2026-11-19): 제목 옆 「계산하기」 → ① 늘어날 1주 수강강의수 / ② 바뀔 완료예정일 — 실선박스로 묶음 */
       (function(){
         const v=ccProfGet(), per=D.pl.per, wkNow=v?ccCap(v).wk:per*7, left=D.total-(D.posAll-D.missN);
-        let wk1=null; try{ if(c.end){ const days=Math.max(1,Math.round((c.end-ccToday())/DAY)+1); wk1=Math.ceil(left*7/days); } }catch(e){}
+        /* ① 계획된 완료예정일 고정: 지금 하루 수강강의수로 계속 가되, 밀린 강의를 완료예정일까지 남은 날에 나눠 보강 → 하루 수강강의수가 그만큼 늘어남 (2026-11-19) */
+        let wk1=null, cuDays=0, cuX=0, perNow=(v?ccCap(v).wk/7:per);
+        try{ if(c.end){ cuDays=Math.max(1,Math.round((c.end-ccToday())/DAY)); cuX=MN/cuDays; wk1=Math.ceil((perNow+cuX)*7-1e-9); } }catch(e){}
         let end2=null; try{ let d=ccToday(), r=left, g=0, k=v?ccCap(v):null;
           while(r>0&&g<4000){ d=ccAddDays(d,1); const w=d.getDay(); r-=k?((w===0||w===6)?k.we:k.wd)||per:per; g++; } end2=d; }catch(e){}   /* 오른쪽 완료예정일과 같은 방식: 내일부터 셈 */
         const box='border:1.5px solid #C9A227;border-radius:12px;padding:10px 14px;margin-top:8px';
@@ -8313,9 +8315,10 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
           '<div id="'+id+'" style="display:'+((window.__ccOpen||{})[id]?'block':'none')+';font-size:14px;margin-top:6px;line-height:1.7">'+res+'</div>'+(tail||'')+'</div>'; };
         h+='<div style="'+box+'"><div style="font-weight:800;margin-bottom:6px">나의 수정</div>'+
           row("①","계획된 완료예정일 고정 · 1주 수강강의수 조정","ccMy1",
-            (function(){ if(wk1==null) return '–'; const gap=wk1-wkNow;
+            (function(){ if(wk1==null) return '–'; const gap=MN>0?1:0;
               const hrs=[["12","복습 중심형",1/3],["11","강의수강:복습균형형",1/2],["21","강의수강중심형",2/3]].map(function(x){ return '<span style="white-space:nowrap">'+x[1]+' 약 <b>'+Math.ceil(wk1/x[2])+'시간</b></span>'; }).join(' · ');
-              return '1주 <b>'+wkNow+'강</b> → 필요 <b>'+wk1+'강</b> '+(gap>0?'<span style="color:#b0391f;font-weight:800">· '+gap+'강 부족</span>':'<span style="color:#2f7d4f;font-weight:800">✅ 계획된 완료예정일을 지킬 수 있습니다</span>')+
+              const d1=function(x){ x=Math.round(x*10)/10; return x%1?x.toFixed(1):x; };
+              return (gap>0?'<span style="color:#b0391f;font-weight:800">밀린 '+MN+'강</span> → 완료예정일('+ccYMD(c.end)+')까지 하루 수강강의수 <b>'+d1(perNow)+'강 → '+d1(perNow+Math.max(cuX,0.1))+'강</b> <span style="color:#b0391f;font-weight:800">(매일 약 '+(cuX<0.1?'0.1강 미만':d1(cuX)+'강')+' 추가)</span>':'<span style="color:#2f7d4f;font-weight:800">✅ 계획된 완료예정일을 지킬 수 있습니다</span>')+
                 (gap>0?(function(){ /* 부족분 확보 방법 — 한 줄 (2026-11-19) */
                   const v=ccProfGet(); if(!v) return ''; const ok=function(o){ return ccCap(Object.assign({},v,o)).wk>=wk1; }, f=function(x){ return (x%1?x.toFixed(1):x)+'시간'; };
                   let a=null,b=null; for(let h=0.5;h<=16;h+=0.5){ if(a==null&&v.we+h<=16&&ok({we:v.we+h})) a=h; if(b==null&&v.wd+h<=16&&ok({wd:v.wd+h})) b=h; }
@@ -8328,6 +8331,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
                   window.__ccNeedWk=wk1;
                   const sel='<select class="ccsel" style="font:inherit;font-size:.92em;font-weight:700;padding:2px 6px;vertical-align:middle;width:auto;min-width:0" onchange="ccStylePeek(this.value)"><option value="">선택</option>'+
                     ["12","11","21"].map(function(k){ return '<option value="'+k+'"'+(window.__ccPeekR===k?' selected':'')+'>'+RN[k]+(k===(v.r||"12")?' (현재)':'')+'</option>'; }).join("")+'</select>';
+                  if(!st) return '<div style="margin-top:3px">👉 학습스타일 변경으로는 부족합니다 — 주중 혹은 주말 '+hh+' 추가를 권합니다</div>';   /* 어떤 학습스타일로도 안 될 때 */
                   return '<div style="margin-top:3px">👉 주중 혹은 주말 '+hh+' 추가하거나 학습스타일 변경 '+sel+'</div><div id="ccStylePk" style="margin-top:3px"></div>'; })():''); })(),
             '',"조정")+
           row("②","기존의 1주 수강강의수 유지 · 계획된 완료예정일 변경","ccMy2",
@@ -9012,7 +9016,7 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
   window.ccStylePeek=function(r){ window.__ccPeekR=r||null; const el=document.getElementById("ccStylePk"); if(!el) return; if(!r){ el.innerHTML=""; return; }
     const v=ccProfGet(); if(!v) return; const k=ccCap(Object.assign({},v,{r:r})), nw=window.__ccNeedWk||0, ok=k.wk>=nw, d1=function(x){ const y=Math.round(x*10)/10; return (y%1?y.toFixed(1):y); };
     const RN={"12":"복습중심형","11":"균형형","21":"강의수강중심형"};
-    el.innerHTML='→ <b>'+RN[r]+'</b>: 매일 약 <b>'+d1(k.wk/7)+'강</b> · 완료예정일까지 필요 매일 약 <b>'+d1(nw/7)+'강</b> '+(ok?'<span style="color:#2f7d4f;font-weight:800">✅ 충족</span>':'<span style="color:#b0391f;font-weight:800">· 시간 추가 필요</span>')+
+    el.innerHTML='→ <b>'+RN[r]+'</b>: '+(ok?'<span style="color:#2f7d4f;font-weight:800">✅ 충족</span>':'<span style="color:#b0391f;font-weight:800">매일 약 '+d1((nw-k.wk)/7)+'강 부족</span>')+
       (r===(v.r||"12")?' <small style="opacity:.7">(현재 학습스타일)</small>':' <button type="button" class="mini" style="margin-left:6px;padding:2px 10px" onclick="ccPickStyle(\''+r+'\')">이대로 변경</button>'); };
   window.ccPickStyle=function(r){ if(!r) return; if(window.ccPreview){ try{ toast("관리자 미리보기 — 저장하지 않습니다"); }catch(e){} return; }
     const v=ccProfGet(); if(!v) return; v.r=r; v.at=new Date().toISOString(); window.__ccPeekR=null; try{ localStorage.setItem("cc_prof",JSON.stringify(v)); }catch(e){}
