@@ -8398,7 +8398,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
     let sh=0, st2=0; const LL=(CC_LAWS[t]||[]).filter(function(l){ return tot[l]>0; });   /* 담은 강의가 없는 과목(고르지 않은 2차 선택과목 등)은 빼고 */
     A.innerHTML=LL.map(function(l){ const n=tot[l], h=hd[l]; sh+=h; st2+=n; const pc=n?Math.round(h/n*100):0;
       return '<div class="ccacc"><div class="h">'+E(l)+'<span>'+h+' / '+n+'강'+(n?' · '+pc+'%':'')+'</span></div><div class="tr"><div class="fl" style="width:'+pc+'%"></div></div></div>'; }).join("");
-    if(AT) AT.innerHTML=(dual?E(t)+' ':'')+LL.length+'과목 합계 수강율 — 들은 강의 <b>'+sh+'</b> / '+st2+'강 <b style="color:#8a6a12">'+(st2?Math.round(sh*100/st2):0)+'%</b>';
+    if(AT) AT.innerHTML=(dual?E(t)+' ':'')+LL.length+'과목 합계 수강율 : <b style="display:inline-block;font-size:1.45em;font-weight:900;color:#b0391f;padding:1px 12px;margin-left:4px;border:2px solid #b0391f;border-radius:999px;line-height:1.3;vertical-align:middle">'+(st2?Math.round(sh*100/st2):0)+'%</b>';   /* 경각심: 크게 · 진한 붉은색 */
   };
   const hook=function(name){ const o=window[name]; if(typeof o!=="function") return; window[name]=function(){ const r=o.apply(this,arguments); try{ ccTodayRender(); }catch(e){} return r; }; };
   ["showRoadmap","ccPlanBar"].forEach(hook);
