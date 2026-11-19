@@ -8199,7 +8199,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
     const D=ccPaceData(t); if(!D||!D.missN) return;
     /* 수정사항은 익일부터: 오늘 배정은 그대로 · 내일 밀린 강의를 다시 배정 */
     const pl=ccPlanOf(t); pl.pend=Object.assign({},pl.pend||{},{from:ccISO(ccAddDays(ccToday(),1)),re:true}); pl.chEnd=iso; ccPlanWrite(t,pl);
-    window.__ccChgMsg=ccMD(ccToday())+" → "+ccMD(ccParse(iso));
+    window.__ccChgMsg=ccMD(ccToday())+" → "+ccMD(ccParse(iso)); window.__ccGoalMsg=null;   /* 나중에 고친 것만 남김 */
     try{ ccPlanBar(); }catch(e){} try{ ccPaceRender(); }catch(e){}
     toast("내일부터 적용됩니다 — 밀린 강의 다시 배정 · 완료예정일 "+ccYMD(ccParse(iso)));
   };
@@ -8345,7 +8345,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
     const el=document.getElementById("ccGoalD"), r=window.__ccGoal&&__ccGoal(el&&el.value);
     if(!r){ toast("완료 목표일을 골라 주세요"); return; }
     if(r.err){ const g=document.getElementById("ccGoalR"); if(g){ g.innerHTML=__ccGoalTxt(el.value); g.style.display="block"; } return; }
-    window.__ccGoalMsg=__ccGoalTxt(el.value);
+    window.__ccGoalMsg=__ccGoalTxt(el.value); window.__ccChgMsg=null;   /* ③으로 다시 고치면 ② 결과 줄은 지움 — 나중에 고친 것만 적용 */
     /* 수정사항은 익일부터: 오늘 배정은 그대로 · 내일부터 하루 강의 수 변경(+밀린 강의 다시 배정) */
     const pl=ccPlanOf(t); pl.pend={from:ccISO(ccAddDays(ccToday(),1)),re:!!D.missN,per:r.per}; pl.chEnd=r.iso; delete pl.pace; delete pl.perNext; delete pl.perFrom;
     ccPlanWrite(t,pl);
