@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-20 19:45 로그인홈먼저">
+<meta name="cc-build" content="2026-11-20 19:50 홈으로맨앞">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9790,10 +9790,10 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
     try{ toast("적용했습니다 — 익일부터 한 주 "+wk+"강"+(x.miss?" · 밀린 "+x.miss+"강은 내일부터 다시 배정":"")); }catch(e){} nxRender(); };
 
   /* ── 상단 메뉴 ── */
-  const NAV='<button class="mini nxtab" data-nx="mine" data-rec="0" onclick="nxShowMine()">📘 나의 학습</button>'+
+  const NAV='<button class="mini nxtab" data-nx="home" onclick="nxHome()">🏠 홈으로</button>'+
+    '<button class="mini nxtab" data-nx="mine" data-rec="0" onclick="nxShowMine()">📘 나의 학습</button>'+
     '<button class="mini nxtab" data-nx="qb" onclick="ccOpenQB()">📝 과목별실전문제풀이</button>'+
     '<button class="mini nxtab" data-nx="rec" data-rec="1" onclick="ccOpenRecords()">📂 내 공부기록</button>'+
-    '<button class="mini nxtab" data-nx="home" onclick="nxHome()">🏠 홈으로</button>'+
     '<button class="mini nxout" onclick="nxLogout()">로그아웃</button>';
   const navOn=function(k){ document.querySelectorAll("#engmenu .nxtab").forEach(function(b){ b.classList.toggle("on",b.getAttribute("data-nx")===k); }); };
   const setNav=function(){ const em=document.getElementById("engmenu"); if(!em) return; if(em.getAttribute("data-nxnav")==="1"&&em.querySelector(".nxtab")) return;
