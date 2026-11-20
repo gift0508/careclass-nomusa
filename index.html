@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-20 19:50 홈으로맨앞">
+<meta name="cc-build" content="2026-11-20 19:55 복습스타일수정">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9679,7 +9679,7 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
     const tracks=ccTracks(), PJ={}; let any=false;
     tracks.forEach(function(t){ try{ ccPlanSync(t); }catch(e){} PJ[t]=project(t); if(PJ[t]) any=true; });
     const rn=ccRvN();
-    let h='<div class="top"><h2>✅ 오늘할당된학습하기</h2><div class="rv">🔁 복습스타일 <select onchange="ccRvSet(+this.value);nxRender()">'+[1,2,3].map(function(n){ return '<option value="'+n+'"'+(n===rn?' selected':'')+'>'+n+'회 복습</option>'; }).join("")+'</select></div></div>';
+    let h='<div class="top"><h2>✅ 오늘할당된학습하기</h2><div class="rv">🔁 복습스타일 <select onchange="try{this.blur()}catch(e){}ccRvSet(+this.value);nxRender()">'+[1,2,3].map(function(n){ return '<option value="'+n+'"'+(n===rn?' selected':'')+'>'+n+'회 복습</option>'; }).join("")+'</select></div></div>';
     if(!any){ el.innerHTML=h+'<div class="need">1주 공부시간과 학습스타일을 정하면 이번 주에 들을 강의가 여기에 나옵니다.<br><button onclick="nxWizOpen(true)">당신의 합격 설계 시작하기 →</button></div>'; return; }
     /* 이번 주 수강강의목록 */
     const mon=monOf(), sun=ccAddDays(mon,6), M=ccISO(mon), S7=ccISO(sun), T=ccISO(ccToday()), D=RD("cc_nxdone");
