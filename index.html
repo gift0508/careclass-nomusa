@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-21 09:10 질문함">
+<meta name="cc-build" content="2026-11-21 09:30 합격설계확정은마지막에">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9302,7 +9302,7 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
         return '<div class="rss"><h4>'+E(nm)+'</h4><div class="rsl">학습스타일</div>'+["21","11","12"].map(function(r){ return '<button class="rsb'+(A.rs[t][nm]===r?' on':'')+'" onclick="nxWizRS(\''+t+'\',\''+J(nm)+'\',\''+r+'\')">'+CC_RS_NAME[r]+' <small>'+CC_RS_RT[r]+(r===rr?' · 추천':'')+'</small></button>'; }).join("")+
           '<div class="rsl">복습스타일</div>'+[1,2,3].map(function(n){ return '<button class="rsb'+(+A.rv[t][nm]===n?' on':'')+'" onclick="nxWizRV(\''+t+'\',\''+J(nm)+'\','+n+')">'+n+'회 복습 <small>'+["","+2일","+2 · +4일","+2 · +4 · +8일"][n]+(n===rv0?' · 추천':'')+'</small></button>'; }).join("")+'</div>'; }).join(""); }).join("")+'</div>'; }
     return h; };
-  window.nxWizRM=function(m){ A.rm=m; if(m==="own") recInit(); draw(); };
+  window.nxWizRM=function(m){ A.rm=m; if(m==="own") recInit(); draw(); if(m==="rec") setTimeout(function(){ if(step<stepsOf().length+1) nxWizGo(step+1); },260); };
   window.nxWizRS=function(t,nm,r){ recInit(); A.rs[t][nm]=r; draw(); };
   window.nxWizRV=function(t,nm,n){ recInit(); A.rv[t][nm]=n; draw(); };
   const calc=function(){ if(A.wd==null||A.we==null||!A.rm) return null; return {tot:A.wd*5+A.we*2,v:profA()}; };
@@ -9368,7 +9368,15 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
   };
   window.nxWizSet=function(k,v){ A[k]=v===""?null:+v; draw(); };
   window.nxWizPick=function(k,v){ A[k]=v; if(k==="tr") setTrack(v); draw(); setTimeout(function(){ if(step<stepsOf().length) nxWizGo(step+1); },260); };
-  window.nxWizGo=function(n){ const S=stepsOf(); if(n===S.length+1&&step===S.length) finish(); step=Math.max(0,n); draw(); if(WZ) WZ.scrollTop=0; };
+  window.nxWizGo=function(n){ const S=stepsOf(); if(n===S.length+1&&step===S.length) prepare(); step=Math.max(0,n); draw(); if(WZ) WZ.scrollTop=0; };
+  /* 휴대폰 · 브라우저 「뒤로가기」 = 한 단계 앞으로 (사이트를 떠나거나 확정되지 않게) */
+  window.addEventListener("popstate",function(){ if(!WZ||WZ.style.display==="none") return;
+    try{ history.pushState({nxw:1},""); }catch(e){} if(step>0){ step--; draw(); if(WZ) WZ.scrollTop=0; } });
+  /* 합격 설계 미리 보기 — 아직 저장하지 않음 (2026-11-21): 「✅ 나의 학습 시작하기」를 눌러야 확정 */
+  const prepare=function(){
+    if(A.opt){ try{ const st=JSON.parse(localStorage.getItem("cc_state")||"{}")||{}; st.opt2=A.opt; localStorage.setItem("cc_state",JSON.stringify(st)); ccLastState=""; }catch(e){} }
+    ccTracks().forEach(function(t){ try{ nxPassApply(t,true); }catch(e){ console.warn(e); } });
+  };
   const finish=function(){
     if(prev()) return;
     try{ if(typeof sb!=="undefined"&&sb&&typeof ccUid!=="undefined"&&ccUid) sb.rpc("cc_set_my_track",{p_track:user.track}).then(function(r){ if(r&&r.error){ console.warn(r.error); try{ toast("수험 종류를 서버에 저장하지 못했습니다 — 관리자에게 알려 주세요"); }catch(e){} } },function(e){ console.warn(e); }); }catch(e){}
@@ -9389,10 +9397,11 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
     step=0;
     WZ=document.getElementById("nxWiz"); if(!WZ){ WZ=document.createElement("div"); WZ.id="nxWiz"; WZ.innerHTML='<button type="button" class="wzout" onclick="event.stopPropagation();nxWizLogout()">로그아웃 · 관리자 로그인</button><div class="stage"></div>'; document.body.appendChild(WZ); }
     WZ.style.display="block"; draw();
+    try{ history.pushState({nxw:1},""); }catch(e){}
   };
   /* 첫 화면에서도 바로 로그아웃 (관리자 로그인 · 다른 아이디) */
   window.nxWizLogout=function(){ if(WZ) WZ.style.display="none"; try{ const m=document.getElementById("nxMine"); if(m) m.style.display="none"; }catch(e){} try{ logout(); }catch(e){ console.warn(e); } };
-  window.nxWizClose=function(){ if(WZ) WZ.style.display="none"; nxShowMine(); };
+  window.nxWizClose=function(){ if(step>stepsOf().length) finish(); if(WZ) WZ.style.display="none"; nxShowMine(); };
 
   /* ── 예전 화면으로 가던 길은 모두 지금 화면으로 (2026-11-20)
      · 오늘할당된학습하기(예전 미션) · 수강신청 · 강의선택 → 📘 나의 학습
