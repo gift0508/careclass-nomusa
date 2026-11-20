@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-20 20:30 홈겹침수정">
+<meta name="cc-build" content="2026-11-20 20:50 동차생학습순서">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9558,6 +9558,22 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
   /* ── 과목 순서 고정 ── */
   try{ const o=nmSetLaws; nmSetLaws=function(){ o.apply(this,arguments); CC_LAWS["1차"]=NXO1.slice(); window.CC_LAWS=CC_LAWS; }; window.nmSetLaws=nmSetLaws; nmSetLaws(); }catch(e){ console.warn(e); }
 
+  /* 동차: 하루 강의 수를 1차 2 : 2차 1로 나눔 (2026-11-20) — 1차 계획의 하루 수강강의수가 전체, 한 주 안에서 3강마다 1강이 2차 */
+  try{ const oPD=ccPerDay;
+    ccPerDay=function(t,pl,iso){
+      if(!(typeof ccIsDual==="function"&&ccIsDual())) return oPD.apply(this,arguments);
+      const P=(t==="1차")?pl:ccPlanOf("1차"); if(!P||!P.per) return oPD.apply(this,arguments);
+      const drv=function(x){ const xi=ccISO(x); let q=P; if(t!=="1차"&&P.perNext!=null&&P.perFrom&&xi>=P.perFrom) q=Object.assign({},P,{per:P.perNext}); return oPD("1차",q,xi); };
+      const D=ccParse(iso), mon=ccAddDays(D,-((D.getDay()+6)%7)); let C=0, Cp=0;
+      for(let x=mon; x<=D; x=ccAddDays(x,1)){ Cp=C; C+=drv(x); }
+      const n2=Math.floor(C/3)-Math.floor(Cp/3), n=C-Cp;
+      return t==="2차"?n2:(n-n2);
+    };
+    window.ccPerDay=ccPerDay;
+  }catch(e){ console.warn(e); }
+  /* 동차 기존 수강생: 나눔 방식으로 오늘 배정을 한 번 다시 */
+  window.nxDualSplit=function(){ try{ if(!ccIsDual()) return; const T=ccISO(ccToday());
+      ["1차","2차"].forEach(function(t){ const pl=ccPlanOf(t); if(pl.split) return; if(pl.asg) Object.keys(pl.asg).forEach(function(k){ if(pl.asg[k]===T) delete pl.asg[k]; }); pl.sync=ccISO(ccAddDays(ccToday(),-1)); pl.split=1; ccPlanWrite(t,pl); }); }catch(e){ console.warn(e); } };
   /* 과목 순서는 수강생이 바꿀 수 없음 (2026-11-20) — 1차 노동법Ⅰ→노동법Ⅱ→사회보험법→민법→경영학개론 · 2차 노동법→행정쟁송법→인사노무관리론→선택과목 */
   try{ ccOrder=function(t){ return (CC_LAWS[t]||[]).slice(); }; window.ccOrder=ccOrder; }catch(e){ console.warn(e); }
   /* ── 패스제: 필수강의 단계 · 과목 순서 · 한 과목씩 ── */
@@ -9691,7 +9707,11 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
       const row=function(n,t){ const L=(CC_LAWS[t]||[]).filter(function(l){ return !(t==="2차"&&(CC_OPT["2차"]||[]).indexOf(l)>=0); }), S=nxReq(t).map(function(si){ return CC_STAGES[t][si]; });
         let subj=L.map(E).join(' → '); if(t==="2차") subj+=' → '+(has2&&typeof nmOpt2==="function"?E(nmOpt2()):'선택과목');
         return '<div class="oi"><b>'+n+'. '+t+' 학습순서</b><div>단계: '+S.map(E).join(' → ')+'</div><div>과목: '+subj+'</div></div>'; };
-      h+='<div class="ordr">'+row(1,"1차")+row(2,"2차")+'<div class="mu" style="font-size:12px">단계마다 과목 순서대로 한 과목씩 차례로 배정됩니다</div></div>'; }
+      /* 3. 동차생 학습순서 — 1차 2 : 2차 1 */
+      let ex=''; try{ const v=ccProfGet(); if(v){ const k=ccCap(v), n2=Math.floor(k.wk/3); ex='<div>내 공부시간 기준: 한 주 '+k.wk+'강 → <b>1차 '+(k.wk-n2)+'강 · 2차 '+n2+'강</b></div>'; } }catch(e){}
+      const row3='<div class="oi"><b>3. 동차생 학습순서</b><div>배분: 강의를 <b>1차 2 : 2차 1</b>로 나눠 듣습니다 (한 주 안에서 3강마다 1강이 2차)</div>'+ex+
+        '<div>1차는 1차 학습순서대로, 2차는 2차 학습순서대로 각각 이어집니다</div></div>';
+      h+='<div class="ordr">'+row(1,"1차")+row(2,"2차")+row3+'<div class="mu" style="font-size:12px">단계마다 과목 순서대로 한 과목씩 차례로 배정됩니다</div></div>'; }
     if(!any){ el.innerHTML=h+'<div class="need">1주 공부시간과 학습스타일을 정하면 이번 주에 들을 강의가 여기에 나옵니다.<br><button onclick="nxWizOpen(true)">당신의 합격 설계 시작하기 →</button></div>'; return; }
     /* 이번 주 수강강의목록 */
     const mon=monOf(), sun=ccAddDays(mon,6), M=ccISO(mon), S7=ccISO(sun), T=ccISO(ccToday()), D=RD("cc_nxdone");
@@ -9877,11 +9897,15 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
       const l=pos(a), w=Math.max(1.2,pos(ccAddDays(b,1))-l), lab=x[1]+'강 · '+ccMD(a)+'~'+ccMD(b), inside=w>=17, lp=inside?'':(l+w>72?'right:'+(100-l+1)+'%':'left:'+(l+w+1)+'%');
       return '<div class="gr"><div class="lb">'+E(x[0])+'</div><div class="tr"><div class="bar c'+(i%5)+'" style="left:'+l+'%;width:'+w+'%">'+(inside?lab:'')+'</div>'+(inside?'':'<span class="olab" style="'+lp+'">'+lab+'</span>')+'</div></div>'; }).join("");
     const tk=[]; let m=new Date(start.getFullYear(),start.getMonth()+1,1); while(m<ex){ tk.push('<span style="left:'+pos(m)+'%">'+(m.getMonth()+1)+'월</span>'); m=new Date(m.getFullYear(),m.getMonth()+1,1); }
-    let cap=0, d=new Date(start), fin=null, got=0, g=0; while(d<=dl){ const w=d.getDay(); cap+=(w===0||w===6)?c.e:c.d; d=ccAddDays(d,1); }
-    d=new Date(start); while(got<tot&&g<3000){ const w=d.getDay(); got+=(w===0||w===6)?c.e:c.d; if(got>=tot){ fin=new Date(d); break; } d=ccAddDays(d,1); g++; }
-    const needWk=Math.ceil(perDay*7), lack=needWk-c.wk;
-    const verd=cap>=tot?'<div class="verd ok">✅ <b>내 공부시간(한 주 '+c.wk+'강)으로 시험 2주 전까지 필수강의를 모두 들을 수 있습니다</b>'+(fin?' — 완료 예정 '+ccYMD(fin):'')+'</div>'
-      :'<div class="verd no">⚠️ <b>지금 공부시간으로는 한 주 '+c.wk+'강 — 이 설계를 지키려면 한 주 '+needWk+'강이 필요해 '+lack+'강이 모자랍니다</b><br>이대로면 필수강의 완료가 '+(fin?ccYMD(fin):'시험일 이후')+'로 늦어집니다 · 공부시간을 늘리거나 학습스타일 변경을 고려하세요</div>';
+    /* 동차: 실제 배정과 같은 규칙 — 한 주 안에서 3강마다 1강이 2차 (1차 2 : 2차 1) */
+    const full=function(x){ const w=x.getDay(); return (w===0||w===6)?c.e:c.d; };
+    const dayCap=function(x){ if(!ccIsDual()) return full(x); const mon=ccAddDays(x,-((x.getDay()+6)%7)); let C=0, Cp=0; for(let y=mon; y<=x; y=ccAddDays(y,1)){ Cp=C; C+=full(y); } const n2=Math.floor(C/3)-Math.floor(Cp/3); return t==="2차"?n2:(C-Cp-n2); };
+    const cwk=ccIsDual()?(t==="2차"?Math.floor(c.wk/3):c.wk-Math.floor(c.wk/3)):c.wk;
+    let cap=0, d=new Date(start), fin=null, got=0, g=0; while(d<=dl){ cap+=dayCap(d); d=ccAddDays(d,1); }
+    d=new Date(start); while(got<tot&&g<3000){ got+=dayCap(d); if(got>=tot){ fin=new Date(d); break; } d=ccAddDays(d,1); g++; }
+    const needWk=Math.ceil(perDay*7), lack=needWk-cwk;
+    const verd=cap>=tot?'<div class="verd ok">✅ <b>내 공부시간(한 주 '+cwk+'강)으로 시험 2주 전까지 필수강의를 모두 들을 수 있습니다</b>'+(fin?' — 완료 예정 '+ccYMD(fin):'')+'</div>'
+      :'<div class="verd no">⚠️ <b>지금 공부시간으로는 한 주 '+cwk+'강 — 이 설계를 지키려면 한 주 '+needWk+'강이 필요해 '+lack+'강이 모자랍니다</b><br>이대로면 필수강의 완료가 '+(fin?ccYMD(fin):'시험일 이후')+'로 늦어집니다 · 공부시간을 늘리거나 학습스타일 변경을 고려하세요</div>';
     let xt=''; if(t==="1차"){ const ai=ccAutoSI("1차"); let n=0; if(ai>=0) (CC_LAWS["1차"]||[]).forEach(function(l){ n+=(ccCat("1차",l)[ai]||0); }); if(n) xt='<div class="plh" style="margin:10px 0 0">📎 <b>기타특강('+n+'강)</b>은 수강생 자율수강</div>'; }
     return '<div class="plan"><h4>🎯 '+t+' 합격 설계 — 필수강의를 시험 2주 전('+ccMD(dl)+')까지</h4>'+
       '<div class="plh">필수강의 '+tot+'강 · '+ccMD(start)+'부터 '+days+'일 · 하루 평균 약 '+(Math.round(perDay*10)/10)+'강 (한 주 '+needWk+'강) · 시험일 '+ccYMD(ex)+'</div>'+
@@ -9899,7 +9923,7 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
         (A.opt?'<span>2차 선택과목</span><div><b>'+E(A.opt)+'</b></div>':'')+
         '<span>학습스타일</span><div><b>'+E(RTN[A.r])+'</b></div>'+
         '<span>1주 공부시간</span><div><b>주중(월~금) 하루 '+A.wd+'시간 · 주말(토~일) 하루 '+A.we+'시간 · 한 주 총 '+c.tot+'시간</b></div></div>'+
-        '<div class="sum">📅 학습스타일에 따른 나의 수강일정 : 하루 평균 수강강의수 <b>약 '+c.avg+'강</b> <small class="mu">(주중 하루 '+c.d+'강 · 주말 하루 '+c.e+'강 · 한 주 '+c.wk+'강)</small></div></div>'+
+        '<div class="sum">📅 학습스타일에 따른 나의 수강일정 : 하루 평균 수강강의수 <b>약 '+c.avg+'강</b> <small class="mu">(주중 하루 '+c.d+'강 · 주말 하루 '+c.e+'강 · 한 주 '+c.wk+'강)</small>'+(ccIsDual()?'<div style="margin-top:6px;font-size:13px">🔀 동차: 강의를 <b>1차 2 : 2차 1</b>로 나눠 듣습니다 — 한 주 1차 '+(c.wk-Math.floor(c.wk/3))+'강 · 2차 '+Math.floor(c.wk/3)+'강</div>':'')+'</div></div>'+
         ccTracks().map(function(t){ return planHTML(t,c); }).join("")+
         '<button class="go" onclick="nxWizClose()">✅ 나의 학습 시작하기 →</button><button class="redo" onclick="nxWizGo(1)">처음부터 다시</button></div>'; return; }
     const st=S[step-1]; let body;
@@ -9956,6 +9980,7 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
   const after=function(){
     if(window.ccPreview||typeof user==="undefined"||!user) return;
     try{ ccTracks().forEach(function(t){ nxPassApply(t,false); }); }catch(e){ console.warn(e); }
+    try{ nxDualSplit(); }catch(e){}
     const m=ccMeGet();
     if(!m.wiz&&!ccProfGet()){ nxWizOpen(false); return; }
     try{ const v=ccProfGet(); if(v) ccTracks().forEach(function(t){ if(!ccPlanOf(t).per){ if(t===TRACK) ccCapAuto(v); else ccPlanSetPer(t,ccPerOf(v)); } }); }catch(e){}
