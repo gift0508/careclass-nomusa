@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-20 19:40 명예의전당">
+<meta name="cc-build" content="2026-11-20 19:45 로그인홈먼저">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9938,7 +9938,7 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
     const m=ccMeGet();
     if(!m.wiz&&!ccProfGet()){ nxWizOpen(false); return; }
     try{ const v=ccProfGet(); if(v) ccTracks().forEach(function(t){ if(!ccPlanOf(t).per){ if(t===TRACK) ccCapAuto(v); else ccPlanSetPer(t,ccPerOf(v)); } }); }catch(e){}
-    nxShowMine();
+    nxHome();   /* 로그인하면 홈(조언 · 합격 진단 · 나의 학습 실행 | 명예의 전당)이 먼저 (2026-11-20) */
     /* 신규 강의 공개 정보를 다 불러오면 오늘 배정을 다시 그림 */
     if(window.CC_PUB_ON&&!window.CC_PUB_READY){ let g=0; const iv=setInterval(function(){ g++; if(window.CC_PUB_READY||g>40){ clearInterval(iv); try{ nxRender(); }catch(e){} } },500); }
   };
