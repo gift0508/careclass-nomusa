@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-19 17:16 밀린강의안분적용">
+<meta name="cc-build" content="2026-11-20 12:40 나의수정4번">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -8247,6 +8247,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
   window.ccPaceStay=function(){ toast("지금 속도를 유지합니다 — 오늘할당된학습하기를 매일 마치면 됩니다"); };
   window.ccPaceRender=function(){
     const box=document.getElementById("ccPace"); if(!box) return;
+    if(box.contains(document.activeElement)&&/^(SELECT|INPUT)$/.test(document.activeElement.tagName)) return;   /* 고르는 중에는 다시 그리지 않음 */
     if(typeof user==="undefined"||!user){ box.innerHTML=""; return; }
     const t=TRACK, D=ccPaceData(t), md=function(iso){ return ccMD(ccParse(iso)); };
     if(!D){ box.innerHTML='<div class="sub">하루 수강강의수를 정하면 그날부터 내 속도를 점검합니다 — 위 「📅 나의 수강 계획」에서 하루 수강강의수를 정해 주세요.</div>'; return; }
@@ -8355,7 +8356,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
                     '<div style="margin-top:3px">👉 또는 학습스타일 변경 '+sel+'</div><div id="ccStylePk" style="margin-top:3px"></div>'; })():''); })(),
             '',"조정")+
           row("②","기존의 1주 수강강의수 유지 · 계획된 완료예정일 변경확인","ccMy2",
-            '<b>'+md(T)+' → <span style="color:#e0685a">'+(end2?ccMD(end2):'–')+'</span></b>'+(window.__ccChgMsg?'<span style="color:#2f7d4f;font-weight:800;margin-left:8px">✅ 적용됨 (익일부터)</span>':(end2?'<button type="button" class="mini" style="margin-left:8px;padding:2px 12px;font-weight:800;border-color:#C9A227;color:#8a6a12" onclick="ccPaceChg(\''+t+'\',\''+ccISO(end2)+'\')">적용</button>':'')),'',"변경확인")+goalRow(true)+
+            '<b>'+md(T)+' → <span style="color:#e0685a">'+(end2?ccMD(end2):'–')+'</span></b>'+(window.__ccChgMsg?'<span style="color:#2f7d4f;font-weight:800;margin-left:8px">✅ 적용됨 (익일부터)</span>':(end2?'<button type="button" class="mini" style="margin-left:8px;padding:2px 12px;font-weight:800;border-color:#C9A227;color:#8a6a12" onclick="ccPaceChg(\''+t+'\',\''+ccISO(end2)+'\')">적용</button>':'')),'',"변경확인")+goalRow(true)+(window.ccMy4Row?ccMy4Row(true):'')+
           '</div>';
       })();
     } else if(loose){
@@ -8375,7 +8376,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
         '<div class="sub" style="margin-top:2px">느슨하다고 느끼면 위 「느슨함」을 눌러 일정을 다시 짜세요</div></div>';
     }
     if(!MN) h+='<div style="border:1.5px solid #C9A227;border-radius:12px;padding:10px 14px;margin-top:10px"><div style="font-weight:800;margin-bottom:6px">나의 수정</div>'+
-      (window.__ccChgMsg?'<div style="font-weight:700;margin-bottom:8px">② 완료예정일 변경 <span style="color:#e0685a">'+__ccChgMsg+'</span></div>':'')+goalRow(!!window.__ccChgMsg)+'</div>';
+      (window.__ccChgMsg?'<div style="font-weight:700;margin-bottom:8px">② 완료예정일 변경 <span style="color:#e0685a">'+__ccChgMsg+'</span></div>':'')+goalRow(!!window.__ccChgMsg)+(window.ccMy4Row?ccMy4Row(true):'')+'</div>';
     box.innerHTML=h;
     try{ if(window.__ccPeekR) ccStylePeek(window.__ccPeekR); }catch(e){}   /* 다시 그려도 학습스타일 미리 보기 유지 */
   };
@@ -8901,9 +8902,8 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
     };
     const put=function(el,sf){ if(el.contains(document.activeElement)&&document.activeElement.tagName==="SELECT") return; el.innerHTML=build(sf); };
     /* ② 내 페이스 점검 */
-    const pc=document.getElementById("ccPace");
-    if(pc){ let el=document.getElementById("ccStudy"); if(!el){ el=document.createElement("div"); el.id="ccStudy"; }
-      el.className="ccstudy panel"; if(el.nextSibling!==pc||el.parentNode!==pc.parentNode) pc.parentNode.insertBefore(el,pc); put(el,""); }
+    /* (2026-11-20) 내 페이스 점검 위 따로 있던 박스는 「나의 수정」 ④로 옮김 → 박스 제거 */
+    { const old=document.getElementById("ccStudy"); if(old&&old.parentNode) old.parentNode.removeChild(old); }
     /* ① STEP ① 박스 안: 수험 정보 표 (ccMeRender) */
     try{ ccMeRender(); }catch(e){ console.warn(e); }
   };
@@ -9066,6 +9066,53 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
     window.__ccApplied1="학습스타일 "+({"12":"복습중심형","11":"균형형","21":"강의수강중심형"})[r]; try{ localStorage.setItem("cc_applied1",window.__ccApplied1); }catch(e){} window.__ccChgMsg=null; window.__ccGoalMsg=null; (window.__ccOpen=window.__ccOpen||{}).ccMy1=true;
     const msg=ccCapAuto(v); try{ ccStudyRender(); }catch(e){} try{ ccPaceRender(); }catch(e){} try{ ccPlanBar(); }catch(e){}
     try{ toast("학습스타일을 바꿨습니다 — "+ccCap(v).R.n+" · 한 주 "+ccCap(v).wk+"강"+(msg?" · "+msg:"")); }catch(e){} };
+  /* ═══ 나의 수정 ④ 1주 공부가능시간 · 학습스타일 변경 (2026-11-20)
+     값을 바꾸면 진단만(계획된 완료예정일과 비교) · [적용]을 눌러야 저장 → 익일부터 반영 ═══ */
+  window.ccMy4Plan=function(){ try{ const pl=ccPlanOf(TRACK); if(pl.chEnd) return ccParse(pl.chEnd); const c=ccPlanCalc(TRACK); return c.end||null; }catch(e){ return null; } };
+  window.ccMy4Res=function(){
+    const v=ccProfGet(), d=window.__ccMy4||v; if(!d) return '';
+    const ap=(!window.__ccMy4&&window.__ccMy4Msg)?'<div style="margin-top:6px;color:#2f7d4f;font-weight:800">✅ 적용됨 (익일부터): '+window.__ccMy4Msg+'</div>':'';
+    const end=ccEndByCap(d).end, pe=ccMy4Plan(), wk=ccCap(d).wk;
+    const same=v&&+v.wd===+d.wd&&+v.we===+d.we&&rk(v)===rk(d);
+    let dg='';
+    if(end&&pe){ const n=Math.round((end-pe)/86400000), body=' — 한 주 '+wk+'강 → 완료예정 '+ccYMD(end)+' · 계획된 완료예정일('+ccYMD(pe)+')';
+      dg=n>0?'<div class="my4d late">⚠️ <b>계획된 완료예정일보다 늦어짐</b>'+body+'보다 <b>'+n+'일 늦음</b><br>공부시간을 늘리거나 학습스타일 변경을 고려하세요</div>'
+            :'<div class="my4d ok">✅ <b>계획된 완료예정일 안에 완료</b>'+body+(n<0?'보다 <b>'+(-n)+'일 빠름</b>':'과 같음')+'</div>'; }
+    return ap+dg+(same?'':'<div style="margin-top:6px"><button type="button" class="mini" style="padding:2px 12px;font-weight:800;border-color:#C9A227;color:#8a6a12" onclick="ccMy4Apply()">적용</button></div>');
+  };
+  window.ccMy4Row=function(top){
+    const v=ccProfGet(); if(!v) return '';
+    const d=window.__ccMy4||v, cur=rk(d);
+    const hs=function(k,val){ let h='<select class="ccsel my4s" data-k="'+k+'" style="width:4.6em;min-width:0" onchange="ccMy4Pick(this)">';
+      for(let x=0;x<=16;x+=0.5) h+='<option value="'+x+'"'+(x===+val?' selected':'')+'>'+(x%1?x.toFixed(1):x)+'</option>'; return h+'</select>'; };
+    const rs='<select class="ccsel my4s" data-k="r" onchange="ccMy4Pick(this)">'+["12","11","21"].map(function(k){ return '<option value="'+k+'"'+(k===cur?' selected':'')+'>'+RT[k].n+' '+RT[k].r+'</option>'; }).join("")+'</select>';
+    return '<div id="ccMy4" style="'+(top?'margin-top:10px;padding-top:10px;border-top:1px dashed var(--line)':'')+'">'+
+      '<div style="font-weight:700">④ 1주 공부가능시간 · 학습스타일 변경</div>'+
+      '<div style="font-size:14px;margin-top:6px;line-height:2">⏱ 주중 하루 '+hs("wd",d.wd)+' 시간 · 주말 하루 '+hs("we",d.we)+' 시간 · <b style="color:#8a6a12;white-space:nowrap">한 주 총 '+F(tot(d))+'</b></div>'+
+      '<div style="font-size:14px;line-height:2">📚 학습스타일 '+rs+'</div>'+
+      '<div id="ccMy4R">'+ccMy4Res()+'</div></div>';
+  };
+  window.ccMy4Pick=function(sel){
+    const box=document.getElementById("ccMy4"); if(!box) return; const v=ccProfGet(); if(!v) return;
+    const g=function(k){ const e=box.querySelector('[data-k="'+k+'"]'); return e?e.value:""; };
+    window.__ccMy4={wd:+g("wd"),we:+g("we"),r:g("r")}; window.__ccMy4Msg=null;
+    try{ sel.blur(); }catch(e){}
+    const tt=box.querySelector('b'); if(tt) tt.textContent='한 주 총 '+F(tot(window.__ccMy4));
+    const r=document.getElementById("ccMy4R"); if(r) r.innerHTML=ccMy4Res();
+  };
+  window.ccMy4Apply=function(){
+    const d=window.__ccMy4; if(!d) return; if(window.ccPreview){ try{ toast("관리자 미리보기 — 저장하지 않습니다"); }catch(e){} return; }
+    const v={wd:d.wd,we:d.we,r:d.r,at:new Date().toISOString()};
+    try{ localStorage.setItem("cc_prof",JSON.stringify(v)); }catch(e){}
+    window.__ccMy4=null; window.__ccMy4Msg='주중 '+F(v.wd)+' · 주말 '+F(v.we)+' · '+RT[rk(v)].n;
+    window.__ccApplied1=null; window.__ccPrevProf=null; window.__ccChgMsg=null; window.__ccGoalMsg=null; window.__ccGoalPrev=null;
+    try{ localStorage.removeItem("cc_applied1"); localStorage.removeItem("cc_prof_prev"); }catch(e){}
+    const msg=ccCapAuto(v); try{ ccStudyRender(); }catch(e){} try{ ccPaceRender(); }catch(e){} try{ ccPlanBar(); }catch(e){}
+    try{ toast("적용했습니다 — 익일부터 · 한 주 "+ccCap(v).wk+"강"+(msg?" · "+msg:"")); }catch(e){}
+  };
+  (function(){ const st=document.createElement("style"); st.textContent='#ccMy4 .my4s{font:inherit;font-size:13px;font-weight:700;padding:2px 6px!important;width:auto!important;min-width:0!important;height:auto!important;vertical-align:middle}#ccMy4 .my4s[data-k=wd],#ccMy4 .my4s[data-k=we]{width:4.6em!important}'+
+    '#ccMy4 .my4d{margin-top:8px;border-radius:10px;padding:9px 12px;font-size:13.5px;line-height:1.7}#ccMy4 .my4d.late{background:rgba(224,104,90,.08);border:1.5px solid #e2a796;color:#b0391f}'+
+    '#ccMy4 .my4d.ok{background:rgba(47,125,79,.08);border:1.5px solid #9fd1b0;color:#2f7d4f}#ccMy4 .my4d b{font-weight:800}'; document.head.appendChild(st); })();
   window.ccPerOf=function(v){ return Math.max(1,Math.min(CC_PER_MAX,Math.round(ccCap(v).wk/7))); };
   window.ccEndByCap=function(v){
     try{ const c=ccPlanCalc(TRACK), k=ccCap(v), all=Math.max(0,c.total-c.pos); let left=all;
