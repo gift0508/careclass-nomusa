@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-21 00:52 첫화면로그아웃하단">
+<meta name="cc-build" content="2026-11-21 01:00 미리보기화면전환">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -2120,17 +2120,16 @@ function ccAdminPreview(track){
   let bar=document.getElementById("ccPrevBar");
   if(!bar){ bar=document.createElement("div"); bar.id="ccPrevBar"; bar.className="ccprevbar"; document.body.appendChild(bar); }
   bar.innerHTML='<span>👀 <b>관리자 미리보기</b> · 수강생 화면 · 진도 저장 안 됨</span>'+
-    '<button class="mini'+(TRACK==="1차"?" on":"")+'" data-pt="1차" onclick="ccPrevTrack(\'1차\')">1차 화면</button>'+
-    '<button class="mini'+(TRACK==="2차"?" on":"")+'" data-pt="2차" onclick="ccPrevTrack(\'2차\')">2차 화면</button>'+
+    ['1차','2차','1+2차'].map(function(t){ return '<button class="mini'+(user&&user.track===t?" on":"")+'" data-pt="'+t+'" onclick="ccPrevTrack(\''+t+'\')">'+(t==="1+2차"?"동차":t)+' 화면</button>'; }).join("")+
     '<button class="mini gold" onclick="ccAdminBack()">🖥 대시보드로</button>';
   bar.style.display="flex";
   try{ ccChatStart("admin","ccChatStu"); }catch(e){}
 }
 /* 미리보기 1차·2차 화면 전환 — 1+2차(동차) 미리보기에서는 수강생과 똑같이 차수만 바꿈 */
 function ccPrevTrack(t){
-  if(ccIsDual()){ try{ ccSwitchTrack(t); }catch(e){ console.error(e); } }
-  else ccAdminPreview(t);
-  try{ document.querySelectorAll("#ccPrevBar [data-pt]").forEach(function(b){ b.classList.toggle("on",b.getAttribute("data-pt")===TRACK); }); }catch(e){}
+  /* (2026-11-20) 1차생 · 2차생 · 동차생 화면을 각각 그대로 보여 줌 (나의 학습은 동차면 1차·2차를 함께 보여 주므로 수험 종류째 바꿈) */
+  ccAdminPreview(t);
+  try{ document.querySelectorAll("#ccPrevBar [data-pt]").forEach(function(b){ b.classList.toggle("on",b.getAttribute("data-pt")===t); }); }catch(e){}
 }
 function ccAdminBack(){
   window.ccPreview=false;
@@ -7097,7 +7096,7 @@ async function ccAdminViewPf(pf){
   if(!bar){ bar=document.createElement("div"); bar.id="ccPrevBar"; bar.className="ccprevbar"; document.body.appendChild(bar); }
   const dual=ccIsDual();
   bar.innerHTML='<span>👀 <b>'+nm+'</b> 수강생 화면 · 열람 전용 (저장 안 됨) · 진도 기록 '+rows.length+'건</span>'+
-    (dual?'<button class="mini'+(TRACK==="1차"?" on":"")+'" data-pt="1차" onclick="ccPrevTrack(\'1차\')">1차 화면</button><button class="mini'+(TRACK==="2차"?" on":"")+'" data-pt="2차" onclick="ccPrevTrack(\'2차\')">2차 화면</button>':'')+
+    (dual?'<span style="opacity:.8">동차 — 1차·2차를 함께 보여 줍니다</span>':'')+
     '<button class="mini gold" onclick="ccAdminBack()">🖥 대시보드로</button>';
   bar.style.display="flex";
   try{ ccTrackBar(); }catch(e){}
@@ -10147,6 +10146,9 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
     if(window.ccPreview){
       try{ ccTracks().forEach(function(t){ nxPassApply(t,false); }); }catch(e){}
       try{ nxDualSplit(); }catch(e){}
+      /* 관리자 미리보기(특정 수강생이 아님): 예시 공부시간으로 화면을 채워 보여 줌 — 이 브라우저에만, 서버 저장 안 됨 */
+      try{ if(!window.ccViewUid&&!ccProfGet()) localStorage.setItem("cc_prof",JSON.stringify({wd:4,we:8,r:"12",demo:1}));
+        const v=ccProfGet(); if(v) ccTracks().forEach(function(t){ if(!ccPlanOf(t).per){ if(t===TRACK) ccCapAuto(v); else ccPlanSetPer(t,ccPerOf(v)); } }); }catch(e){}
       try{ nxShowMine(); }catch(e){ console.warn(e); }
       return; }
     try{ ccTracks().forEach(function(t){ nxPassApply(t,false); }); }catch(e){ console.warn(e); }
