@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-20 19:55 복습스타일수정">
+<meta name="cc-build" content="2026-11-20 20:05 수험종류선택">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9833,9 +9833,17 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
   const RT=[["12","복습 중심형","수강 1 : 복습 2","추천"],["11","강의수강·복습균형형","수강 1.5 : 복습 1.5"],["21","강의수강중심형","수강 2 : 복습 1"]];
   const RTN={"12":"복습 중심형 1 : 2","11":"강의수강·복습균형형 1 : 1","21":"강의수강중심형 2 : 1"};
   let A={}, step=0, WZ=null;
+  /* 수험 종류: 처음 화면에서 수강생이 고름 (가입신청에서 묻지 않음) · 한 번 정하면 그 뒤로는 계정 과정 그대로 */
+  const trLock=function(){ const m=ccMeGet(); return !!m.wiz; };
+  const TRV={"1차":"1차","2차":"2차","동차(1+2차)":"1+2차"};
+  const setTrack=function(v){ const t=TRV[v]; if(!t||!user||user.track===t) return;
+    user.track=t;
+    try{ initTrack(t); ccRestoreState(); renderDash(); }catch(e){ console.warn(e); }
+    try{ const b=document.querySelector(".ubadge"); if(b) b.textContent="바로합격반 · "+t+" 트랙"; }catch(e){}
+    if(ccTracks().indexOf("2차")>=0&&!A.opt&&typeof nmOpt2==="function") A.opt=nmOpt2(); if(ccTracks().indexOf("2차")<0) A.opt=null; };
   const trName=function(){ const t=user&&user.track; return t==="1+2차"?"동차(1+2차)":(t||"1차"); };
   const stepsOf=function(){
-    const a=[{k:"tr",q:"당신이 준비하는 수험은?",hint:"공인노무사 시험 중 지금 준비하는 것입니다 · 가입하신 과정으로 정해져 있습니다.",
+    const a=[{k:"tr",q:"당신이 준비하는 수험은?",hint:"공인노무사 시험 중 지금 준비하는 것을 고르세요.",
         o:[["1차","1차","객관식 5과목"],["2차","2차","주관식(사례형) 4과목"],["동차(1+2차)","동차 (1차 + 2차)","1차와 2차를 한 해에 함께"]]},
       {k:"mode",q:"어떤 형태로 공부하나요?",hint:"공부에 쓸 수 있는 시간을 정하는 기준이 됩니다.",o:[["전업","전업","공부에 전념"],["직장 병행","직장 병행","일과 공부를 함께"]]},
 ];
@@ -9886,17 +9894,18 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
     if(st.k==="hrs"){ const hs=function(k){ let h='<select onchange="nxWizSet(\''+k+'\',this.value)"><option value="">선택</option>'; for(let x=0.5;x<=16;x+=0.5) h+='<option value="'+x+'"'+(A[k]===x?' selected':'')+'>'+(x%1?x.toFixed(1):x)+'</option>'; return h+'</select>'; };
       const c=calc(); body='<div class="hrs"><div class="hrow"><div><b>주중</b><small>월~금 하루</small></div><div>'+hs("wd")+' 시간</div></div><div class="hrow"><div><b>주말</b><small>토~일 하루</small></div><div>'+hs("we")+' 시간</div></div></div>'+
         (c?'<div class="calc">한 주 총 <b>'+c.tot+'시간</b> · 학습스타일에 따라 하루 평균 수강강의수 <b>약 '+c.avg+'강</b><br><small class="mu">주중 하루 '+c.d+'강 · 주말 하루 '+c.e+'강 · 한 주 '+c.wk+'강</small></div>':'');
-    } else body='<div class="opts">'+st.o.map(function(o){ const dis=st.k==="tr"&&o[0]!==trName();
-        return '<button class="opt'+(A[st.k]===o[0]?' on':'')+'"'+(dis?' disabled':'')+' onclick="nxWizPick(\''+st.k+'\',\''+J(o[0])+'\')"><span class="dot"></span><span><b>'+E(o[1])+'</b><small>'+E(o[2])+'</small></span>'+(o[3]?'<span class="tag">'+o[3]+'</span>':'')+(st.k==="tr"&&!dis?'<span class="tag">내 과정</span>':'')+'</button>'; }).join("")+'</div>';
+    } else body='<div class="opts">'+st.o.map(function(o){ const dis=st.k==="tr"&&trLock()&&o[0]!==trName();
+        return '<button class="opt'+(A[st.k]===o[0]?' on':'')+'"'+(dis?' disabled':'')+' onclick="nxWizPick(\''+st.k+'\',\''+J(o[0])+'\')"><span class="dot"></span><span><b>'+E(o[1])+'</b><small>'+E(o[2])+'</small></span>'+(o[3]?'<span class="tag">'+o[3]+'</span>':'')+'</button>'; }).join("")+'</div>';
     const ok=st.k==="hrs"?(A.wd!=null&&A.we!=null):A[st.k]!=null;
     app.innerHTML='<div class="card">'+prog(S)+'<div class="no">STEP '+step+' / '+S.length+'</div><div class="q">'+st.q+'</div><div class="hint">'+st.hint+'</div>'+body+
       '<div class="nav"><button class="back" onclick="nxWizGo('+(step-1)+')">← 이전</button><button class="next"'+(ok?'':' disabled')+' onclick="nxWizGo('+(step+1)+')">'+(step===S.length?'완성하기':'다음')+' →</button></div></div>';
   };
   window.nxWizSet=function(k,v){ A[k]=v===""?null:+v; draw(); };
-  window.nxWizPick=function(k,v){ A[k]=v; draw(); setTimeout(function(){ if(step<stepsOf().length) nxWizGo(step+1); },260); };
+  window.nxWizPick=function(k,v){ A[k]=v; if(k==="tr") setTrack(v); draw(); setTimeout(function(){ if(step<stepsOf().length) nxWizGo(step+1); },260); };
   window.nxWizGo=function(n){ const S=stepsOf(); if(n===S.length+1&&step===S.length) finish(); step=Math.max(0,n); draw(); if(WZ) WZ.scrollTop=0; };
   const finish=function(){
     if(prev()) return;
+    try{ if(typeof sb!=="undefined"&&sb&&typeof ccUid!=="undefined"&&ccUid) sb.rpc("cc_set_my_track",{p_track:user.track}).then(function(r){ if(r&&r.error){ console.warn(r.error); try{ toast("수험 종류를 서버에 저장하지 못했습니다 — 관리자에게 알려 주세요"); }catch(e){} } },function(e){ console.warn(e); }); }catch(e){}
     const v={wd:A.wd,we:A.we,r:A.r,at:new Date().toISOString()}; WR("cc_prof",v);
     const m=ccMeGet(); m.mode=A.mode;
     m.wiz=new Date().toISOString(); m.at=m.at||m.wiz; WR("cc_me",m);
