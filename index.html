@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-20 16:55 첨삭답안문구">
+<meta name="cc-build" content="2026-11-20 17:15 합격평균60">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -7159,7 +7159,7 @@ window.ccAdmStuSample=function(){ ccAdminPreview("1+2차"); setTimeout(function(
 /* ═══ 조언 경로 (2026-10-30) — ① 자동 진단 → ② 조언 초안 → ③ 관리자 확정·발송(cc_advice) → ④ 수강생 로그인 즉시 「오늘의 합격조언」 → ⑤ 사후 확인(읽음·해소·재조언)
    진단 신호: 접속 공백 · 밀린 복습 · 오답노트가 몰린 강 · 헷갈림 표시 · 과락선 근처 과목(1차) · 이상 없음(격려)
    수강생 문구에는 점수 산정 방식·순위를 넣지 않음 ═══ */
-window.NM_ADV={all:[],err:"",rv:{},P:null,at:0};
+window.NM_ADV={all:[],err:"",rv:{},P:null,at:0,c2:{},q2:{},pa:null};
 function nmAdvE(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
 function nmAdvT(){ return ccISO(ccToday()); }
 function nmAdvMissing(e){ const m=String((e&&(e.message||e.code))||e||""); return /cc_advice|42P01|PGRST205|does not exist|schema cache/i.test(m); }
@@ -7171,7 +7171,7 @@ const NM_ADV_ACT={
   diag:["🎯 300점 합격 진단","nmDiagOpen()"],
   plan:["📄 전체학습계획","showRoadmap()"]
 };
-const NM_ADV_KIND={idle:"재시동",overdue:"밀린 복습",note:"오답 집중 강",confuse:"헷갈림",fail:"과락 위험",weak:"취약 보강",top:"합격권 관리",cheer:"격려",consult:"상담 제안",report:"위치 진단",free:"직접 조언"};
+const NM_ADV_KIND={idle:"재시동",overdue:"밀린 복습",note:"오답 집중 강",confuse:"헷갈림",fail:"과락 위험",weak:"취약 보강",top:"합격권 관리",cheer:"격려",consult:"상담 제안",report:"위치 진단",free:"직접 조언",low2:"2차 합격평균 미달",pass2:"2차 합격평균 이상",rw2:"2차 재작성 쌓임",idle2:"2차 작성 공백"};
 
 /* ① 자동 진단 — rv: cc_review 줄들 · last: 직전 접속 시각 · D: 300점 진단(1차) */
 window.nmChk=function(o){
@@ -7203,6 +7203,34 @@ window.nmChk=function(o){
     out.push({k:"fail",lvl:"warn",
       adm:"과락 경보 — <b>"+nmAdvE(s.join(", "))+"</b> ("+nmAdvE(D.alerts.map(function(a){ return a.t; }).join(" · "))+")",
       stu:s.join("·")+"이(가) 과락선(40점) 근처에 있어요. 1차는 한 과목이라도 40점 아래면 총점과 관계없이 불합격이라, 이번 주는 "+s[0]+" 문제풀이와 오답노트 비중을 늘려 주세요.",act:"diag"}); }
+  /* 2차 신호 (2026-11-20): 간단채점(과목별실전문제풀이) 기록 cc_case3_v1 · 과목별 합격평균점수(관리자 입력, 없으면 법정 기준 평균 60점) */
+  const iga=function(w){ const c=String(w||"").charCodeAt(String(w||"").length-1); if(c>=0xAC00&&c<=0xD7A3) return w+(((c-0xAC00)%28)?"이":"가"); if(/[ⅠⅡⅢ1378]$/.test(w)) return w+"이"; return w+"이(가)"; };
+  if(o.c2){ const P=(o.c2&&o.c2.p)||{}, Q=o.q2||{}, PA=o.pa||{}, now=Date.now(), DAY7=7*86400000, tag=o.dual?"[2차] ":"";
+    const bySub={}; let lastAt=0, any=0, rwOld=0;
+    Object.keys(P).forEach(function(id){ const x=P[id]||{}, tr=x.tries||[]; if(!tr.length) return; any++;
+      const sj=Q[id]||Q[String(id).replace(/^q/,"")]||""; const la=+tr[tr.length-1].at||0; if(la>lastAt) lastAt=la;
+      if(x.box==="rw"&&now-la>DAY7) rwOld++;
+      if(sj) tr.forEach(function(t){ (bySub[sj]=bySub[sj]||[]).push({at:+t.at||0,p:+t.pct||0}); }); });
+    const lo=[], hi=[];
+    Object.keys(bySub).forEach(function(sj){ const L=bySub[sj].sort(function(a,b){ return b.at-a.at; }).slice(0,3); if(L.length<3) return;
+      const av=Math.round(L.reduce(function(a,b){ return a+b.p; },0)/L.length), pv=+PA[sj], set=pv>0, base=set?pv:60;
+      const lab=set?"합격평균("+base+"점)":"법정 합격기준(평균 60점)";
+      (av<base?lo:hi).push({sj:sj,av:av,base:base,lab:lab}); });
+    if(lo.length) out.push({k:"low2",lvl:"weak",
+      adm:"2차 간단채점 최근 3회 평균 — "+lo.map(function(x){ return "<b>"+nmAdvE(x.sj)+"</b> "+x.av+"점 (기준 "+x.base+"점 · "+(x.base-x.av)+"점 부족)"; }).join(" · "),
+      stu:tag+lo.map(function(x){ return iga(x.sj)+" "+x.lab+"보다 낮은 편이에요."; }).join(" ")+" "+lo[0].sj+" 핵심이론을 다시 확인하고, 「재작성하기」에 모은 문제를 다시 써 보세요.",act:"qb"});
+    if(hi.length&&!lo.length) out.push({k:"pass2",lvl:"ok",
+      adm:"2차 간단채점 최근 3회 평균 — "+hi.map(function(x){ return "<b>"+nmAdvE(x.sj)+"</b> "+x.av+"점 (기준 "+x.base+"점)"; }).join(" · "),
+      stu:tag+hi.map(function(x){ return iga(x.sj)+" "+x.lab+"보다 높아요."; }).join(" ")+" 지금 페이스를 유지하면서 실전답안첨삭(축문첨삭)으로 실전 감각을 점검해 보세요.",act:"qb"});
+    if(rwOld>=5) out.push({k:"rw2",lvl:"weak",n:rwOld,
+      adm:"2차 「재작성하기」에 <b>"+rwOld+"문제</b> — 7일 넘게 다시 쓰지 않음",
+      stu:tag+"「재작성하기」에 모아 둔 문제가 "+rwOld+"개 있어요. 이번 주에는 그중 한두 문제부터 다시 써 보세요. 다시 쓸 때 점수가 가장 많이 오릅니다.",act:"qb"});
+    if(any&&lastAt&&now-lastAt>DAY7){ const dd=Math.floor((now-lastAt)/86400000);
+      out.push({k:"idle2",lvl:"warn",
+        adm:"2차 주관식 마지막 작성 <b>"+dd+"일 전</b> — 답안 작성 리듬 회복",
+        stu:tag+dd+"일 동안 2차 답안을 쓰지 않았어요. 오늘은 과목별실전문제풀이에서 한 문제만 써 보세요. 손이 기억하는 답안 리듬을 놓치지 않는 것이 중요합니다.",act:"qb"}); }
+  }
+  if(o.dual) out.forEach(function(x){ if(["idle","overdue","note","confuse","fail"].indexOf(x.k)>=0&&x.stu&&x.stu.indexOf("[1차]")!==0) x.stu="[1차] "+x.stu; });
   if(!out.some(function(x){ return x.lvl==="warn"||x.lvl==="weak"; })&&rv.length>=20&&(da==null||da<=2))
     out.push({k:"cheer",lvl:"ok",adm:"이상 신호 없음 · 꾸준한 페이스 — 격려 적기",
       stu:"꾸준히 잘 하고 있어요. 지금 리듬 그대로 오늘 할당된 학습을 이어 가세요. 꾸준함이 합격을 만듭니다.",act:"mission"});
@@ -7219,7 +7247,7 @@ window.nmAdvDraft=function(kind,ex){
   if(kind==="fail") return (ex.w?ex.w+"이(가) ":"")+"과락선(40점) 근처에 있어요. 이번 주는 이 과목 문제풀이와 오답노트 비중을 늘려 주세요.";
   return "";
 };
-function nmAdvActOf(kind){ return {idle:"mission",overdue:"mission",note:"wrong",confuse:"mission",fail:"diag",weak:"wrong",top:"qb",cheer:"mission",report:"plan"}[kind]||""; }
+function nmAdvActOf(kind){ return {idle:"mission",overdue:"mission",note:"wrong",confuse:"mission",fail:"diag",weak:"wrong",top:"qb",cheer:"mission",report:"plan",low2:"qb",pass2:"qb",rw2:"qb",idle2:"qb"}[kind]||""; }
 
 /* 관리자 자료: 전체 cc_review(진단용 열만) + cc_advice */
 window.nmAdvEnsure=function(force){
@@ -7232,6 +7260,11 @@ window.nmAdvEnsure=function(force){
       const r=await sb.from("cc_review").select("user_id,qkey,subject,lec,mark,next_due,graduated,in_note").order("user_id").order("qkey").range(from,from+PAGE-1);
       if(r.error) throw r.error; const d=r.data||[]; d.forEach(function(x){ (rv[x.user_id]=rv[x.user_id]||[]).push(x); }); if(d.length<PAGE) break; } }catch(e){ console.warn("[조언] 복습 기록",e); }
     NM_ADV.rv=rv;
+    /* 2차 진단 자료: 수강생별 간단채점 기록 · 2차 문제 과목 · 과목별 합격평균점수 */
+    try{ const r=await sb.from("cc_progress").select("user_id,value").eq("key","cc_case3_v1").limit(5000); if(r.error) throw r.error;
+      const c2={}; (r.data||[]).forEach(function(x){ try{ c2[x.user_id]=typeof x.value==="string"?JSON.parse(x.value):(x.value||{}); }catch(e){} }); NM_ADV.c2=c2; }catch(e){ console.warn("[조언] 2차 기록",e); }
+    try{ const rows=await ccQBLoadRaw("2차"); const q2={}; (rows||[]).forEach(function(q){ q2[String(q.id)]=q.subject||""; }); NM_ADV.q2=q2; }catch(e){ console.warn("[조언] 2차 문제",e); }
+    try{ NM_ADV.pa=await nmPassAvgLoad(); }catch(e){}
     try{ const r=await sb.from("cc_advice").select("*").order("created_at",{ascending:false}).limit(3000);
       if(r.error) throw r.error; NM_ADV.all=r.data||[]; NM_ADV.err=""; }
     catch(e){ NM_ADV.all=[]; NM_ADV.err=nmAdvMissing(e)?"missing":ccErr(e); }
@@ -7242,7 +7275,8 @@ function nmAdvPf(uid){ return (ccProfiles||[]).find(function(p){ return p.id===u
 window.nmChkFor=function(uid){
   const pf=nmAdvPf(uid); let D=null;
   try{ if(pf&&String(pf.track||"1차").indexOf("1")>=0&&window.nmDiagFor) D=nmDiagFor(uid); }catch(e){}
-  return nmChk({rv:NM_ADV.rv[uid]||[],last:pf&&pf.last_seen,D:D});
+  const tr=String((pf&&pf.track)||"1차"), has2=tr.indexOf("2")>=0;
+  return nmChk({rv:NM_ADV.rv[uid]||[],last:pf&&pf.last_seen,D:D,dual:tr==="1+2차",c2:has2?(NM_ADV.c2[uid]||{p:{}}):null,q2:NM_ADV.q2,pa:NM_ADV.pa||nmPassAvgDef()});
 };
 /* ⑤ 사후 확인: 같은 종류의 마지막 조언 · 신호가 남아 있는지 */
 window.nmAdvFollow=function(uid,kind,sig){
@@ -7254,7 +7288,7 @@ window.nmAdvFollow=function(uid,kind,sig){
 };
 /* 조언 큐(관제실)에 넣을 항목 */
 window.nmAdvQueue=function(uid){
-  return nmChkFor(uid).filter(function(s){ return s.k!=="fail"&&s.k!=="cheer"&&s.k!=="idle"; }).map(function(s){
+  return nmChkFor(uid).filter(function(s){ return s.k!=="fail"&&s.k!=="cheer"&&s.k!=="idle"&&s.k!=="pass2"; }).map(function(s){
     return {t:s.lvl==="warn"?"t-warn":"t-weak",tag:"🩺 "+NM_ADV_KIND[s.k],kind:s.k,msg:s.adm+' '+nmAdvFollow(uid,s.k,true)}; });
 };
 
@@ -7300,6 +7334,22 @@ window.nmAdvSend=async function(uid,kind){
 window.nmAdvView=function(uid){ try{ closeEngine(); }catch(e){} try{ document.getElementById("adminView").classList.remove("open"); }catch(e){}
   if(!window.ccPreview) ccAdminPreview("1+2차"); setTimeout(function(){ ccAdmStuGo(uid); },150); };
 
+/* ⚙️ 2차 과목별 합격평균점수 (관리자 입력 · cc_settings "nm_pass_avg2") — 2차 조언 기준 · 비어 있으면 법정 합격기준 평균 60점 */
+window.nmPassAvgDef=function(){ const o={}; ((CC_LAWS&&CC_LAWS["2차"])||[]).forEach(function(l){ o[l]=60; }); return o; };   /* 처음 값: 모든 과목 60점 (2026-11-20 · 과목별 실제 점수는 나중에 입력) */
+window.nmPassAvgLoad=async function(){ try{ const r=await sb.from("cc_settings").select("value").eq("key","nm_pass_avg2").maybeSingle(); if(r.error) throw r.error; if(!r.data) return nmPassAvgDef(); const v=r.data.value; return (typeof v==="string"?JSON.parse(v||"{}"):(v||{}))||{}; }catch(e){ return nmPassAvgDef(); } };
+window.nmPassAvgOpen=async function(){
+  if(!window.adminAuthed) return; const PA=await nmPassAvgLoad(), L=(CC_LAWS&&CC_LAWS["2차"])||[];
+  const m=nmAdvBox("nmPassAvg");
+  m.innerHTML='<div class="tkbox" style="max-width:420px"><button class="tkx" onclick="document.getElementById(\'nmPassAvg\').classList.remove(\'on\')">✕</button><h3>⚙️ 2차 과목별 합격평균점수</h3>'+
+    '<div class="tksub" style="margin:6px 0 10px">수강생 간단채점 최근 3회 평균을 이 점수와 비교해 조언합니다 · 비워 두면 법정 합격기준(평균 60점)으로 봅니다</div>'+
+    L.map(function(l){ return '<div style="display:flex;align-items:center;gap:10px;margin:6px 0"><b style="flex:1">'+nmAdvE(l)+'</b><input type="number" min="0" max="100" step="0.5" data-sj="'+nmAdvE(l)+'" value="'+(PA[l]!=null?nmAdvE(PA[l]):'')+'" placeholder="60" style="width:80px;padding:6px 8px;border:1px solid var(--line);border-radius:8px;font:inherit;text-align:right"> 점</div>'; }).join("")+
+    '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px"><button class="mini" onclick="document.getElementById(\'nmPassAvg\').classList.remove(\'on\')">취소</button><button class="mini" style="background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700" onclick="nmPassAvgSave()">저장</button></div></div>';
+  m.classList.add("on"); };
+window.nmPassAvgSave=async function(){
+  const o={}; document.querySelectorAll('#nmPassAvg input[data-sj]').forEach(function(i){ const v=parseFloat(i.value); if(v>0&&v<=100) o[i.getAttribute("data-sj")]=v; });
+  const r=await sb.from("cc_settings").upsert([{key:"nm_pass_avg2",value:JSON.stringify(o),updated_at:new Date().toISOString()}],{onConflict:"key"});
+  if(r.error){ alert("저장하지 못했습니다 — "+ccErr(r.error)); return; }
+  NM_ADV.pa=o; document.getElementById("nmPassAvg").classList.remove("on"); toast("2차 합격평균점수를 저장했습니다 — 2차 조언 기준에 바로 반영됩니다"); try{ ccAdmStuPanel(); }catch(e){} };
 /* 관리자 미리보기 패널: 선택한 수강생의 🩺 진단 카드 */
 window.nmAdvCard=function(){
   const uid=window.ccViewUid; if(!uid) return "";
@@ -7307,7 +7357,7 @@ window.nmAdvCard=function(){
   const S=nmChkFor(uid), col={warn:"#e0685a",weak:"#e0a44a",ok:"#3fb27f"};
   return '<div style="margin-top:10px;padding:10px 12px;border-top:1px dashed var(--gold)">'+
     '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b>🩺 '+nmAdvE(pf.name||pf.login_id)+' 진단</b><small style="color:var(--mute)">마지막 접속 '+nmAdvE(ccLastStr(pf.last_seen))+' · 복습 기록 '+(NM_ADV.rv[uid]||[]).length+'문항</small>'+
-    '<span style="margin-left:auto"></span><button class="mini" onclick="nmAdvPopup(true)">👁 오늘의 합격조언 미리보기</button><button class="mini" onclick="nmAdvCompose(\''+uid+'\',\'free\')">✍️ 직접 조언 쓰기</button></div>'+
+    '<span style="margin-left:auto"></span><button class="mini" onclick="nmAdvPopup(true)">👁 오늘의 합격조언 미리보기</button><button class="mini" onclick="nmAdvCompose(\''+uid+'\',\'free\')">✍️ 직접 조언 쓰기</button><button class="mini" onclick="nmPassAvgOpen()">⚙️ 2차 합격평균점수</button></div>'+
     (NM_ADV.err==="missing"?'<div class="tksub" style="color:#e0685a">조언 발송을 쓰려면 nomusa_advice.sql을 먼저 실행해 주세요</div>':'')+
     (S.length?S.map(function(s){ return '<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--line)"><span style="flex:none;font-size:.72rem;font-weight:700;color:#fff;background:'+col[s.lvl]+';border-radius:6px;padding:2px 7px">'+NM_ADV_KIND[s.k]+'</span>'+
       '<div style="flex:1;font-size:.84rem;line-height:1.55">'+s.adm+'<br>'+nmAdvFollow(uid,s.k,true)+'</div><button class="mini" style="flex:none" onclick="nmAdvCompose(\''+uid+'\',\''+s.k+'\')">조언 쓰기</button></div>'; }).join(""):
