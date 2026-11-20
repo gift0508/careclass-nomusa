@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-20 23:10 암기성공2단계까지">
+<meta name="cc-build" content="2026-11-20 23:30 관리자진행막대">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -882,21 +882,19 @@ border-radius:999px;padding:4px 12px;font-size:.7rem;cursor:pointer;font-family:
       </div>
     </div>
 
-    <div class="agrid" style="margin-top:22px">
+    <div class="agrid" style="margin-top:22px;grid-template-columns:1fr">
       <div class="panel">
         <h3>수험 유형별 분석</h3>
         <div class="sub">전업·직장 병행 단위의 인원·진도·성취 — 관리 강도 설계의 기초 자료</div>
         <div class="atable" id="bySchool"></div>
       </div>
-      <div class="panel">
-        <h3>응시 경험별 분석</h3>
-        <div class="sub">1차·2차 응시 경험 단위의 진도·접속 비교</div>
+      <div class="panel" style="display:none">
         <div class="atable" id="byYear"></div>
       </div>
     </div>
 
     <div class="panel" style="margin-top:22px">
-      <h3>전체 진단 한눈판 — 수강생 × <span class="lawN2">7</span>과목 히트맵</h3>
+      <h3>전체 진단 한눈판 — 수강생별 진행 막대</h3>
       <div class="sub" id="hmLegend">칸 색 = 현재 단계 · 붉은 테두리 = 취약 신호 · 행 클릭 시 학생 상세</div>
       <div class="heat" id="heatmap"></div>
     </div>
@@ -1928,7 +1926,7 @@ function renderAdmin(){
   adminList=list;
   const _stg=stName, _cols=["#7a8db0","#5aa8e8","#e8b93c","#5ec98f"];
   const _lg=document.getElementById("hmLegend");
-  if(_lg)_lg.innerHTML='칸 = 과목별 들은 강의 / 필수강의 (나의 학습 체크 기준) · 빨간 글씨 = 지난주까지 밀린 강의 · 행 클릭 시 학생 상세';
+  if(_lg)_lg.innerHTML='처음 「당신의 합격 설계」 막대그래프 위에 들은 강의를 채운 진행 상황 (나의 학습 체크 기준) · 빨간 선보다 진한 부분이 짧으면 밀림 · 행 클릭 시 학생 상세';
   document.querySelectorAll(".lawN2").forEach(function(e){ e.textContent=nL; });
   // KPI
   document.getElementById("akTotal").textContent=list.length;
@@ -1972,15 +1970,13 @@ function renderAdmin(){
   }
   groupTable(function(x){ return x.s; },"bySchool");
   groupTable(function(x){ return x.y; },"byYear");
-  // 히트맵
-  const cols="grid-template-columns:110px repeat("+nL+",minmax(46px,1fr)) 90px";
+  // 진행 막대 (합격 설계 막대그래프 · 나의 학습 기준)
   document.getElementById("heatmap").innerHTML=list.length?
-   `<div class="hrow hh" style="${cols}"><span></span>${ADMIN_LAWS.map(function(l){ return `<span style="text-align:center">${l}</span>`; }).join("")}<span style="text-align:center">상태</span></div>`+
+   '<div class="nxarow hh"><span>수강생</span><span>합격 설계 대비 진행 — 막대 = 단계별 합격 설계 기간 · 진한 부분 = 들은 강의 · 빨간 선 = 오늘 · 점선 = 시험 2주 전</span><span>들은 강의 · 지난주까지</span><span>상태</span></div>'+
    list.map(function(x,i){
-     const cells=ADMIN_LAWS.map(function(l){ const b=x.nx&&x.nx.by[l]; if(!b||!b.n) return '<span class="hcell" style="background:rgba(255,255,255,.08);color:var(--mute)">—</span>'; const r=b.d/b.n, q=r>=1?3:(r>=.5?2:(r>0?1:0));
-       return `<span class="hcell hs${q}"${b.miss?' style="color:#ff9b9b;font-weight:800"':''} title="${ccEsc(l)} 들은 강의 ${b.d}/${b.n}${b.miss?' · 밀림 '+b.miss+'강':''}">${b.d}/${b.n}${b.miss?' ▼'+b.miss:''}</span>`; }).join("");
+     const sm=x.nx?(x.nx.done+'/'+x.nx.total+'강 · '+(x.nx.miss>0?'<b style="color:#ff9b9b">'+x.nx.miss+'강 밀림</b>':'<b style="color:#5ec98f">계획대로</b>')):'—';
      const st=x.st==="ok"?'<span class="hstat ok">정상</span>':'<span class="hstat warn">'+x.stl+'</span>';
-     return `<div class="hrow" style="${cols}" onclick="openStudent(${i})"><span class="hname">${ccEsc(x.n)}<small>${ccEsc(x.s)}</small></span>${cells}${st}</div>`;
+     return '<div class="nxarow" onclick="openStudent('+i+')"><span class="nm"><b>'+ccEsc(x.n)+'</b><small>'+ccEsc(x.s)+'</small></span>'+nxAdmBar(x.nx)+'<span class="sm">'+sm+'</span>'+st+'</div>';
    }).join(""):EMPTY;
   // 명부
   document.getElementById("roster").innerHTML=list.length?
@@ -2004,9 +2000,26 @@ function nxAdmCalc(uid,t){
       b.n++; if(dn){ done++; b.d++; }
       if(a&&a<=LS){ plan++; if(dn) act++; else b.miss++; }
       if(a&&a>=M&&a<=SN){ wN++; if(dn) wD++; } });
-    return {total:f.length,done:done,plan:plan,miss:plan-act,wN:wN,wD:wD,by:by};
+    const R=(typeof nxReq==="function")?nxReq(t):[], stg=R.map(function(si){ const it=f.filter(function(o){ return o.si===si; }); return {si:si,n:it.length,d:it.filter(function(o){ return D["0|"+t+"|"+o.key]; }).length}; }).filter(function(x){ return x.n>0; });
+    return {total:f.length,done:done,plan:plan,miss:plan-act,wN:wN,wD:wD,by:by,stg:stg,start:pl.start||ccISO(td),t:t};
   }catch(e){ console.warn(e); return null; }
 }
+/* 관리자 진행 막대: 합격 설계 막대그래프를 한 줄로 — 단계마다 합격 설계 기간 · 진한 부분 = 들은 강의 · 빨간 선 = 오늘 */
+function nxAdmBar(nx){
+  if(!nx||!nx.stg.length) return '<div class="nxab emp">계획 없음</div>';
+  const st=ccParse(nx.start), td=ccToday(), ex=ccExamDate(nx.t,td), dl=ccAddDays(ex,-14), tot=nx.stg.reduce(function(a,x){ return a+x.n; },0);
+  const days=Math.max(1,Math.round((dl-st)/864e5)+1), perDay=tot/days, span=Math.max(1,Math.round((ex-st)/864e5)), pos=function(d){ return Math.max(0,Math.min(100,(d-st)/864e5/span*100)); };
+  let acc=0; const seg=nx.stg.map(function(x,k){ const a=ccAddDays(st,Math.floor(acc/perDay)); acc+=x.n; const b=ccAddDays(st,Math.ceil(acc/perDay)-1); const l=pos(a), w=Math.max(1,pos(ccAddDays(b,1))-l);
+    return '<div class="nxs c'+(k%4)+'" style="left:'+l+'%;width:'+w+'%" title="'+ccEsc(CC_STAGES[nx.t][x.si])+' '+x.d+'/'+x.n+'강"><i style="width:'+Math.min(100,x.d/x.n*100)+'%"></i></div>'; }).join("");
+  return '<div class="nxab">'+seg+'<div class="nxt" style="left:'+pos(td)+'%"></div><div class="nxd" style="left:'+pos(dl)+'%"></div></div>';
+}
+(function(){ const css='html .nxab{position:relative;height:18px;background:rgba(127,127,127,.18);border-radius:6px;min-width:0}html .nxab.emp{background:none;height:auto;font-size:12px;opacity:.6}'+
+  'html .nxs{position:absolute;top:0;bottom:0;border-radius:5px;overflow:hidden}html .nxs i{position:absolute;left:0;top:0;bottom:0}'+
+  'html .nxs.c0{background:#c9d3e6}html .nxs.c0 i{background:#0D1F3C}html .nxs.c1{background:#cfdcf0}html .nxs.c1 i{background:#2d5aa0}html .nxs.c2{background:#efe2b5}html .nxs.c2 i{background:#C9A227}html .nxs.c3{background:#cfe6d7}html .nxs.c3 i{background:#2f7d4f}'+
+  'html .nxt{position:absolute;top:-4px;bottom:-4px;border-left:2px solid #e0685a;z-index:2}html .nxd{position:absolute;top:-4px;bottom:-4px;border-left:2px dashed #8a8f9a;z-index:2}'+
+  'html .nxarow{display:grid;grid-template-columns:150px minmax(0,1fr) 170px 80px;gap:12px;align-items:center;padding:8px 6px;border-bottom:1px dashed rgba(127,127,127,.25);cursor:pointer;font-size:13px}html .nxarow.hh{cursor:default;font-size:12px;opacity:.75;font-weight:700}'+
+  'html .nxarow .nm b{display:block}html .nxarow .nm small{opacity:.65}html .nxarow .sm{font-size:12.5px}';
+  try{ const sh=new CSSStyleSheet(); sh.replaceSync(css); document.adoptedStyleSheets=document.adoptedStyleSheets.concat([sh]); }catch(e){ const st=document.createElement("style"); st.textContent=css; document.head.appendChild(st); } })();
 function openStudent(i){
   const x=adminList[i]; if(!x) return; const pf=x.pf;
   const stName=(CC_STAGES&&CC_STAGES[TRACK==="2차"?"2차":"1차"])||((TRACK==="2차")?["핵심","문풀","파이널","특강"]:["기본","문풀","핵심","기출실전"]);
@@ -2254,6 +2267,7 @@ function ccRenderPwReq(){
 }
 /* ── 관리자: 수험 종류 전환 신청 (1차 → 2차) (2026-11-19) ── */
 function ccRenderTrReq(){
+  return;   /* (2026-11-20) 수험 종류 전환 신청 칸 삭제 — 수험 종류는 첫 화면에서 정함 */
   let el=document.getElementById("ccTrReq");
   if(!el){ const ap=document.getElementById("ccPwReqPanel")||document.getElementById("ccAppPanel"); if(!ap) return;
     const pn=document.createElement("div"); pn.className="panel"; pn.style.marginTop="22px"; pn.id="ccTrReqPanel";
