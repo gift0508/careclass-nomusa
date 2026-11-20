@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-20 20:10 나의학습입힘">
+<meta name="cc-build" content="2026-11-20 18:50 응시경험삭제">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9185,8 +9185,6 @@ window.CC_IP_TOOLS={"민법":[1,2,3,4,5,6],"노동법Ⅰ":[1,2,3,4,5],"노동법
     let h='<div class="mkv">'+
       '<span>수험 종류</span><div>'+chips("tr",["1차","2차","동차(1+2차)"],tr)+trBtn+'</div>'+
       '<span>수험 형태</span><div>'+chips("mode",["전업","직장 병행"],mode)+'</div>'+
-      '<span>응시 경험</span><div>'+chips("exp",["초시","재시","삼시이상"],m.exp||"")+
-        ((m.exp&&m.expUntil&&ccISO(ccToday())>m.expUntil)?'<button type="button" class="mch medit" onclick="ccMeExpOpen()">수정</button>':'')+'<span class="mnote">※ 동차의 경우 2차 응시경험을 선택하면 됩니다.</span></div>'+
       '<div class="mhr"></div>'+
       '<span>수강신청 현황</span><div class="mpath">'+path+'</div>'+
       '<span>학습스타일</span><div>'+rs+'<span class="mnote">※ 하루 3시간 기준으로 복습중심형은 수강1 : 복습2 / 강의수강복습균형형은 1.5 : 1.5 / 강의수강중심형은 2 : 1입니다.</span></div>'+
@@ -9808,7 +9806,7 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
     const a=[{k:"tr",q:"당신이 준비하는 수험은?",hint:"공인노무사 시험 중 지금 준비하는 것입니다 · 가입하신 과정으로 정해져 있습니다.",
         o:[["1차","1차","객관식 5과목"],["2차","2차","주관식(사례형) 4과목"],["동차(1+2차)","동차 (1차 + 2차)","1차와 2차를 한 해에 함께"]]},
       {k:"mode",q:"어떤 형태로 공부하나요?",hint:"공부에 쓸 수 있는 시간을 정하는 기준이 됩니다.",o:[["전업","전업","공부에 전념"],["직장 병행","직장 병행","일과 공부를 함께"]]},
-      {k:"exp",q:"응시 경험은?",hint:"동차의 경우 2차 응시경험을 선택하면 됩니다.",o:[["초시","초시","이번이 처음"],["재시","재시","두 번째 도전"],["삼시이상","삼시 이상","세 번 이상"]]}];
+];
     if(ccTracks().indexOf("2차")>=0) a.push({k:"opt",q:"2차 선택과목은?",hint:"선택과목 1과목을 고르세요.",o:(CC_OPT["2차"]||[]).map(function(l){ return [l,l,"2차 선택과목"]; })});
     a.push({k:"r",q:"나의 학습스타일은?",hint:"하루 3시간 기준으로 강의수강과 복습에 쓰는 시간의 비율입니다.",o:RT.map(function(x){ return [x[0],x[1],x[2],x[3]]; })});
     a.push({k:"hrs",q:"1주 공부시간은?",hint:"하루에 공부할 수 있는 시간을 고르세요 · 수정시 익일부터 적용됩니다."});
@@ -9846,7 +9844,6 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
         '<h3>노무사 '+E(tn==="동차(1+2차)"?"동차":tn)+' · '+E(A.mode)+' 수험</h3><div class="kv">'+
         '<span>수험 종류</span><div>'+pl(tn,["1차","2차","동차(1+2차)"])+'</div>'+
         '<span>수험 형태</span><div>'+pl(A.mode,["전업","직장 병행"])+'</div>'+
-        '<span>응시 경험</span><div>'+pl(A.exp,["초시","재시","삼시이상"])+'</div>'+
         (A.opt?'<span>2차 선택과목</span><div><b>'+E(A.opt)+'</b></div>':'')+
         '<span>학습스타일</span><div><b>'+E(RTN[A.r])+'</b></div>'+
         '<span>1주 공부시간</span><div><b>주중(월~금) 하루 '+A.wd+'시간 · 주말(토~일) 하루 '+A.we+'시간 · 한 주 총 '+c.tot+'시간</b></div></div>'+
@@ -9869,7 +9866,7 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
   const finish=function(){
     if(prev()) return;
     const v={wd:A.wd,we:A.we,r:A.r,at:new Date().toISOString()}; WR("cc_prof",v);
-    const m=ccMeGet(); m.mode=A.mode; if(m.exp!==A.exp){ m.exp=A.exp; try{ const ex=ccExamDate(user.track==="1차"?"1차":"2차",ccToday()); if(ex) m.expUntil=ccISO(ex); }catch(e){} }
+    const m=ccMeGet(); m.mode=A.mode;
     m.wiz=new Date().toISOString(); m.at=m.at||m.wiz; WR("cc_me",m);
     if(A.opt){ try{ const st=JSON.parse(localStorage.getItem("cc_state")||"{}")||{}; st.opt2=A.opt; localStorage.setItem("cc_state",JSON.stringify(st)); ccLastState=""; }catch(e){} }
     ccTracks().forEach(function(t){ try{ nxPassApply(t,true); }catch(e){ console.warn(e); } });
