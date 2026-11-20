@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-20 18:20 270점합격진단">
+<meta name="cc-build" content="2026-11-20 18:40 가입신청4항목">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -1556,15 +1556,8 @@ function openUpgrade(feat){
     <div class="upsub">${fmsg}
     신청서 제출 → <b>시대에듀에서 결제</b> → 결제가 확인되면 <b style="color:var(--gold)">아이디와 임시 비밀번호를 문자로</b> 보내 드립니다.</div>
     <label>성명</label><input id="upName" type="text" maxlength="20">
-    <label>전화번호</label><input id="upPhone" type="tel" placeholder="010-0000-0000" maxlength="13">
-    <label>수험 유형</label>
-    <select id="upSchool"><option>전업 수험</option><option>직장 병행</option></select>
-    <label>1차 응시 경험</label>
-    <select id="upExp1"><option>처음</option><option>응시해 봄</option><option>합격·면제</option></select>
-    <label>2차 응시 경험</label>
-    <select id="upExp2"><option>처음</option><option>응시해 봄</option></select>
-    <label>바로합격반 과정</label>
-    <select id="upTrack"><option value="1차">1차 바로합격반 · 객관식 5과목</option><option value="2차" selected>2차 바로합격반 · 사례형 4과목 (선택 1과목 포함)</option><option value="1+2차">1차+2차 바로합격반 · 동차 전 과정</option></select>
+    <label>시대에듀 가입 아이디</label><input id="upSd" type="text" placeholder="시대에듀에서 쓰는 아이디" maxlength="40" autocapitalize="off" spellcheck="false">
+    <label>연락처</label><input id="upPhone" type="tel" placeholder="010-0000-0000" maxlength="13">
     <label>사용할 아이디</label><input id="upId" type="text" placeholder="영문 소문자·숫자 4~12자" maxlength="12" autocapitalize="off" spellcheck="false">
     <div class="uperr" id="uperr"></div>
     <button class="btn gbtn" id="upSend" onclick="submitUpgrade()">바로합격반 신청하기 →</button>`;
@@ -1585,9 +1578,10 @@ async function submitUpgrade(){
   const nm=document.getElementById("upName").value.trim();
   const phRaw=document.getElementById("upPhone").value.trim();
   const id=document.getElementById("upId").value.trim().toLowerCase();
+  const sd=(document.getElementById("upSd")||{value:""}).value.trim();
   const err=document.getElementById("uperr");
   const digits=phRaw.replace(/\D/g,"");
-  if(!nm||!phRaw||!id){ err.textContent="성명·전화번호·아이디를 모두 입력해 주세요."; return; }
+  if(!nm||!sd||!phRaw||!id){ err.textContent="성명·시대에듀 가입 아이디·연락처·사용할 아이디를 모두 입력해 주세요."; return; }
   if(!/^01\d{8,9}$/.test(digits)){ err.textContent="휴대전화 번호를 확인해 주세요 (예: 010-1234-5678)"; return; }
   if(!/^[a-z0-9]{4,12}$/.test(id)){ err.textContent="아이디는 영문 소문자·숫자 4~12자로 정해 주세요."; return; }
   if(!sb){ err.textContent="서버 연결 모듈을 불러오지 못했습니다 — 새로고침해 주세요"; return; }
@@ -1595,10 +1589,9 @@ async function submitUpgrade(){
   const btn=document.getElementById("upSend"); if(btn) btn.disabled=true;
   err.textContent="접수 중…";
   try{
-    const r=await sb.from("cc_applications").insert({name:nm,phone:phone,exam_type:document.getElementById("upSchool").value,
-      exp1:document.getElementById("upExp1").value,exp2:document.getElementById("upExp2").value,
-      round:"1차 "+document.getElementById("upExp1").value+" · 2차 "+document.getElementById("upExp2").value,
-      track:document.getElementById("upTrack").value,login_id:id});
+    /* (2026-11-20) 신청서는 성명 · 시대에듀 가입 아이디 · 연락처 · 사용할 아이디만 — 수험 종류·형태·응시 경험은 첫 화면에서 수강생이 고름
+       과정(1차·2차·동차)은 관리자가 시대에듀 결제 내역을 확인해 계정 발급 때 정함 */
+    const r=await sb.from("cc_applications").insert({name:nm,phone:phone,sdedu_id:sd,login_id:id});
     if(r.error) throw r.error;
     upgApplied=true;
     document.getElementById("upBody").innerHTML=upgDoneView();
@@ -1842,7 +1835,7 @@ function ccRenderApps(){
         ?'<span class="ccacts"><button class="mini" style="border-color:var(--gold);color:var(--gold)" onclick="ccIssue('+a.id+')">결제 확인 · 계정 발급</button><button class="mini" onclick="ccCancelApp('+a.id+')">취소</button></span>'
         :'<span class="ccacts" style="color:var(--mute);font-size:.7rem">'+(a.status==="발급완료"?"발급 "+ccDate(a.issued_at):"")+'</span>';
       const stc=a.status==="대기"?"color:var(--gold)":(a.status==="발급완료"?"color:#5ec98f":"color:var(--mute)");
-      return '<div class="ccrow"><span>'+ccDate(a.created_at)+'</span><span class="nm2">'+ccEsc(a.name)+'</span><span>'+ccEsc(a.phone)+'</span><span>'+ccEsc(a.exam_type||"")+' · '+ccEsc((a.exp1||a.exp2)?("1차 "+(a.exp1||"—")+" / 2차 "+(a.exp2||"—")):(a.round||""))+'</span><span>'+ccEsc(a.track||"")+'</span><span>'+ccEsc(a.login_id)+'</span><span style="'+stc+';font-weight:700">'+ccEsc(a.status)+'</span>'+act+'</div>';
+      return '<div class="ccrow"><span>'+ccDate(a.created_at)+'</span><span class="nm2">'+ccEsc(a.name)+'</span><span>'+ccEsc(a.phone)+'</span><span>'+(a.sdedu_id?'시대에듀 '+ccEsc(a.sdedu_id):ccEsc(a.exam_type||"")+' · '+ccEsc((a.exp1||a.exp2)?("1차 "+(a.exp1||"—")+" / 2차 "+(a.exp2||"—")):(a.round||"")))+'</span><span>'+ccEsc(a.track||"")+'</span><span>'+ccEsc(a.login_id)+'</span><span style="'+stc+';font-weight:700">'+ccEsc(a.status)+'</span>'+act+'</div>';
     }).join("");
 }
 function ccNewPw(){ const c="abcdefghjkmnpqrstuvwxyz23456789"; const a=new Uint32Array(8); crypto.getRandomValues(a); let s=""; for(let i=0;i<a.length;i++) s+=c[a[i]%c.length]; return s; }
@@ -1874,6 +1867,9 @@ async function ccIssue(appId){
   if(nt==null) return; nt=parseInt(String(nt).trim(),10);
   if(!(nt>=0&&nt<=1000)){ alert("이용권은 0~1000회로 넣어 주세요."); return; }
   try{ localStorage.setItem("cc_ticket_default",String(nt)); }catch(e){}
+  if(!a.track){ let tk=prompt(a.name+"님 과정을 정해 주세요 — 시대에듀 결제 내역 확인"+(a.sdedu_id?" (시대에듀 아이디: "+a.sdedu_id+")":"")+"\n\n1 = 1차 · 2 = 2차 · 3 = 동차(1+2차)","1");
+    if(tk==null) return; tk={"1":"1차","2":"2차","3":"1+2차"}[String(tk).trim()]; if(!tk){ alert("1 · 2 · 3 중에서 골라 주세요."); return; }
+    const u=await sb.from("cc_applications").update({track:tk}).eq("id",appId); if(u.error){ alert("과정을 저장하지 못했습니다 — "+ccErr(u.error)); return; } a.track=tk; }
   if(!confirm(a.name+" ("+a.phone+")\n과정: "+(a.track||"")+" · 아이디: "+lid+" · 기본 이용권 "+nt+"회\n\n시대에듀 결제가 확인된 신청이 맞습니까?\n확인을 누르면 계정이 발급됩니다.")) return;
   const pw=ccNewPw();
   const r=await sb.rpc("cc_issue_account",{p_app:appId,p_login:lid,p_pw:pw,p_tickets:nt});
