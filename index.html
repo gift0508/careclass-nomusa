@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-21 01:00 미리보기화면전환">
+<meta name="cc-build" content="2026-11-21 02:50 2회독문구">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -3762,6 +3762,7 @@ window.ccMissionRefresh=function(){ try{ openEngine('mission',true); }catch(e){}
 window.ccPlanStart=async function(){
   if(window.CC_PUB_ON){
     try{ const r=await sb.from("cc_settings").select("value").eq("key","pub").maybeSingle(); if(r.error) throw r.error; window.CC_PUB=(r.data&&r.data.value)?JSON.parse(r.data.value):{}; }catch(e){ console.warn("공개 정보",e); }
+    try{ await nxCatLoad(); }catch(e){ console.warn("강의 수",e); }
     window.CC_PUB_READY=true;
   }
   try{ ccTracks().forEach(function(t){ ccPlanSync(t); }); P.A.cells=buildCellsA(); grid(); ccPlanBar(); ccTopStats(); }catch(e){ console.warn(e); }
@@ -4248,13 +4249,13 @@ function ccPubPanel(){
   pn=document.createElement("div"); pn.className="panel"; pn.style.marginTop="22px"; pn.id="ccPubPanel";
   const SL=window.CC_SRC_LABEL||{n:"신규 강의",ny:""};
   pn.innerHTML='<h3>🆕 '+SL.n+(SL.ny?' ('+SL.ny+')':'')+' 강의 공개 현황</h3>'+
-    '<div class="sub">'+SL.n+' 강의가 시대에듀에 올라오면 <b>[+1강]</b>을 누르세요 · 숫자를 누르면 직접 입력 · 수강생 오늘할당된학습에는 <b>공개된 강의까지만</b> 배정됩니다 · '+(SL.o||'작년')+' 강의는 늘 전체 공개입니다</div>'+
+    '<div class="sub">해마다 강의 수가 바뀌면 <b>「총 n강」</b>을 눌러 몇 강인지 적으세요<br>27년 강의가 올라오면 <b>[+1강]</b> — 그 강의부터 27년 강의로 바뀝니다<br>아직 올라오지 않은 강의는 <b>26년 강의로 임시 서비스</b>됩니다</div>'+
     '<div class="pubtabs" id="pubTabs"></div><div id="pubTable"></div><div class="sub" id="pubStat"></div>';
   anchor.after(pn);
   const st=document.createElement("style");
   st.textContent="#ccPubPanel .pubtabs{display:flex;gap:6px;margin:10px 0}#ccPubPanel .pubtabs button{font:inherit;font-size:.82rem;font-weight:800;padding:5px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.25);background:transparent;color:inherit;cursor:pointer}#ccPubPanel .pubtabs button.on{background:var(--gold,#C9A227);color:#0D1F3C;border-color:transparent}"+
     "#ccPubPanel table{width:100%;border-collapse:collapse;font-size:.84rem}#ccPubPanel th,#ccPubPanel td{border-bottom:1px solid rgba(255,255,255,.1);padding:7px 6px;text-align:center}#ccPubPanel th:first-child,#ccPubPanel td:first-child{text-align:left;font-weight:800}"+
-    "#ccPubPanel .pc{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}#ccPubPanel .pc b{cursor:pointer;min-width:22px;display:inline-block;border-bottom:1px dashed rgba(255,255,255,.4)}#ccPubPanel .pc small{opacity:.6}"+
+    "#ccPubPanel .pc{display:inline-flex;align-items:center;gap:4px;white-space:nowrap}#ccPubPanel .pc b{cursor:pointer;min-width:22px;display:inline-block;border-bottom:1px dashed rgba(255,255,255,.4)}#ccPubPanel .pc small{opacity:.6}#ccPubPanel .pc small.tot{opacity:.85;cursor:pointer}#ccPubPanel .pc small.tot u{text-decoration:none;border-bottom:1px dashed currentColor;font-weight:800}"+
     "#ccPubPanel .pc button{font:inherit;font-size:.72rem;font-weight:800;padding:2px 7px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:transparent;color:inherit;cursor:pointer}#ccPubPanel .pc button.p{background:var(--gold,#C9A227);color:#0D1F3C;border-color:transparent}"+
     "#ccPubPanel .pc.full b{color:#7ee2a8}#ccPubPanel .pc.zero b{opacity:.55}#ccPubPanel .na{opacity:.35}";
   pn.appendChild(st);
@@ -4263,6 +4264,7 @@ function ccPubPanel(){
 let CC_PUB_T="1차";
 function ccPubLaws(t){ return (t==="2차"&&window.CC_ADMIN_LAWS2)?CC_ADMIN_LAWS2:((window.CC_LAWS&&CC_LAWS[t])||[]); }
 async function ccPubFetch(){
+  try{ await nxCatLoad(); }catch(e){}
   const r=await sb.from("cc_settings").select("value").eq("key","pub").maybeSingle(); if(r.error) throw r.error;
   window.CC_PUB=(r.data&&r.data.value)?JSON.parse(r.data.value):{}; return CC_PUB;
 }
@@ -4279,10 +4281,11 @@ function ccPubDraw(){
   ccPubLaws(t).forEach(function(l){
     const N=ccCatNew(t,l);
     h+='<tr><td>'+l+'</td>'+cols.map(function(si){
-      const n=N[si]||0; if(!n) return '<td class="na">—</td>';
+      const n=N[si]||0, o=(ccCatOld(t,l)[si]||0), a="'"+t+"','"+l+"',"+si;
+      const tot='<small class="tot" onclick="ccCatEdit('+a+')" title="눌러서 강의 수 입력">총 <u>'+n+'</u>강</small>';
+      if(!n) return '<td><span class="pc zero">'+tot+(o?'<small> · 26년 '+o+'강 임시</small>':'')+'</span></td>';
       const p=Math.min(ccPub(t,l,si),n), cls=p>=n?" full":(p<=0?" zero":"");
-      const a="'"+t+"','"+l+"',"+si;
-      return '<td><span class="pc'+cls+'"><button onclick="ccPubStep('+a+',-1)">−</button><b onclick="ccPubEdit('+a+')" title="눌러서 직접 입력">'+p+'</b><small>/'+n+'</small>'+
+      return '<td><span class="pc'+cls+'"><button onclick="ccPubStep('+a+',-1)">−</button><b onclick="ccPubEdit('+a+')" title="눌러서 직접 입력">'+p+'</b>'+tot+
         (p<n?'<button class="p" onclick="ccPubStep('+a+',1)">+1강</button>':'<small>완강</small>')+'</span></td>';
     }).join("")+'</tr>';
   });
@@ -4298,6 +4301,17 @@ async function ccPubSet(t,l,si,v){
   ccPubDraw();
   toast(t+" "+l+" · "+CC_STAGES[t][si]+" — 공개 "+v+" / "+n+"강");
 }
+/* 강의 수 (해마다 바뀜) — 관리자가 「총 n강」을 눌러 몇 강인지 적음 · cc_settings.key = "catalog" = {"1차|노동법Ⅰ|1": 50, …} (2026-11-20) */
+window.ccCatEdit=async function(t,l,si){
+  const n=ccCatNew(t,l)[si]||0, o=ccCatOld(t,l)[si]||0;
+  const v=prompt(t+" "+l+" · "+CC_STAGES[t][si]+"\n27년 대비 강의는 모두 몇 강인가요? (지금 "+n+"강"+(o?" · 26년 대비 "+o+"강":"")+")\n\n아직 올라오지 않은 강의는 26년 대비 강의로 임시 서비스됩니다.",String(n));
+  if(v==null) return; const k=Math.max(0,Math.min(300,parseInt(v,10)||0));
+  if(k<n&&!confirm("강의 수를 "+n+"강 → "+k+"강으로 줄입니다.\n뒤쪽 "+(n-k)+"강은 수강생 계획에서 빠집니다. 진행할까요?")) return;
+  try{ const r0=await sb.from("cc_settings").select("value").eq("key","catalog").maybeSingle(); const C=(r0.data&&r0.data.value)?JSON.parse(r0.data.value):{};
+    C[t+"|"+l+"|"+si]=k; const r=await sb.from("cc_settings").upsert([{key:"catalog",value:JSON.stringify(C),updated_at:new Date().toISOString()}],{onConflict:"key"}); if(r.error) throw r.error;
+    nxCatApply(C); try{ ccPubDraw(); }catch(e){} toast(t+" "+l+" · "+CC_STAGES[t][si]+" — 총 "+k+"강으로 저장했습니다");
+  }catch(e){ alert("저장하지 못했습니다 — "+ccErr(e)); }
+};
 window.ccPubStep=function(t,l,si,d){ return ccPubSet(t,l,si,Math.min(ccPub(t,l,si),ccCatNew(t,l)[si]||0)+d); };
 window.ccPubEdit=function(t,l,si){
   const n=ccCatNew(t,l)[si]||0, cur=Math.min(ccPub(t,l,si),n);
@@ -9615,6 +9629,16 @@ html #nxMine .fx2 select{font-size:12.5px;padding:2px 6px;border:1.5px solid #C9
 html #nxMine .pap{font:inherit;font-size:12.5px;font-weight:800;padding:3px 14px;border-radius:8px;border:none;background:#C9A227;color:#0D1F3C;cursor:pointer}
 html #nxMine .ordr{background:#fff;border:1px solid #e3dccb;border-radius:12px;padding:10px 16px;margin:-4px 0 14px;font-size:13px;line-height:1.8;display:flex;flex-direction:column;gap:8px}
 html #nxMine .ordr .oi b{font-size:14px}
+html #nxMine .adp{background:#f1f7f0;border:1px solid #bfdcc6;border-radius:12px;padding:9px 16px;margin:-4px 0 14px;font-size:13.5px;line-height:1.7;color:#24563a}html #nxMine .adp b{color:#1e6b3f}
+html #nxAdp{position:fixed;inset:0;z-index:99990;background:rgba(13,31,60,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+html #nxAdp .bx{background:#fff;color:#0D1F3C;border-radius:18px;max-width:460px;width:100%;padding:24px 24px 20px;box-shadow:0 20px 60px rgba(0,0,0,.3);font-size:14px;line-height:1.75}
+html #nxAdp h3{margin:0 0 4px;font-size:20px;color:#1e6b3f}
+html #nxAdp .lead{color:#3b4456;margin-bottom:14px}
+html #nxAdp .st{border-left:4px solid #8cc5a0;background:#f4faf5;border-radius:0 10px 10px 0;padding:8px 12px;margin:8px 0}
+html #nxAdp#nxAdp .st b{display:block;font-size:14.5px;font-weight:800!important;color:#1e6b3f}
+html #nxAdp .st span{color:#3b4456;font-size:13.5px}
+html #nxAdp .nt{font-size:12.5px;color:#6b7488;margin:12px 0 16px}
+html #nxAdp#nxAdp#nxAdp#nxAdp button.go{display:block;width:100%;font:inherit;font-size:15px!important;font-weight:800!important;padding:13px!important;min-height:48px!important;border-radius:12px!important;line-height:1.4!important;border:none;border-radius:12px;background:#1e6b3f;color:#fff;cursor:pointer}
 html #nxMine .ordb{font:inherit;font-size:12.5px;font-weight:800;padding:4px 12px;border-radius:8px;border:1.5px solid #C9A227;background:#fff;color:#8a6a12;cursor:pointer;margin-left:10px;vertical-align:middle}
 html #nxMine .ordb.on{background:#C9A227;color:#0D1F3C}
 html #nxMine .xtra{font-size:12.5px;color:#6b7488;margin-top:10px}html #nxMine .need{background:#fff;border:1px solid #e3dccb;border-radius:16px;padding:30px;text-align:center;font-size:14px}html #nxMine .need button{margin-top:12px;border:none;border-radius:12px;background:#C9A227;color:#0D1F3C;font:inherit;font-size:15px;font-weight:800;padding:11px 22px;cursor:pointer}
@@ -9670,6 +9694,57 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
   /* 동차 기존 수강생: 나눔 방식으로 오늘 배정을 한 번 다시 */
   window.nxDualSplit=function(){ try{ if(!ccIsDual()) return; const T=ccISO(ccToday());
       ["1차","2차"].forEach(function(t){ const pl=ccPlanOf(t); if(pl.split) return; if(pl.asg) Object.keys(pl.asg).forEach(function(k){ if(pl.asg[k]===T) delete pl.asg[k]; }); pl.sync=ccISO(ccAddDays(ccToday(),-1)); pl.split=1; ccPlanWrite(t,pl); }); }catch(e){ console.warn(e); } };
+  /* 적응기 · 복습 시작일 안내 창 — 각각 처음 한 번만 (2026-11-20)
+     intro = 적응기에 처음 들어올 때 · 2 / 4 / 8 = 그 복습 칸에 강의가 처음 올라온 날 */
+  try{ ["cc_adp_seen","cc_adp_rv"].forEach(function(k){ if(CC.syncExact.indexOf(k)<0) CC.syncExact.push(k); }); }catch(e){}
+  const ADP={
+    intro:{h:'🌱 적응기 2주',lead:'처음 2주는 나에게 맞는 공부 리듬을 만드는 적응기입니다.',st:[
+      ['1~2일째 · 강의 적응하기','오늘 듣는 강의를 어떻게 듣는 것이 1교시를 효율적으로 쓰는 것인지 살펴보는 날입니다.'],
+      ['3~14일째 · 복습량 조절 적응하기','첫 복습이 시작되고 복습할 강의가 조금씩 늘어납니다. 복습에 시간이 얼마나 드는지 재 보세요.'],
+      ['15일째부터 · 나만의 복습스타일 만들기','복습 3회독부터 나만의 복습량을 조절하여 복습스타일을 만드는 기간입니다.']],
+      nt:'처음 2주는 복습할 강의가 적어 시간이 남을 수 있습니다. 15일째부터 수강과 복습이 계획한 비율로 맞춰집니다.'},
+    2:{h:'🔁 첫 복습일 · +2일',lead:'오늘부터 복습이 시작됩니다.',st:[
+      ['2일 전에 들은 강의를 처음 다시 봅니다','강의 내용을 먼저 떠올려 보고, 기억나지 않는 부분만 다시 보세요.'],
+      ['복습에 걸린 시간을 재 보세요','오늘 걸린 시간이 앞으로 복습량을 조절하는 기준이 됩니다.']],
+      nt:'복습한 강의는 「2일 전 수강강의」 칸에서 체크하세요.'},
+    4:{h:'🔁 두 번째 복습일 · +2+4일',lead:'오늘부터 복습 칸이 둘이 됩니다.',st:[
+      ['6일 전에 들은 강의를 두 번째로 다시 봅니다','첫 복습 때 틀린 것 · 빈칸 위주로 짧게 보세요.'],
+      ['복습량이 늘어납니다','시간이 모자라면 복습스타일을 바꿔 복습량을 조절할 수 있습니다.']],
+      nt:'복습한 강의는 「6일 전 수강강의」 칸에서 체크하세요.'},
+    8:{h:'🔁 복습 3회독 · +2+4+8일',lead:'오늘부터 복습 칸 셋이 모두 찹니다.',st:[
+      ['14일 전에 들은 강의를 세 번째로 다시 봅니다','두 번의 복습에서도 헷갈린 것만 골라 짧게 보세요.'],
+      ['나만의 복습스타일 만들기','복습 3회독부터 나만의 복습량을 조절하여 복습스타일을 만드는 기간입니다.']],
+      nt:'복습한 강의는 「14일 전 수강강의」 칸에서 체크하세요.'}
+  };
+  const adpRv=function(){ try{ return JSON.parse(localStorage.getItem("cc_adp_rv")||"{}")||{}; }catch(e){ return {}; } };
+  window.nxAdpSeen=function(k){ if(k==="intro"){ try{ return !!localStorage.getItem("cc_adp_seen"); }catch(e){ return true; } } return !!adpRv()[k]; };
+  window.nxAdpOpen=function(k){ k=k||"intro"; const c=ADP[k]; if(!c||document.getElementById("nxAdp")) return;
+    const d=document.createElement("div"); d.id="nxAdp"; d.setAttribute("data-k",k);
+    d.innerHTML='<div class="bx"><h3>'+c.h+'</h3><div class="lead">'+c.lead+'</div>'+
+      c.st.map(function(x){ return '<div class="st"><b>'+x[0]+'</b><span>'+x[1]+'</span></div>'; }).join("")+
+      '<div class="nt">'+c.nt+'</div><button class="go" onclick="nxAdpClose()">'+(k==="intro"?'시작하기':'확인')+'</button></div>';
+    document.body.appendChild(d); };
+  window.nxAdpClose=function(){ const d=document.getElementById("nxAdp"); if(!d) return; const k=d.getAttribute("data-k"); d.remove();
+    if(window.ccPreview) return;
+    try{ if(k==="intro") localStorage.setItem("cc_adp_seen","1"); else { const R=adpRv(); R[k]=1; localStorage.setItem("cc_adp_rv",JSON.stringify(R)); } }catch(e){}
+    try{ if(typeof ccSave==="function") ccSave(); }catch(e){}
+    setTimeout(function(){ try{ nxRender(); }catch(e){} },200); };
+  /* ═══ 27년 대비 · 26년 대비 강의 (2026-11-20)
+     · 강의 수 = 27년 대비 강의 수(관리자 「총 n강」) — 27년 강의가 없는 칸은 26년 강의 수
+     · 강의마다: 27년 강의가 올라왔으면(공개 [+1강]) 27년 강의 · 아직이면 같은 번호의 26년 강의로 임시 서비스 · 둘 다 없으면 올라올 때까지 대기
+     · 강의 기록(배정 · 체크)은 26년→27년으로 바뀌어도 그대로 이어짐 ═══ */
+  window.nxCatApply=function(C){ try{ Object.keys(C||{}).forEach(function(k){ const p=k.split("|"), t=p[0], l=p[1], si=+p[2];
+      if(!CC_CATALOG[t]) CC_CATALOG[t]={}; if(!CC_CATALOG[t][l]) CC_CATALOG[t][l]=[]; const a=CC_CATALOG[t][l]; while(a.length<=si) a.push(0); a[si]=+C[k]||0; }); }catch(e){ console.warn(e); } };
+  window.nxCatLoad=async function(){ if(typeof sb==="undefined"||!sb) return; const r=await sb.from("cc_settings").select("value").eq("key","catalog").maybeSingle(); if(r.error) throw r.error; if(r.data&&r.data.value) nxCatApply(JSON.parse(r.data.value)); };
+  const lecSrc=function(t,l,si,i){ if(ccIsAuto(t,si)) return null; const n=ccCatNew(t,l)[si]||0, o=ccCatOld(t,l)[si]||0; if(!n) return o?"o":"n"; if(i<ccPub(t,l,si)) return "n"; return i<o?"o":"n"; };
+  window.nxLecSrc=lecSrc;
+  try{ const oT=window.ccLecTitle; window.ccLecTitle=function(t,l,si,i,src){ if(!src){ try{ src=lecSrc(t,l,si,i)||undefined; }catch(e){} } return oT(t,l,si,i,src); }; }catch(e){}
+  try{ ccCat=function(t,l,pl){ const N=ccCatNew(t,l), O=ccCatOld(t,l); return N.map(function(n,si){ if(ccIsAuto(t,si)){ return ccSrc(t,l,si,pl)==="o"?O[si]:n; } return n>0?n:(O[si]||0); }); }; window.ccCat=ccCat; }catch(e){ console.warn(e); }
+  try{ const oF=ccFlat; ccFlat=function(t,pl){ const out=oF.apply(this,arguments);
+      out.forEach(function(o){ const s2=lecSrc(t,o.l,o.si,o.i); if(!s2) return; o.src=s2; o.key=o.key.replace(/\|[on]$/,"|m"); });
+      return out; }; ccFlat.__grp=true; window.ccFlat=ccFlat; }catch(e){ console.warn(e); }
+  try{ const oQ=ccQBSrcOK; ccQBSrcOK=function(track,q){ if(!q||!q.src) return true; const si=(CC_STAGES[track]||[]).indexOf(q.stage); if(si<0||ccIsAuto(track,si)) return oQ.apply(this,arguments);
+      if(q.lec!=null&&q.lec!=="") return q.src===lecSrc(track,q.subject,si,(+q.lec)-1); return true; }; window.ccQBSrcOK=ccQBSrcOK; }catch(e){ console.warn(e); }
   /* 과목 순서는 수강생이 바꿀 수 없음 (2026-11-20) — 1차 노동법Ⅰ→노동법Ⅱ→사회보험법→민법→경영학개론 · 2차 노동법→행정쟁송법→인사노무관리론→선택과목 */
   try{ ccOrder=function(t){ return (CC_LAWS[t]||[]).slice(); }; window.ccOrder=ccOrder; }catch(e){ console.warn(e); }
   /* ── 패스제: 필수강의 단계 · 과목 순서 · 한 과목씩 ── */
@@ -9827,6 +9902,14 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
         '<div>1차는 1차 학습순서대로, 2차는 2차 학습순서대로 각각 이어집니다</div></div>';
       h+='<div class="ordr">'+row(1,"1차")+row(2,"2차")+row3+'<div class="mu" style="font-size:12px">단계마다 과목 순서대로 한 과목씩 차례로 배정됩니다</div></div>'; }
     if(!any){ el.innerHTML=h+'<div class="need">1주 공부시간과 학습스타일을 정하면 이번 주에 들을 강의가 여기에 나옵니다.<br><button onclick="nxWizOpen(true)">당신의 합격 설계 시작하기 →</button></div>'; return; }
+    /* 적응기 (처음 2주) — 날마다 한 줄 안내 (2026-11-20) */
+    window.__nxAdpQ=[];
+    try{ let st=null; tracks.forEach(function(t){ const p=ccPlanOf(t); if(p&&p.per&&p.start&&(!st||p.start<st)) st=p.start; });
+      if(st){ const dn=Math.round((ccToday()-ccParse(st))/86400000)+1;
+        if(dn>=15&&dn<=21) h+='<div class="adp">🌿 '+dn+'일째 — 복습 3회독부터 <b>나만의 복습량을 조절하여 복습스타일</b>을 만드는 기간</div>';
+        if(dn>=1&&dn<=14){ const m=dn<=2?'오늘 듣는 강의를 어떻게 듣는 것이 <b>1교시를 효율적으로 쓰는 것인지</b> 살펴보는 날':(dn===3?'첫 복습이 시작됩니다 · 복습 1회독시 <b>복습량을 조절해 가는 날</b>':(dn<=6?'복습 1회독시 <b>복습량을 조절해 가는 기간</b>':(dn===7?'두 번째 복습이 시작됩니다 · 복습 2회독시 <b>복습량을 조절해 가는 날</b>':'복습 2회독시 <b>복습량을 조절해 가는 기간</b>')));
+          h+='<div class="adp">🌱 적응기 '+dn+'일째 — '+m+'</div>';
+          if(!nxAdpSeen("intro")) window.__nxAdpQ=["intro"]; } } }catch(e){}
     /* 이번 주 수강강의목록 */
     const mon=monOf(), sun=ccAddDays(mon,6), M=ccISO(mon), S7=ccISO(sun), T=ccISO(ccToday()), D=RD("cc_nxdone");
     const wk=[];
@@ -9845,11 +9928,13 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
       const arr=((MS&&MS[c[0]])||[]).filter(function(x){ return !x.rv; });
       const its=[]; arr.forEach(function(x){ const t=x.track, p=PJ[t]; if(!p) return; const ok=x.key.slice(t.length+1), o=p.f.filter(function(z){ return z.key===ok; })[0]; if(o) its.push(itemOf(t,o)); });
       const dn=its.filter(function(o){ return D[dk(c[0],o.key)]; }).length;
+      if(its.length&&!nxAdpSeen(c[0])) (window.__nxAdpQ=window.__nxAdpQ||[]).push(c[0]);
       cols.push('<div class="col"><h3><i class="'+c[1]+'">'+c[2]+'</i>'+c[3]+' <span class="cnt">'+dn+' / '+its.length+'</span></h3><div class="s">'+c[4]+' · '+ccMD(dIso)+' 들은 강의</div>'+
         (its.length?its.map(function(o){ return itemHTML(o,c[0],0,''); }).join(""):'<div class="empty">아직 이 간격에\n올라온 강의가 없습니다</div>')+'</div>');
     });
     const gtc=["1.25fr"].concat(cols.slice(1).map(function(){ return "24px 1fr"; })).join(" ");
     h+='<div class="cols" style="grid-template-columns:'+gtc+'">'+cols.join('<div class="arr">→</div>')+'</div>';
+    if(!window.ccPreview&&(window.__nxAdpQ||[]).length){ const k0=window.__nxAdpQ[0]; setTimeout(function(){ nxAdpOpen(k0); },300); }
     /* 기타특강 (자율수강) */
     if(tracks.indexOf("1차")>=0){ const ai=ccAutoSI("1차"); if(ai>=0){ let n=0; (CC_LAWS["1차"]||[]).forEach(function(l){ n+=(ccCat("1차",l)[ai]||0); }); if(n) h+='<div class="xtra">📎 <b>기타특강('+n+'강)</b>은 수강생 자율수강</div>'; } }
     /* 내 페이스 점검 */
