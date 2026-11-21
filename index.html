@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-21 12:30 나의노트올리기">
+<meta name="cc-build" content="2026-11-21 12:40 다음단계안내삭제">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9083,7 +9083,7 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
     if(op){
       h+='<div class="flow">'+(window.ccMyNoteRow?ccMyNoteRow(o):'')+S.map(function(x,i){ if(i>s) return ''; const ok=i<s;
         return '<div class="st'+(ok?' ok':'')+'"><span class="nn">'+(ok?'✓':(i+1))+'</span><b>'+x[0]+' '+E(x[1])+'</b>'+(ok?'<button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">다시</button><span class="dn">완료</span>':(STARTED[k]===i?'<button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">다시 열기</button><button class="okb" onclick="event.stopPropagation();nxStepDone(\''+J(k)+'\','+i+')">✅ 완료</button>':'<button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">시작 →</button>'))+'</div>'; }).join("")+
-        (s<S.length?'<div class="st lock">'+(s<S.length-1?'마치고 「✅ 수업완료」 또는 「✅ 완료」를 누르면 다음 단계 「'+E(S[s+1][1])+'」가 나타납니다':'마지막 단계입니다 — 마치고 「✅ 완료」를 누르면 이 강의가 체크됩니다')+'</div>':'<div class="st fin">✅ 이 강의 학습 완료 — 체크되었습니다</div>')+
+        (s<S.length?(s<S.length-1?'':'<div class="st lock">마지막 단계입니다 — 마치고 「✅ 완료」를 누르면 이 강의가 체크됩니다</div>'):'<div class="st fin">✅ 이 강의 학습 완료 — 체크되었습니다</div>')+
         ((o.t==="1차"&&o.stage==="문제풀이"&&day===0)?'<div class="st ex"><button onclick="event.stopPropagation();nxWrong(\''+J(k)+'\')">📒 오답노트 '+(noteHas("오답|"+o.key)?'보기 ✓':'올리기')+'</button></div>':'')+
         '</div>';
     }
