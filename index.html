@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-21 16:00 이용권버튼글씨">
+<meta name="cc-build" content="2026-11-21 11:20 공부기록메뉴정렬">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -10024,6 +10024,20 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
     'html #ccTkBody#ccTkBody#ccTkBody#ccTkBody #ccGift button.gfp b{color:#0D1F3C!important}');
     document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){}
 })();
+</script>
+<script>
+/* 📂 내 공부기록 메뉴 정렬 (2026-11-21): 넓은 화면 한 줄 · 좁은 화면 4칸 바둑판 · 가로 스크롤 없음 */
+(function(){ try{ const c=new CSSStyleSheet(); const B='html #nmRvBody#nmRvBody#nmRvBody#nmRvBody .nmrvtabs.ccrectabs';
+  c.replaceSync(
+   '@media (min-width:960px){html .tkbox.nmrvbox:has(.ccrectabs){max-width:min(940px,96vw)!important;width:min(940px,96vw)!important}'+
+     B+'{display:flex!important;flex-wrap:nowrap!important;gap:5px!important}'+B+' button{flex:1 1 auto!important;min-width:0}}'+
+   '@media (max-width:959.98px){html .tkbox.nmrvbox:has(.ccrectabs){max-width:min(700px,96vw)!important;width:min(700px,96vw)!important}'+
+     B+'{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:5px!important}}'+
+   '@media (max-width:520px){'+B+'{grid-template-columns:repeat(2,minmax(0,1fr))!important}}'+
+   B+' button{display:flex!important;align-items:center!important;justify-content:center!important;gap:3px;white-space:nowrap!important;font-size:12px!important;padding:7px 6px!important;letter-spacing:-.02em;margin:0!important;height:34px;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis}'+
+   B+' button small{font-size:11px!important}'+
+   'html .tkbox.nmrvbox:has(.ccrectabs){overflow-x:hidden!important}');
+  document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){} })();
 </script>
 </body>
 </html>
