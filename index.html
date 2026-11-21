@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-21 19:00 학습스타일통일">
+<meta name="cc-build" content="2026-11-21 19:10 내강의실안내">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -10091,7 +10091,7 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
   window.ccMyNoteRow=function(o){ if(!o||!o.key) return '';
     if(N.uid!==uidNow()) load();
     const f=N.map[hx(o.key)], kk=E(String(o.key).replace(/\\/g,"\\\\").replace(/'/g,"\\'")), nn=E(nm(o).replace(/\\/g,"\\\\").replace(/'/g,"\\'"));
-    return '<div class="st mynote" onclick="event.stopPropagation()">'+
+    return '<div class="st mynote" onclick="event.stopPropagation()">'+(window.ccViewUid?'':'<div class="mntop">내강의실에서 강의수강 후 시작하세요</div>')+
       (f?'<button class="mnv" onclick="ccMyNoteView(\''+E(f.path)+'\',\''+nn+'\')">📷 나의노트 보기 ✓</button>'+(window.ccViewUid?'':'<button class="mnu" onclick="ccMyNotePick(\''+kk+'\',\''+nn+'\')">다시 올리기</button>')
         :(window.ccViewUid?'<span class="mnh">올린 나의노트가 없습니다</span>':'<button class="mnu on" onclick="ccMyNotePick(\''+kk+'\',\''+nn+'\')">📷 나의노트 올리기 (사진)</button>'))+
       (window.ccViewUid?'':'<button class="mnhow" onclick="var h=this.parentNode.querySelector(\'.mnh.how\');if(h)h.style.display=h.style.display===\'block\'?\'none\':\'block\'">이용방법</button><div class="mnh how" style="display:none">선택사항입니다<br>올리지 않아도 학습은 그대로 진행됩니다<br>강의당 용지 1장으로 압축정리하여 사진으로 올리세요</div>')+'</div>';
@@ -10152,7 +10152,7 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
     'html #nxMine#nxMine .st.mynote{display:flex;flex-wrap:wrap;align-items:center;gap:6px 5px;padding:8px 0 8px 10px;border-bottom:1px dashed #e8dfc4}'+
     'html #nxMine#nxMine .st.mynote button{font:inherit;font-size:12px;font-weight:800;padding:5px 9px;white-space:nowrap;letter-spacing:-.02em;border-radius:9px;cursor:pointer;border:1.5px solid #2d5aa0;background:#fff;color:#1f4a8a;opacity:1}'+
     'html #nxMine#nxMine .st.mynote button.mnu.on{border-color:#C9A227;background:#fff8e6;color:#6B5312}html #nxMine#nxMine .st.mynote button.mnv{border-color:#2f7d4f;color:#1e6b3f;background:#eef8f1}'+
-    'html #nxMine#nxMine .st.mynote button.mnu.on{flex:0 1 auto;min-width:0}html #nxMine#nxMine .st.mynote .mnh{width:100%;font-size:11.5px;color:#7a7f8c;word-break:keep-all;line-height:1.6}html #nxMine#nxMine .st.mynote button.mnhow{border:1px solid #c9c3b3;background:#fff;color:#5a6070;font-size:11px;padding:4px 7px}'+
+    'html #nxMine#nxMine .st.mynote button.mnu.on{flex:0 1 auto;min-width:0}html #nxMine#nxMine .st.mynote .mntop{width:100%;font-size:12.5px;font-weight:800;color:#6B5312}html #nxMine#nxMine .st.mynote .mnh{width:100%;font-size:11.5px;color:#7a7f8c;word-break:keep-all;line-height:1.6}html #nxMine#nxMine .st.mynote button.mnhow{border:1px solid #c9c3b3;background:#fff;color:#5a6070;font-size:11px;padding:4px 7px}'+
     '#ccMnOv{position:fixed;inset:0;z-index:99999;background:rgba(13,31,60,.6);display:none;align-items:center;justify-content:center;padding:3vh 3vw}#ccMnOv.on{display:flex}'+
     '#ccMnOv .mnbox{background:#fffdf8;border-radius:14px;max-width:min(900px,96vw);max-height:94vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35)}'+
     '#ccMnOv .mnhd{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0D1F3C;color:#fff}#ccMnOv .mnhd b{flex:1;font-size:14px;color:#E5BE44}#ccMnOv .mnhd button{font:inherit;font-size:13px;font-weight:800;padding:5px 12px;border-radius:8px;border:none;background:#C9A227;color:#0D1F3C;cursor:pointer}'+
