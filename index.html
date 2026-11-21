@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-21 14:45 질문예시">
+<meta name="cc-build" content="2026-11-21 15:30 이용권세가지">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9563,7 +9563,7 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
   (function(){ const src=document.getElementById("nxHofCss"); if(!src) return; const css=src.textContent;
     try{ const sh=new CSSStyleSheet(); sh.replaceSync(css); document.adoptedStyleSheets=document.adoptedStyleSheets.concat([sh]); }
     catch(e){ const st=document.createElement("style"); st.textContent=css; document.head.appendChild(st); } })();
-  const PRIZE={1:2,2:1,3:1}, IDLE=15*60*1000;
+  const PRIZE={1:3,2:2,3:1}, IDLE=15*60*1000;
   const E=function(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); };
   const HM=function(sec){ sec=Math.max(0,sec|0); const h=Math.floor(sec/3600), m=Math.floor(sec%3600/60); return h?(h+"시간 "+String(m).padStart(2,"0")+"분"):(m+"분"); };
   const TB=function(t){ return t==="1+2차"?'<i>동차</i>':(t==="1차"?'<i class="t1">1차</i>':'<i>2차</i>'); };
@@ -9599,7 +9599,7 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
     '<li>15분 동안 움직임이 없거나 다른 탭·앱으로 가면 멈춥니다</li>'+
     '<li>하루 최대 14시간까지 인정합니다</li>'+
     '<li><b>집계</b> — 월요일 0시에 새로 시작해 일요일 밤에 확정됩니다</li>'+
-    '<li><b>시상</b> — 1~3위에게 축문첨삭 이용권을 드립니다</li>'+
+    '<li><b>시상</b> — 1~3위에게 소정의 축문첨삭 이용권을 드립니다(1위:3장, 2위:2장, 3위:1장 — 환불대상이 아닙니다.)</li>'+
     '<li><b>이름</b> — 가운데 글자를 가리고, 순위와 시간만 보입니다</li></ul></details>';
   let D={last:null,cur:null,err:null,at:0}, open=false;
   const draw=function(){
@@ -9641,7 +9641,7 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
     p=document.createElement("div"); p.className="panel"; p.id="nxHofAdm"; p.style.marginTop="22px"; pn.parentNode.insertBefore(p,pn); return p; };
   window.nxHofAdmLoad=async function(){
     const p=admBox(); if(!p||typeof sb==="undefined"||!sb) return;
-    p.innerHTML='<h3>🏆 명예의 전당 — 지난주 시상</h3><div class="sub">지난주 실제 공부시간 1~3위 · 1위 축문첨삭 이용권 2장 · 2·3위 1장 · [지급]을 누르면 이용권이 들어가고 홈에 지급으로 표시됩니다</div><div id="nxHofAdmL">불러오는 중…</div>';
+    p.innerHTML='<h3>🏆 명예의 전당 — 지난주 시상</h3><div class="sub">지난주 실제 공부시간 1~3위 · 1위 축문첨삭 이용권 3장 · 2위 2장 · 3위 1장 · [지급]을 누르면 이용권이 들어가고 홈에 지급으로 표시됩니다</div><div id="nxHofAdmL">불러오는 중…</div>';
     const L=document.getElementById("nxHofAdmL");
     try{ const r=await sb.rpc("cc_hof_admin",{p_off:-1}); if(r.error) throw r.error; const rows=r.data||[];
       window.__nxHofAdm=rows;
@@ -9912,6 +9912,63 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
    'html #ccQnaAdm textarea{width:100%;box-sizing:border-box;min-height:64px;margin-top:10px;border-radius:10px;padding:8px 10px;font:inherit;font-size:13px}html #ccQnaAdm .qnab2{display:flex;flex-direction:column;gap:6px;width:190px;margin-top:8px}';
   document.head.appendChild(st);
   try{ document.adoptedStyleSheets=document.adoptedStyleSheets.concat([(function(){ const c=new CSSStyleSheet(); c.replaceSync(st.textContent); return c; })()]); }catch(e){}
+})();
+</script>
+<script>
+/* ═══ 🎁 이용권 선물하기 (2026-11-21) — 시상 이용권만 · 수강생 아이디로만 · 한 달 최대 2장 · 되돌릴 수 없음 · 관리자 기록
+   SQL: nomusa_gift.sql ═══ */
+(function(){
+  const E=function(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); };
+  const G={info:null,err:null,peek:null,login:"",n:1};
+  const box=function(){ const b=document.getElementById("ccTkBody"); if(!b) return null; let g=document.getElementById("ccGift"); if(!g){ g=document.createElement("div"); g.id="ccGift"; const big=b.querySelector(".tkuse")||b.querySelector(".tkbig"); if(big&&big.nextSibling) b.insertBefore(g,big.nextSibling); else b.appendChild(g); } return g; };
+  const draw=function(){ const g=box(); if(!g) return; const I=G.info;
+    /* 이용권 세 가지 (2026-11-21): 구매 · 시상 · 선물받은 */
+    let h='<div class="tkh">🎫 내 이용권 나누어 보기</div><div class="gfkind">'+
+      '<div class="gk buy"><b>구매 이용권</b><span>'+(I?'구매 '+I.buy+'장 · 남은 <b>'+I.buy_left+'장</b>':'…')+'</span><em>환불대상</em></div>'+
+      '<div class="gk hof"><b>시상 이용권</b><span>'+(I?'받은 '+I.hof+'장 · 선물함 '+I.sent+'장 · 남은 <b>'+I.hof_left+'장</b>':'…')+'</span><em>환불대상 아님 · 선물 가능</em></div>'+
+      '<div class="gk recv"><b>선물받은 이용권</b><span>'+(I?'받은 '+I.recv+'장 · 남은 <b>'+I.recv_left+'장</b>':'…')+'</span><em>환불대상 아님</em></div>'+
+      '<div class="gknote">이용권을 쓸 때는 선물받은 이용권 → 시상 이용권 → 구매 이용권 순서로 씁니다</div></div>';
+    h+='<div class="tkh">🎁 이용권 선물하기 <small>시상으로 받은 이용권만 · 한 달에 최대 2장</small></div>';
+    if(G.err) h+='<div class="tksub">선물하기를 준비하고 있습니다</div>';
+    else if(!I) h+='<div class="tksub">불러오는 중…</div>';
+    else{ const can=Math.min(I.giftable,I.month_left);
+      h+='<div class="gfst">선물할 수 있는 시상 이용권 <b>'+I.giftable+'장</b> · 이번 달 남은 선물 <b>'+I.month_left+'장</b></div>';
+      if(can<=0) h+='<div class="tksub">'+(I.giftable<=0?'선물할 수 있는 시상 이용권이 없습니다 — 산 이용권과 선물로 받은 이용권은 선물할 수 없습니다':'이번 달 선물은 모두 했습니다 — 다음 달에 다시 선물할 수 있습니다')+'</div>';
+      else{ h+='<div class="gfrow"><input id="gfLogin" placeholder="받는 사람 아이디 (바로합격반 수강생)" value="'+E(G.login)+'"><button class="tklink gfb" onclick="ccGiftPeek()">받는 사람 확인</button></div>';
+        if(G.peek){ h+='<div class="gfpeek">받는 사람: <b>'+E(G.peek)+'</b> ('+E(G.login)+')</div><div class="gfn">'+[1,2].filter(function(n){ return n<=can; }).map(function(n){ return '<button class="tkpack gfp'+(G.n===n?' on':'')+'" onclick="ccGiftN('+n+')"><b>'+n+'장</b></button>'; }).join("")+'</div>'+
+          '<div class="gfwarn">⚠️ 보낸 뒤에는 되돌릴 수 없습니다</div><button class="tkpay gfgo" onclick="ccGiftSend()">🎁 '+G.n+'장 선물하기</button>'; } } }
+    g.innerHTML=h; };
+  const loadInfo=async function(){ try{ const r=await sb.rpc("cc_ticket_gift_info"); if(r.error) throw r.error; G.info=r.data||{giftable:0,month_left:0}; G.err=null; }catch(e){ console.warn("[선물]",e); G.err=e; } draw(); };
+  try{ const o=window.ccTkRender||ccTkRender; window.ccTkRender=ccTkRender=function(){ const r=o.apply(this,arguments); try{ draw(); loadInfo(); }catch(e){} return r; }; }catch(e){ console.warn(e); }
+  window.ccGiftN=function(n){ G.n=n; draw(); };
+  window.ccGiftPeek=async function(){ const i=document.getElementById("gfLogin"); const v=i?i.value.trim():""; if(!v){ toast("받는 사람 아이디를 적어 주세요"); return; } G.login=v; G.peek=null;
+    try{ const r=await sb.rpc("cc_ticket_gift_peek",{p_login:v}); if(r.error) throw r.error; G.peek=r.data; G.n=1; }catch(e){ alert(typeof ccErr==="function"?ccErr(e):e.message); } draw(); };
+  window.ccGiftSend=async function(){ if(!G.peek||!G.login) return;
+    if(!confirm(G.peek+"("+G.login+")님께 축문첨삭 이용권 "+G.n+"장을 선물할까요?\n\n보낸 뒤에는 되돌릴 수 없습니다.")) return;
+    try{ const r=await sb.rpc("cc_ticket_gift",{p_login:G.login,p_n:G.n}); if(r.error) throw r.error; toast("🎁 이용권 "+G.n+"장을 선물했습니다");
+      G.peek=null; G.login=""; try{ if(typeof r.data==="number") ccTkSet(r.data); }catch(e){} try{ await ccTkLoad(); }catch(e){} ccTkRender();
+    }catch(e){ alert("선물하지 못했습니다 — "+(typeof ccErr==="function"?ccErr(e):e.message)); } };
+  /* 관리자: 🎁 이용권 선물 기록 */
+  const admBox=function(){ let p=document.getElementById("ccGiftAdm"); if(p) return p; const s=document.getElementById("ccSubs"); const pn=s&&s.closest(".panel"); if(!pn) return null;
+    p=document.createElement("div"); p.className="panel"; p.id="ccGiftAdm"; p.style.marginTop="22px"; pn.parentNode.insertBefore(p,pn.nextSibling); return p; };
+  window.ccGiftAdmLoad=async function(){ const p=admBox(); if(!p||typeof sb==="undefined"||!sb) return;
+    p.innerHTML='<h3>🎫 이용권 현황 · 🎁 선물 기록</h3><div class="sub">구매 이용권만 환불대상 · 시상 이용권은 선물하면 줄어듦 · 선물받은 이용권은 환불대상 아님 · 쓰는 순서: 선물받은 → 시상 → 구매</div><div id="ccTkKind">불러오는 중…</div><div class="stt" style="margin:16px 0 6px;font-weight:800">🎁 선물 기록 — 누가 누구에게 몇 장</div><div id="ccGiftAdmL">불러오는 중…</div>';
+    try{ const k=await sb.rpc("cc_ticket_admin_all"); if(k.error) throw k.error; const R=(k.data||[]).filter(function(x){ const b=x.b||{}; return (b.balance||b.buy||b.hof||b.recv); });
+      document.getElementById("ccTkKind").innerHTML=R.length?'<div class="tkk"><div class="tkkr h"><span>수강생</span><span>남은 이용권</span><span>구매 (구매 / 남은)</span><span>시상 (받은 / 선물함 / 남은)</span><span>선물받은 (받은 / 남은)</span><span>환불 가능</span></div>'+
+        R.map(function(x){ const b=x.b||{}; return '<div class="tkkr"><span><b>'+E(x.name||x.login_id)+'</b> <small>'+E(x.login_id)+'</small></span><span>'+b.balance+'장</span><span>'+b.buy+' / <b>'+b.buy_left+'</b></span><span>'+b.hof+' / '+b.sent+' / <b>'+b.hof_left+'</b></span><span>'+b.recv+' / <b>'+b.recv_left+'</b></span><span class="rf">'+b.refundable+'장</span></div>'; }).join("")+'</div>':'<div class="sub">이용권을 가진 수강생이 없습니다</div>';
+    }catch(e){ const el=document.getElementById("ccTkKind"); if(el) el.innerHTML='<div class="sub">선물하기 SQL(nomusa_gift.sql)을 아직 실행하지 않았거나 불러오지 못했습니다</div>'; }
+    const L=document.getElementById("ccGiftAdmL");
+    try{ const r=await sb.rpc("cc_ticket_gift_admin",{p_limit:200}); if(r.error) throw r.error; const rows=r.data||[];
+      L.innerHTML=rows.length?'<div class="gfadm">'+rows.map(function(x){ const d=new Date(x.created_at); return '<div class="gfar"><span>'+(d.getMonth()+1)+'/'+d.getDate()+'</span><span><b>'+E(x.from_name||x.from_login)+'</b> <small>'+E(x.from_login)+'</small> → <b>'+E(x.to_name||x.to_login)+'</b> <small>'+E(x.to_login)+'</small></span><span>'+x.n+'장</span></div>'; }).join("")+'</div>':'<div class="sub">아직 선물 기록이 없습니다</div>';
+    }catch(e){ L.innerHTML='<div class="sub">선물하기 SQL(nomusa_gift.sql)을 아직 실행하지 않았거나 불러오지 못했습니다</div>'; } };
+  try{ const o=window.ccOpenAdmin; if(o) window.ccOpenAdmin=ccOpenAdmin=async function(){ const r=await o.apply(this,arguments); try{ ccGiftAdmLoad(); }catch(e){} return r; }; }catch(e){}
+  const st=document.createElement("style"); st.textContent=
+   '#ccGift .gfkind{display:flex;flex-direction:column;gap:6px;margin:6px 0 10px}#ccGift .gk{display:grid;grid-template-columns:110px 1fr;gap:2px 10px;border:1px solid rgba(127,127,127,.3);border-radius:10px;padding:7px 10px;font-size:13px}#ccGift .gk>b{grid-row:span 2}#ccGift .gk em{font-style:normal;font-size:11.5px;font-weight:700}#ccGift .gk.buy em{color:#2f7d4f}#ccGift .gk.hof em,#ccGift .gk.recv em{color:#e0573f}#ccGift .gknote{font-size:11.5px;opacity:.75}'+'#ccGift .gfnote{margin:10px 0 4px;font-size:12.5px;line-height:1.6;border:1px dashed rgba(201,162,39,.6);border-radius:10px;padding:7px 10px}#ccGift .gfnote b{color:#e0573f}#ccGift .gfnote b.gfr{color:inherit}'+
+   '#ccGift .gfst{font-size:13px;margin:4px 0 8px}#ccGift .gfrow{display:flex;flex-direction:column;gap:6px}#ccGift #gfLogin{font:inherit;font-size:13.5px;padding:8px 10px;border-radius:10px;border:1px solid rgba(127,127,127,.4)}'+
+   '#ccGift .gfpeek{margin:8px 0 6px;font-size:13.5px}#ccGift .gfn{display:flex;flex-direction:column;gap:6px;max-width:220px}#ccGift .gfp.on{outline:2px solid #C9A227}'+
+   '#ccGift .gfwarn{margin:8px 0 6px;font-size:12.5px;font-weight:800;color:#e0573f}#ccGift .gfgo{display:block;text-align:center;border:none;cursor:pointer;width:100%;max-width:260px}'+
+   '#ccGift#ccGift .gfgo{background:#C9A227!important;color:#0D1F3C!important;font-weight:800!important;padding:10px!important;border-radius:10px!important}#ccGift#ccGift .gfp{padding:8px!important}#ccGift .gfnote b.gfr{color:inherit!important}'+'#ccGiftAdm .tkkr{display:grid;grid-template-columns:1.4fr .8fr 1fr 1.4fr 1.1fr .8fr;gap:8px;padding:7px 4px;border-top:1px solid rgba(127,127,127,.15);font-size:13px;align-items:center}#ccGiftAdm .tkkr.h{font-size:11.5px;opacity:.75;border-top:none}#ccGiftAdm .tkkr small{opacity:.65}#ccGiftAdm .tkkr .rf{font-weight:800;color:#2f7d4f}'+'#ccGiftAdm .gfar{display:grid;grid-template-columns:60px 1fr 50px;gap:8px;padding:7px 4px;border-top:1px solid rgba(127,127,127,.15);font-size:13px}#ccGiftAdm .gfar small{opacity:.65}';
+  document.head.appendChild(st);
 })();
 </script>
 </body>
