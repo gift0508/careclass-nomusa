@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-21 14:40 질문함안내3줄">
+<meta name="cc-build" content="2026-11-21 14:45 질문예시">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9787,7 +9787,7 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
     if(!document.getElementById("qnaIntro")){ const it=document.createElement("div"); it.id="qnaIntro"; it.className="qnai"; it.innerHTML=INTRO; h.parentNode.insertBefore(it,h.nextSibling); }
     let on=false; try{ on=localStorage.getItem("cc_chat_big")==="1"; }catch(e){} if(on) ccChatBig(true); };
   const setupInput=function(){ setupBig(); const ci=document.querySelector("#chat .cinput"); if(!ci||ci.__qna) return; ci.__qna=1;
-    ci.innerHTML='<textarea id="cq" rows="3" placeholder="질문을 적어 주세요"></textarea>'+
+    ci.innerHTML='<textarea id="cq" rows="3" placeholder="[예시] [민법] 착오 취소와 사기 취소가 경합하면 어느 쪽을 먼저 검토하나요?"></textarea>'+
       '<input type="file" id="qnaFile" accept="image/*" multiple style="display:none" onchange="ccQnaPick(this)">'+
       '<button type="button" class="qnafb" onclick="document.getElementById(\'qnaFile\').click()">📷 사진 올리기 <small>최대 3장</small></button><div id="qnaFL" class="qnafl"></div>'+
       '<div class="qnainfo">사진만 올릴 수 있습니다<br>답변을 받은 질문과 사진은 <b>2주 뒤 지워집니다</b> — 필요한 답변은 따로 옮겨 적어 두세요</div>'+
