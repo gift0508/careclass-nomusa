@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-21 11:20 공부기록메뉴정렬">
+<meta name="cc-build" content="2026-11-21 11:40 작은버튼글씨">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -10037,6 +10037,12 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
    B+' button{display:flex!important;align-items:center!important;justify-content:center!important;gap:3px;white-space:nowrap!important;font-size:12px!important;padding:7px 6px!important;letter-spacing:-.02em;margin:0!important;height:34px;box-sizing:border-box;overflow:hidden;text-overflow:ellipsis}'+
    B+' button small{font-size:11px!important}'+
    'html .tkbox.nmrvbox:has(.ccrectabs){overflow-x:hidden!important}');
+  document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){} })();
+</script>
+<script>
+/* 창 안의 작은 버튼(.mini) 글씨가 흐리게 보이는 것 고침 (2026-11-21) — 색을 따로 정한 버튼은 그대로 */
+(function(){ try{ const c=new CSSStyleSheet(); const B='html body .tkbox.tkbox.tkbox button.mini:not([style*="background"]):not(.on)';
+  c.replaceSync(B+'{color:#1f4a8a!important;background:#fff!important;border:1.5px solid #2d5aa0!important;font-weight:800!important;opacity:1!important}'+B+':hover{background:#eef3fb!important}');
   document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){} })();
 </script>
 </body>
