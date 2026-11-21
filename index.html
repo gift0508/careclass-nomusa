@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-21 15:55 공부기록이용권">
+<meta name="cc-build" content="2026-11-21 16:00 이용권버튼글씨">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -10017,6 +10017,12 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
    '.rtkk .gk em{font-style:normal;font-size:12px;font-weight:700}.rtkk .gk.buy em{color:#2f7d4f}.rtkk .gk.hof em,.rtkk .gk.recv em{color:#c2412d}.rtkk .gknote{font-size:12px;color:#7a7f8c}'+
    '.rtkk .gk.gkg{grid-template-columns:120px 1fr auto}.rtkk .gkbtn{grid-row:1 / span 2;grid-column:3;align-self:center}'+'.rtkb{display:flex;flex-direction:column;gap:6px;max-width:260px}.rtkr{display:grid;grid-template-columns:56px 1fr auto;gap:8px;font-size:13.5px;padding:6px 4px;border-bottom:1px dashed #e3ddcc}.rtkr em{font-style:normal;font-size:12px;color:#7a7f8c}';
   document.head.appendChild(st);
+  /* 버튼 글씨가 테마 변환으로 흐려지지 않게 (2026-11-21) */
+  try{ const c=new CSSStyleSheet(); c.replaceSync(
+    'html #nmRvBody#nmRvBody#nmRvBody#nmRvBody .rtk button.mini{color:#1f4a8a!important;background:#fff!important;border:1.5px solid #2d5aa0!important;font-weight:800!important;font-size:13px!important;opacity:1!important;padding:6px 12px!important}'+
+    'html #ccTkBody#ccTkBody#ccTkBody#ccTkBody #ccGift button.gfb{color:#1f4a8a!important;opacity:1!important;font-weight:800!important}'+
+    'html #ccTkBody#ccTkBody#ccTkBody#ccTkBody #ccGift button.gfp b{color:#0D1F3C!important}');
+    document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){}
 })();
 </script>
 </body>
