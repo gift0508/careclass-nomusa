@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-21 11:40 작은버튼글씨">
+<meta name="cc-build" content="2026-11-21 12:30 나의노트올리기">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9081,7 +9081,7 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
     let h='<div class="it'+(done?' done':'')+(cls?' '+cls:'')+(op?' open':'')+'" onclick="'+(op?'':'nxAdpTap('+day+');')+'nxTog(\''+J(k)+'\')"><input type="checkbox"'+(done?' checked':'')+' onclick="event.stopPropagation()" onchange="nxChk(\''+J(k)+'\',this.checked)">'+
       '<span><b>'+(num?num+'. ':'')+E(o.name)+'</b>'+(o.ttl?'<small>'+E(o.ttl)+'</small>':'')+'</span><span class="chev">'+(op?'▲':'▼')+'</span></div>';
     if(op){
-      h+='<div class="flow">'+S.map(function(x,i){ if(i>s) return ''; const ok=i<s;
+      h+='<div class="flow">'+(window.ccMyNoteRow?ccMyNoteRow(o):'')+S.map(function(x,i){ if(i>s) return ''; const ok=i<s;
         return '<div class="st'+(ok?' ok':'')+'"><span class="nn">'+(ok?'✓':(i+1))+'</span><b>'+x[0]+' '+E(x[1])+'</b>'+(ok?'<button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">다시</button><span class="dn">완료</span>':(STARTED[k]===i?'<button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">다시 열기</button><button class="okb" onclick="event.stopPropagation();nxStepDone(\''+J(k)+'\','+i+')">✅ 완료</button>':'<button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">시작 →</button>'))+'</div>'; }).join("")+
         (s<S.length?'<div class="st lock">'+(s<S.length-1?'마치고 「✅ 수업완료」 또는 「✅ 완료」를 누르면 다음 단계 「'+E(S[s+1][1])+'」가 나타납니다':'마지막 단계입니다 — 마치고 「✅ 완료」를 누르면 이 강의가 체크됩니다')+'</div>':'<div class="st fin">✅ 이 강의 학습 완료 — 체크되었습니다</div>')+
         ((o.t==="1차"&&o.stage==="문제풀이"&&day===0)?'<div class="st ex"><button onclick="event.stopPropagation();nxWrong(\''+J(k)+'\')">📒 오답노트 '+(noteHas("오답|"+o.key)?'보기 ✓':'올리기')+'</button></div>':'')+
@@ -9225,13 +9225,15 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
     const hs=function(k,val){ let o='<select data-k="'+k+'" onchange="nxPick2(\'all\',this)">'; for(let z=0;z<=16;z+=0.5) o+='<option value="'+z+'"'+(z===+val?' selected':'')+'>'+(z%1?z.toFixed(1):z)+'</option>'; return o+'</select>'; };
     /* 학습스타일: 추천대로 하기 / 내가 정하기 (단계별 학습스타일 · 복습스타일) (2026-11-21) */
     const dm=d.rm||"rec", dws=dual?'<div class="rsw">🔀 동차 학습스타일 <select data-k="dw" onchange="nxPick2(\'all\',this)">'+["1","2","0"].map(function(k){ return '<option value="'+k+'"'+(k===(d.dw||"1")?' selected':'')+'>'+CC_DW_NAME[k]+'</option>'; }).join("")+'</select></div>':'';
-    let rs='<select data-k="rm" onchange="nxPick2(\'all\',this)"><option value="rec"'+(dm!=="own"?' selected':'')+'>⭐ 추천대로 하기</option><option value="own"'+(dm==="own"?' selected':'')+'>✏️ 내가 정하기</option></select>';
+    let rs='<select data-k="rm" onchange="nxPick2(\'all\',this)"><option value="rec"'+(dm!=="own"?' selected':'')+'>⭐ 추천대로 하기</option><option value="own"'+(dm==="own"?' selected':'')+'>✏️ 내가 정하기</option></select><button class="pcfm'+(same?'':' on')+'" onclick="'+(same?'nxOk2()':'nxApply2(\'all\')')+'">✅ 확인</button>';
     if(dm==="own"){ rs+='<div class="rsx">'+T.map(function(t){ return (dual?'<div class="rsxt">'+t+'</div>':'')+nxReq(t).map(function(si){ if(t==="1차"&&(d.dw||"1")==="2") return si===nxReq(t)[0]?'<div class="rsxr"><b>1차</b><span>2차중심형 — 강의만 · 복습 없음</span></div>':''; const nm=CC_STAGES[t][si], r0=ccStyleR(t,si,d), v0=(d.rv&&d.rv[t]&&+d.rv[t][nm])||((window.CC_RV_REC||{})[t]||{})[nm]||2;
         return '<div class="rsxr"><b>'+E(nm)+'</b><select data-k="rs|'+t+'|'+E(nm)+'" onchange="nxPick2(\'all\',this)">'+["21","11","12"].map(function(r){ return '<option value="'+r+'"'+(r===r0?' selected':'')+'>'+CC_RS_NAME[r]+' '+CC_RS_RT[r]+'</option>'; }).join("")+'</select>'+
           '<select data-k="rv|'+t+'|'+E(nm)+'" onchange="nxPick2(\'all\',this)">'+[1,2,3].map(function(n){ return '<option value="'+n+'"'+(n===v0?' selected':'')+'>복습 '+n+'회</option>'; }).join("")+'</select></div>'; }).join(""); }).join("")+'</div>'; }
     let dg=''; if(!same){ dg=T.map(function(t){ const p=PJ[t], x=paceData(t,p), e2=simEnd(t,p,x.rem,capOf(t,d),x.missK), n2=e2?Math.round((e2-x.base)/864e5):null;
         return '<div class="dg2'+(e2&&n2<=0?'':' no')+'">'+(dual?t+' — ':'')+(e2?(n2<=0?'완료예정 '+ccYMD(e2)+' · 시험일 '+exB(t,e2):'완료예정 '+ccYMD(e2)+' · 시험일 '+exB(t,e2)+(Math.round((e2-ccExamDate(t,ccToday()))/864e5)>0?' — 시험일 내로 들어오도록 학습시간이나 학습스타일을 조정하세요':'')):'⚠️ 이 공부시간으로는 강의를 들을 시간이 없습니다')+'</div>'; }).join("")+
-        '<div style="margin-top:6px"><button class="pap" onclick="nxApply2(\'all\')">적용</button> <small class="mu">적용하면 익일부터 반영됩니다</small></div>'; }
+''; }
+    dg+=(same?'<div class="pcok">✔ 지금 이대로 적용되어 있습니다</div>'
+             :'');
     h+='<details class="pchg"'+(window.__nxPOpen?' open':'')+' ontoggle="window.__nxPOpen=this.open"><summary>⏱ 공부시간 · 학습스타일 바꾸기</summary>'+
       '<div class="fx2">주중 하루 '+hs("wd",d.wd)+' 시간 · 주말 하루 '+hs("we",d.we)+' 시간'+dws+'<div class="rsw">📚 학습스타일 '+rs+'</div></div>'+dg+'</details>';
     return h+'</div></div>';
@@ -9241,6 +9243,8 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
     box.querySelectorAll('[data-k^="rs|"],[data-k^="rv|"]').forEach(function(e){ const k=e.getAttribute("data-k").split("|"), M=k[0]==="rs"?o.rs:o.rv; M[k[1]]=M[k[1]]||{}; M[k[1]][k[2]]=k[0]==="rs"?e.value:+e.value; });
     if(o.rm==="own"&&!Object.keys(o.rs).length){ const cur=NX2[t]||ccProfGet()||{}; if(cur.rm==="own"){ o.rs=cur.rs||{}; o.rv=cur.rv||{}; } }
     NX2[t]=o; try{ sel.blur(); }catch(e){} nxRender(); };
+  window.nxOk2=function(){ window.__nxPOpen=false; try{ toast("지금 설정 그대로 공부합니다"); }catch(e){} nxRender(); };
+  window.nxUndo2=function(){ delete NX2.all; nxRender(); };
   window.nxApply2=function(t){ const d=NX2[t]; if(!d||prev()) return;
     const old=ccProfGet(), v={wd:d.wd,we:d.we,r:d.r||"11",rm:d.rm||"rec",at:new Date().toISOString()};
     if(v.rm==="own"){ v.rs=d.rs||{}; v.rv=d.rv||{}; }
@@ -9250,7 +9254,7 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
     ccTracks().forEach(function(t2){ try{ const pl=ccPlanOf(t2); if(pl.xtra&&Object.keys(pl.xtra).length){ pl.xtra={}; ccPlanWrite(t2,pl); } }catch(e){} });   /* ① 조정분은 새 공부시간으로 대신 */
     const msg=ccCapAuto(v); ccTracks().forEach(function(t2){ if(t2===TRACK) return; try{ const pl=ccPlanOf(t2), n=ccPerOf(v); if(!pl.per) ccPlanSetPer(t2,n); else if(pl.per!==n){ pl.perNext=n; pl.perFrom=ccISO(ccAddDays(ccToday(),1)); ccPlanWrite(t2,pl); } }catch(e){} });
     try{ ccStudyRender(); }catch(e){} try{ ccPaceRender(); }catch(e){}
-    try{ toast("적용했습니다 — 하루 강의 수는 익일부터 · 복습스타일은 바로"); }catch(e){} nxRender(); };
+    window.__nxPOpen=false; try{ toast("확정했습니다 — 하루 강의 수는 익일부터 · 복습스타일은 바로"); }catch(e){} nxRender(); };
   window.nxAdj1=function(t,wk){ if(prev()) return;
     const p=project(t); if(!p) return; const x=paceData(t,p), pl=ccPlanOf(t);
     if(pl.asg) x.missK.forEach(function(k){ delete pl.asg[k]; });   /* 밀린 강의는 내일부터 다시 순서대로 */
@@ -10044,6 +10048,109 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
 (function(){ try{ const c=new CSSStyleSheet(); const B='html body .tkbox.tkbox.tkbox button.mini:not([style*="background"]):not(.on)';
   c.replaceSync(B+'{color:#1f4a8a!important;background:#fff!important;border:1.5px solid #2d5aa0!important;font-weight:800!important;opacity:1!important}'+B+':hover{background:#eef3fb!important}');
   document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){} })();
+</script>
+<script>
+/* 공부시간 · 학습스타일 바꾸기 — 확인 / 확정 버튼 (2026-11-21) */
+(function(){ try{ const c=new CSSStyleSheet(); const P='html body .pchg.pchg.pchg';
+  c.replaceSync(P+' .pcok{margin-top:10px;font-size:12.5px;font-weight:800;color:#1e6b3f}'+P+' .pcok.no{color:#b0391f}'+
+   P+' button.pcfm{display:inline-block;margin-left:8px;vertical-align:middle;padding:5px 14px;border-radius:10px;font:inherit;font-size:13px;font-weight:800;cursor:pointer;border:1.5px solid #2d5aa0!important;background:#fff!important;color:#1f4a8a!important;opacity:1!important}'+
+   P+' button.pcfm.on{background:linear-gradient(90deg,#C9A227,#E5BE44)!important;border-color:#C9A227!important;color:#0D1F3C!important}'+
+   P+' button.pcbk{display:inline-block;margin-left:6px;padding:3px 10px;border-radius:10px;font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;border:1px solid #c9c3b3!important;background:#fff!important;color:#5a6070!important}');
+  document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){} })();
+</script>
+<script>
+/* ═══ 📷 나의노트 올리기 (2026-11-21) — 강의마다 손으로 정리한 노트 1장을 사진으로
+   · 저장: Supabase Storage 비공개 버킷 'note' · 수강생 폴더(아이디 번호)/강의.jpg · 다시 올리면 바뀜
+   · 수강생 본인과 관리자만 볼 수 있음 · 「📂 내 공부기록 → 📝 강의노트」에도 모임 · 시험이 끝나면 관리자가 한 번에 지움 ═══ */
+(function(){
+  const E=function(x){ return String(x==null?"":x).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); };
+  const hx=function(str){ return Array.from(new TextEncoder().encode(String(str))).map(function(b){ return b.toString(16).padStart(2,"0"); }).join(""); };
+  const uh=function(h){ try{ const a=new Uint8Array(h.match(/../g).map(function(x){ return parseInt(x,16); })); return new TextDecoder().decode(a); }catch(e){ return ""; } };
+  const uidNow=function(){ return window.ccViewUid||(typeof ccUid!=="undefined"?ccUid:null); };
+  const live=function(){ return typeof sb!=="undefined"&&sb&&sb.storage&&uidNow(); };
+  const N={uid:null,map:{},busy:false,P:null};   /* map: hex(강의키) → {path, name} */
+  const load=function(force){ const u=uidNow(); if(!live()) return Promise.resolve();
+    if(N.uid===u&&N.P&&!force) return N.P;
+    N.uid=u; N.map={};
+    return (N.P=sb.storage.from("note").list(u,{limit:1000}).then(function(r){ (r.data||[]).forEach(function(f){ const m=/^([0-9a-f]+)\.([0-9a-f]*)\.jpg$/.exec(f.name||""); if(m) N.map[m[1]]={path:u+"/"+f.name,name:uh(m[2]),at:f.updated_at||f.created_at}; }); })
+      .catch(function(e){ console.warn("[나의노트]",e); }).then(function(){ try{ nxRender(); }catch(e){} }));
+  };
+  window.ccMyNoteLoad=load;
+  const nm=function(o){ return o.name||((o.subj||"")+" "+(o.stage||"")+" "+(o.lecNo||"")+"강"); };
+  window.ccMyNoteRow=function(o){ if(!o||!o.key) return '';
+    if(N.uid!==uidNow()) load();
+    const f=N.map[hx(o.key)], kk=E(String(o.key).replace(/\\/g,"\\\\").replace(/'/g,"\\'")), nn=E(nm(o).replace(/\\/g,"\\\\").replace(/'/g,"\\'"));
+    return '<div class="st mynote" onclick="event.stopPropagation()">'+
+      (f?'<button class="mnv" onclick="ccMyNoteView(\''+E(f.path)+'\',\''+nn+'\')">📷 나의노트 보기 ✓</button>'+(window.ccViewUid?'':'<button class="mnu" onclick="ccMyNotePick(\''+kk+'\',\''+nn+'\')">다시 올리기</button>')
+        :(window.ccViewUid?'<span class="mnh">올린 나의노트가 없습니다</span>':'<button class="mnu on" onclick="ccMyNotePick(\''+kk+'\',\''+nn+'\')">📷 나의노트 올리기 (사진)</button>'))+
+      (f||window.ccViewUid?'':'<div class="mnh">선택사항입니다 · 올리지 않아도 학습은 그대로 진행됩니다 · 강의당 용지 1장으로 압축정리하여 사진으로 올리세요</div>')+'</div>';
+  };
+  const shrink=function(f){ return new Promise(function(ok){ const u=URL.createObjectURL(f), im=new Image();
+    im.onload=function(){ const k=Math.min(1,2000/Math.max(im.width,im.height)), c=document.createElement("canvas"); c.width=Math.round(im.width*k); c.height=Math.round(im.height*k);
+      c.getContext("2d").drawImage(im,0,0,c.width,c.height); URL.revokeObjectURL(u); c.toBlob(function(b){ ok(b||f); },"image/jpeg",0.82); };
+    im.onerror=function(){ URL.revokeObjectURL(u); ok(f); }; im.src=u; }); };
+  window.ccMyNotePick=function(key,name){
+    if(window.ccPreview){ try{ toast("관리자 미리보기 — 저장하지 않습니다"); }catch(e){} return; }
+    if(!live()){ try{ toast("로그인한 뒤 올릴 수 있습니다"); }catch(e){} return; }
+    const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
+    inp.onchange=async function(){ const f=inp.files&&inp.files[0]; if(!f) return;
+      if(!/^image\//.test(f.type)){ try{ toast("사진만 올릴 수 있습니다"); }catch(e){} return; }
+      if(N.busy) return; N.busy=true; try{ toast("나의노트를 올리는 중…"); }catch(e){}
+      try{ await load(); const b=await shrink(f), h=hx(key), u=uidNow(), path=u+"/"+h+"."+hx(name).slice(0,400)+".jpg", old=N.map[h];
+        const r=await sb.storage.from("note").upload(path,b,{contentType:"image/jpeg",upsert:true}); if(r.error) throw r.error;
+        if(old&&old.path!==path){ try{ await sb.storage.from("note").remove([old.path]); }catch(e){} }
+        N.map[h]={path:path,name:name,at:new Date().toISOString()};
+        try{ toast("나의노트를 올렸습니다 — 「📂 내 공부기록 → 📝 강의노트」에도 모입니다"); }catch(e){}
+      }catch(e){ console.warn(e); try{ toast("올리지 못했습니다 — "+(typeof ccErr==="function"?ccErr(e):e.message)); }catch(x){} }
+      N.busy=false; try{ nxRender(); }catch(e){} try{ if(document.querySelector("#nmRvModal.on")&&window.CC_REC&&CC_REC.tab==="note") ccRecDraw(); }catch(e){} };
+    inp.click(); };
+  window.ccMyNoteView=async function(path,name){
+    let ov=document.getElementById("ccMnOv"); if(!ov){ ov=document.createElement("div"); ov.id="ccMnOv"; ov.onclick=function(e){ if(e.target===ov) ov.classList.remove("on"); }; document.body.appendChild(ov); }
+    ov.innerHTML='<div class="mnbox"><div class="mnhd"><b>📷 '+E(name)+'</b><button onclick="document.getElementById(\'ccMnOv\').classList.remove(\'on\')">닫기</button></div><div class="mnimg">불러오는 중…</div></div>'; ov.classList.add("on");
+    try{ const r=await sb.storage.from("note").createSignedUrl(path,3600); if(r.error) throw r.error;
+      ov.querySelector(".mnimg").innerHTML='<img src="'+E(r.data.signedUrl)+'" alt="나의노트">'; }
+    catch(e){ ov.querySelector(".mnimg").textContent="사진을 불러오지 못했습니다"; } };
+  /* 📂 내 공부기록 → 📝 강의노트 맨 위에 나의노트 사진 모음 */
+  const hook=function(){ const dr=window.ccRecDraw; if(!dr||dr.__mn) return;
+    const w=function(){ const r=dr.apply(this,arguments);
+      try{ if(window.CC_REC&&CC_REC.tab==="note"){ const body=document.getElementById("nmRvBody"), tabs=body&&body.querySelector(".nmrvtabs"); if(tabs){
+        if(N.uid!==uidNow()) load(true).then(function(){ try{ if(CC_REC.tab==="note") ccRecDraw(); }catch(e){} });
+        const L=Object.keys(N.map).map(function(h){ return N.map[h]; }).sort(function(a,b){ return String(a.name).localeCompare(String(b.name),"ko",{numeric:true}); });
+        const pn=function(x){ return E(String(x).replace(/\\/g,"\\\\").replace(/'/g,"\\'")); };
+        tabs.insertAdjacentHTML("afterend",'<div class="mnrec"><div class="mnrt">📷 나의노트 사진 <small>'+L.length+'장</small></div>'+
+          (L.length?L.map(function(f){ return '<div class="mnri"><span>'+E(f.name)+'</span><button onclick="ccMyNoteView(\''+pn(f.path)+'\',\''+pn(f.name)+'\')">보기</button></div>'; }).join("")
+            :'<div class="mnh">나의 학습에서 강의를 펼친 뒤 「📷 나의노트 올리기 (사진)」를 누르면 여기에 모입니다</div>')+'</div>'); } } }catch(e){}
+      return r; };
+    w.__mn=true; window.ccRecDraw=ccRecDraw=w; };
+  setTimeout(hook,0); setTimeout(hook,1500);
+  /* 관리자: 시험이 끝난 뒤 나의노트 사진 모두 지우기 */
+  window.ccMyNoteWipe=async function(){
+    if(!confirm("모든 수강생의 나의노트 사진을 지웁니다.\n시험이 끝난 뒤에만 누르세요. 되돌릴 수 없습니다.")) return;
+    const msg=document.getElementById("ccMnWipeMsg"); if(msg) msg.textContent="지우는 중…";
+    try{ const root=await sb.storage.from("note").list("",{limit:1000}); let n=0;
+      for(const d of (root.data||[])){ if(!d.name) continue; const L=await sb.storage.from("note").list(d.name,{limit:1000}); const paths=(L.data||[]).map(function(f){ return d.name+"/"+f.name; });
+        if(paths.length){ const r=await sb.storage.from("note").remove(paths); if(r.error) throw r.error; n+=paths.length; } }
+      if(msg) msg.textContent="나의노트 사진 "+n+"장을 지웠습니다"; N.P=null; N.uid=null;
+    }catch(e){ console.warn(e); if(msg) msg.textContent="지우지 못했습니다 — "+(e.message||e); } };
+  const admAdd=function(){ const g=document.getElementById("ccGiftAdm"); if(!g||document.getElementById("ccMnWipe")) return;
+    const p=document.createElement("div"); p.className="panel"; p.id="ccMnWipe"; p.style.marginTop="22px";
+    p.innerHTML='<h3>📷 나의노트 사진</h3><div class="sub">수강생이 강의마다 올린 노트 사진 · 시험일까지 보관 · 시험이 끝나면 아래 버튼으로 한 번에 지웁니다</div><div style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;margin-top:8px"><button class="mini" onclick="ccMyNoteWipe()">🗑 나의노트 사진 모두 지우기 (시험 끝난 뒤)</button><small id="ccMnWipeMsg" class="mu"></small></div>';
+    g.parentNode.insertBefore(p,g.nextSibling); };
+  try{ const o=window.ccGiftAdmLoad; if(o) window.ccGiftAdmLoad=async function(){ const r=await o.apply(this,arguments); try{ admAdd(); }catch(e){} return r; }; }catch(e){}
+  try{ const c=new CSSStyleSheet(); c.replaceSync(
+    'html #nxMine#nxMine .st.mynote{display:flex;flex-wrap:wrap;align-items:center;gap:6px 8px;padding:8px 0 8px 34px;border-bottom:1px dashed #e8dfc4}'+
+    'html #nxMine#nxMine .st.mynote button{font:inherit;font-size:12.5px;font-weight:800;padding:5px 12px;border-radius:9px;cursor:pointer;border:1.5px solid #2d5aa0;background:#fff;color:#1f4a8a;opacity:1}'+
+    'html #nxMine#nxMine .st.mynote button.mnu.on{border-color:#C9A227;background:#fff8e6;color:#6B5312}html #nxMine#nxMine .st.mynote button.mnv{border-color:#2f7d4f;color:#1e6b3f;background:#eef8f1}'+
+    'html #nxMine#nxMine .st.mynote .mnh{width:100%;font-size:11.5px;color:#7a7f8c}'+
+    '#ccMnOv{position:fixed;inset:0;z-index:99999;background:rgba(13,31,60,.6);display:none;align-items:center;justify-content:center;padding:3vh 3vw}#ccMnOv.on{display:flex}'+
+    '#ccMnOv .mnbox{background:#fffdf8;border-radius:14px;max-width:min(900px,96vw);max-height:94vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35)}'+
+    '#ccMnOv .mnhd{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0D1F3C;color:#fff}#ccMnOv .mnhd b{flex:1;font-size:14px;color:#E5BE44}#ccMnOv .mnhd button{font:inherit;font-size:13px;font-weight:800;padding:5px 12px;border-radius:8px;border:none;background:#C9A227;color:#0D1F3C;cursor:pointer}'+
+    '#ccMnOv .mnimg{overflow:auto;padding:10px;text-align:center;color:#5a6070;font-size:13px}#ccMnOv .mnimg img{max-width:100%;height:auto;display:block;margin:0 auto}'+
+    'html #nmRvBody#nmRvBody .mnrec{border:1.5px solid #e9d9a6;background:#fffaf0;border-radius:12px;padding:10px 12px;margin:6px 0 10px}html #nmRvBody#nmRvBody .mnrt{font-size:13px;font-weight:800;color:#6B5312;margin-bottom:4px}html #nmRvBody .mnrt small{color:#8a8f99}'+
+    'html #nmRvBody#nmRvBody .mnri{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;border-top:1px dashed #eadfbf;font-size:13px;color:#1d2433}'+
+    'html #nmRvBody#nmRvBody .mnri button{font:inherit;font-size:12px;font-weight:800;padding:3px 12px;border-radius:8px;border:1.5px solid #2d5aa0;background:#fff;color:#1f4a8a;cursor:pointer}html #nmRvBody#nmRvBody .mnh{font-size:12px;color:#7a7f8c}');
+    document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){}
+})();
 </script>
 </body>
 </html>
