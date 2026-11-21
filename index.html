@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-21 12:40 학습순서안내">
+<meta name="cc-build" content="2026-11-21 13:20 질문함상담강사">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -2986,7 +2986,7 @@ window.ccPlanPeek=function(t,n){
     var g=document.createElement("span"); g.className="cgrip";
     g.innerHTML='<button type="button" title="맨 위로" onclick="ccChatMove(\'up\')">▲</button><button type="button" title="맨 아래로" onclick="ccChatMove(\'down\')">▼</button>';
     var last=head.lastElementChild; head.insertBefore(g,last);
-    var sub=head.querySelector(".chsub"); if(sub) sub.textContent="2일 내 답변 · 끌어서 위아래 이동"; head.title="잡고 끌면 위아래로 옮겨집니다";
+    var sub=head.querySelector(".chsub"); if(sub) sub.textContent="끌어서 위아래 이동"; head.title="잡고 끌면 위아래로 옮겨집니다";
     var dragging=false, startY=0, startTop=0;
     head.addEventListener("pointerdown",function(e){
       if(e.target.closest("button")) return;
@@ -5979,11 +5979,11 @@ window.qupFillSel=qupFillSel; window.qupSave=qupSave; window.qupUndo=qupUndo; wi
 <button class="fab" id="fab" onclick="toggleChat()">📮<span class="fabl">질문함</span></button>
 <div class="chat" id="chat">
   <div class="chead">
-    <div><b>📮 질문함</b><span class="chsub">2일 내 답변</span></div>
+    <div><b>📮 질문함</b><span class="chsub"></span></div>
     <button class="mini" onclick="toggleChat()">닫기</button>
   </div>
   <div class="cbody" id="cbody">
-    <div class="cmsg ai">안녕하세요! 노무사 특별관리 이용 중 막히는 것을 무엇이든 물어보세요. 개념 질문, 판례, 답안 현출 방법, 오늘 과업에 대한 조언까지 — 지금 바로 답해드립니다.</div>
+    <div class="qnai">학습과 관련하여 궁금한 것을 이곳에 질문으로 남겨놓으면 <b>상담강사선생님</b>이 답변을 합니다.<br><small>기타 강의관련질문이나 강사관련질문은 고객센터로 하시기 바랍니다.</small></div>
   </div>
   <div class="cinput">
     <input id="cq" type="text" placeholder="예: 소유권이전등기청구권의 소멸시효가 헷갈려요" onkeydown="if(event.key==='Enter')askAI()">
@@ -6004,7 +6004,7 @@ window.qupFillSel=qupFillSel; window.qupSave=qupSave; window.qupUndo=qupUndo; wi
 </div>
 <div class="engview" id="engview">
   <div class="enghead"><b>시대에듀 노무사 · 바로합격반</b><span class="et" id="engtitle"></span>
-    <button class="qatop" onclick="toggleChat()">📮 질문함 <small>2일 내 답변</small></button>
+    <button class="qatop" onclick="toggleChat()">📮 질문함</button>
     <button class="engback" onclick="engBack()">← 내 화면으로 돌아가기</button></div>
   <iframe id="engframe" title="엔진"></iframe>
 </div>
@@ -7898,7 +7898,7 @@ window.nmPubClose=function(){ const m=document.getElementById("nmPubPop"); if(m)
     const n=D?D.missN:0, d=D?D.missDays.length:ms.length;
     return '<div class="ccmiss">⚠️ <b>학습이 밀렸습니다'+(n?' — '+n+'강 ('+d+'일)':'')+'</b>'+(ccIsDual()?' · '+t:'')+
       '<span class="ccmb"><button onclick="'+P+'ccGoPace()">📈 내 페이스 점검에서 다시 짜기 →</button>'+
-      (inFrame?'<button onclick="parent.toggleChat()" style="background:linear-gradient(135deg,#E8B93C,#C9A227);color:#0D1F3C">📮 질문함 <small style="font-weight:600;opacity:.75">2일 내 답변</small></button>':'')+'</span></div>';
+      (inFrame?'<button onclick="parent.toggleChat()" style="background:linear-gradient(135deg,#E8B93C,#C9A227);color:#0D1F3C">📮 질문함</button>':'')+'</span></div>';
   };
   /* 학습 화면 안에 「무시로 질의응답」이 따로 있으면 맨 위 띠의 같은 버튼은 숨김 — 그 화면을 떠나면 다시 보임 */
   window.ccQaInline=function(){
@@ -7948,7 +7948,7 @@ body.qd-on #qaDock{display:flex}
 .chat .chead{cursor:ns-resize}
 .chat .chead button{cursor:pointer}
 </style>
-<div id="qaDock" title="눌러서 열기 · 위아래로 끌어서 옮기기"><span class="qd-grip">⋮⋮</span><span class="qd-t">📮 질문함</span><span class="qd-s">2일 내 답변</span></div>
+<div id="qaDock" title="눌러서 열기 · 위아래로 끌어서 옮기기"><span class="qd-grip">⋮⋮</span><span class="qd-t">📮 질문함</span></div>
 <script>
 (function(){
   var D=document.getElementById("qaDock"), C=document.getElementById("chat"), K="cc_qadock_y", KC="cc_qachat_y";
@@ -9042,6 +9042,7 @@ html #nxMine .ln{font-size:13px;margin-top:6px}html #nxMine .ln2{font-size:12px;
     const r=REG[k]; if(!r) return; const S=steps(r.o,r.day), x=S[idx]; if(!x) return;
     const P=RD("cc_nxstep"), done=!!RD("cc_nxdone")[k], s=done?S.length:Math.min(P[k]||0,S.length);
     if(idx>=s){ STARTED[k]=idx; window.__nxLast={k:k,idx:idx}; window.__nxPending=true; } else { window.__nxPending=false; }
+    try{ window.__nxLecLabel=r.o.name||((r.o.subj||"")+" "+(r.o.stage||"")+" "+(r.o.lecNo||"")+"강"); }catch(e){}
     OPEN[k]=true;
     try{ run(r.o,r.day,x[2]); }catch(e){ console.warn(e); }
     nxRender();
@@ -9765,6 +9766,96 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
       return ccSimEndS(L,ccToday(),function(iso,si){ if(iso===T) return capT; return v?ccPerDayS(t,iso,si,v):ccPerDayS(t,iso,si,ccProfAt(iso)); });
     }catch(e){ console.warn(e); return null; } };
   window.ccPlanEndWith=ccPlanEndWith;
+})();
+</script>
+<script>
+/* ═══ 📮 질문함 (2026-11-21) — 학습 질문을 남기면 상담강사선생님(관리자)이 답변 · AI 즉답 없앰 · 답변 기한 없음
+   Supabase 표 cc_qna (nomusa_qna.sql) ═══ */
+(function(){
+  const E=function(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); };
+  const T=function(x){ try{ const d=new Date(x); return (d.getMonth()+1)+"/"+d.getDate()+" "+String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); }catch(e){ return ""; } };
+  const live=function(){ return typeof sb!=="undefined"&&sb&&typeof ccUid!=="undefined"&&ccUid&&!window.ccPreview; };
+  const INTRO='학습과 관련하여 궁금한 것을 이곳에 질문으로 남겨놓으면 <b>상담강사선생님</b>이 답변을 합니다.<br><small>기타 강의관련질문이나 강사관련질문은 고객센터로 하시기 바랍니다.</small>';
+  let MY=[], ERR=null;
+  /* 입력칸: 여러 줄 · 버튼은 아래로 */
+  const setupInput=function(){ const ci=document.querySelector("#chat .cinput"); if(!ci||ci.__qna) return; ci.__qna=1;
+    ci.innerHTML='<textarea id="cq" rows="3" placeholder="질문을 적어 주세요 (어느 강의에 대한 질문인지 함께 적으면 좋습니다)"></textarea><button class="csend" id="csend" onclick="askAI()">질문 남기기</button>'; };
+  const draw=function(){ const b=document.getElementById("cbody"); if(!b) return;
+    let h='<div class="qnai">'+INTRO+'</div>';
+    if(window.ccPreview) h+='<div class="qnae">관리자 미리보기 — 수강생 질문함 모양만 보여 드립니다</div>';
+    else if(ERR) h+='<div class="qnae">질문함을 불러오지 못했습니다 — 잠시 후 다시 열어 주세요</div>';
+    h+=MY.map(function(x){ const ok=!!x.a;
+      return '<div class="qnaq"><div class="qm"><span>'+T(x.created_at)+(x.lec?' · '+E(x.lec):'')+'</span><span class="qs '+(ok?'ok':'w')+'">'+(ok?'답변 완료':'답변 대기')+(ok&&!x.seen?'<i>NEW</i>':'')+'</span></div>'+
+        '<div class="qt">'+E(x.q).replace(/\n/g,'<br>')+'</div>'+(ok?'<div class="qa"><b>상담강사선생님 · '+T(x.a_at)+'</b>'+E(x.a).replace(/\n/g,'<br>')+'</div>':'')+'</div>'; }).join("");
+    b.innerHTML=h; b.scrollTop=b.scrollHeight; };
+  const load=async function(){ if(!live()){ draw(); return; }
+    try{ const r=await sb.from("cc_qna").select("*").eq("user_id",ccUid).order("created_at",{ascending:true}).limit(200); if(r.error) throw r.error; MY=r.data||[]; ERR=null; }catch(e){ console.warn("[질문함]",e); ERR=e; }
+    draw(); badge(); };
+  const markSeen=async function(){ if(!live()) return; if(!MY.some(function(x){ return x.a&&!x.seen; })) return;
+    try{ await sb.rpc("cc_qna_seen"); }catch(e){} };
+  /* 탭 · 버튼의 빨간 숫자 = 아직 안 본 답변 */
+  let NEWN=0;
+  const badge=function(){ const n=NEWN=MY.filter(function(x){ return x.a&&!x.seen; }).length;
+    ["qaDock","fab"].forEach(function(id){ const el=document.getElementById(id); if(!el) return; let i=el.querySelector(".qnab"); if(!n){ if(i) i.remove(); return; } if(!i){ i=document.createElement("i"); i.className="qnab"; el.appendChild(i); } i.textContent=n; }); };
+  const poll=async function(){ if(!live()) return; try{ const r=await sb.from("cc_qna").select("id,a,seen,a_at").eq("user_id",ccUid).not("a","is",null).eq("seen",false); if(!r.error){ const ids={}; (r.data||[]).forEach(function(x){ ids[x.id]=x; });
+        MY.forEach(function(x){ if(ids[x.id]){ x.a=x.a||ids[x.id].a; x.seen=false; } }); if((r.data||[]).length&&!MY.length) await load(); badge(); } }catch(e){} };
+  setInterval(function(){ if(document.visibilityState==="visible") poll(); },120000);
+  setTimeout(function(){ try{ setupInput(); if(live()) load(); }catch(e){} },2500);
+  /* 열기 · 닫기 */
+  try{ const oT=window.toggleChat; window.toggleChat=toggleChat=function(){ setupInput(); const r=oT.apply(this,arguments);
+      const c=document.getElementById("chat"); if(c&&c.classList.contains("open")){ draw(); load().then(function(){ markSeen().then(function(){ setTimeout(function(){ MY.forEach(function(x){ if(x.a) x.seen=true; }); badge(); },4000); }); }); }
+      return r; }; }catch(e){ console.warn(e); }
+  /* 질문 남기기 (예전 AI 즉답 대신) */
+  window.askAI=askAI=async function(){
+    const inp=document.getElementById("cq"); if(!inp) return; const q=inp.value.trim(); if(!q) return;
+    if(window.ccPreview){ try{ toast("관리자 미리보기 — 저장하지 않습니다"); }catch(e){} return; }
+    if(!live()){ try{ toast("로그인한 뒤 질문을 남길 수 있습니다"); }catch(e){} return; }
+    const btn=document.getElementById("csend"); if(btn) btn.disabled=true;
+    try{ const row={user_id:ccUid,track:(user&&user.track)||null,lec:window.__nxLecLabel||null,q:q};
+      const r=await sb.from("cc_qna").insert([row]).select("*"); if(r.error) throw r.error;
+      inp.value=""; MY.push((r.data&&r.data[0])||Object.assign({created_at:new Date().toISOString()},row)); draw(); try{ toast("질문을 남겼습니다 — 상담강사선생님이 답변을 합니다"); }catch(e){}
+    }catch(e){ console.warn(e); try{ toast("질문을 남기지 못했습니다 — "+(typeof ccErr==="function"?ccErr(e):e.message)); }catch(x){} }
+    if(btn) btn.disabled=false; };
+  /* ── 관리자 대시보드: 📮 질문함 ── */
+  const A={tab:"w",rows:[],names:{}};
+  const admBox=function(){ let p=document.getElementById("ccQnaAdm"); if(p) return p; const s=document.getElementById("ccSubs"); const pn=s&&s.closest(".panel"); if(!pn) return null;
+    p=document.createElement("div"); p.className="panel"; p.id="ccQnaAdm"; p.style.marginTop="22px"; pn.parentNode.insertBefore(p,pn); return p; };
+  const admDraw=function(){ const p=admBox(); if(!p) return; const W=A.rows.filter(function(x){ return !x.a; }), D=A.rows.filter(function(x){ return !!x.a; }), L=A.tab==="w"?W:D.slice().reverse();
+    p.innerHTML='<h3>📮 질문함</h3><div class="sub">수강생이 남긴 학습 질문 · 답변을 보내면 수강생 질문함에 바로 보이고 탭에 빨간 숫자가 뜹니다</div>'+
+      '<div class="qnaw"><div class="qnat"><button class="mini'+(A.tab==="w"?' on':'')+'" onclick="ccQnaTab(\'w\')">답변 대기 '+W.length+'</button><button class="mini'+(A.tab==="d"?' on':'')+'" onclick="ccQnaTab(\'d\')">답변 완료 '+D.length+'</button></div><div class="qnal">'+
+      (A.err?'<div class="sub">질문함 SQL(nomusa_qna.sql)을 아직 실행하지 않았거나 불러오지 못했습니다</div>':'')+
+      (L.length?L.map(function(x){ const n=A.names[x.user_id]||{}; const tr=x.track==="1+2차"?"동차":(x.track||n.track||"");
+        return '<div class="qnaa"><div class="qm"><b>'+E(n.name||"수강생")+'</b> · '+E(n.login_id||"")+(tr?' · '+E(tr):'')+' · '+T(x.created_at)+(x.lec?' · '+E(x.lec):'')+'</div><div class="qt">'+E(x.q).replace(/\n/g,'<br>')+'</div>'+
+          '<textarea id="qnaA'+x.id+'" placeholder="답변을 적어 주세요">'+E(x.a||"")+'</textarea>'+(x.a?'<div class="sub" style="margin:4px 0 0">'+T(x.a_at)+' 답변 · '+(x.seen?'수강생 읽음':'아직 안 읽음')+'</div>':'')+
+          '<div class="qnab2"><button class="mini" onclick="ccQnaSend('+x.id+')">'+(x.a?'답변 고치기':'답변 보내기')+'</button></div></div>'; }).join(""):'<div class="sub">'+(A.tab==="w"?'답변을 기다리는 질문이 없습니다':'아직 답변한 질문이 없습니다')+'</div>')+'</div></div>'; };
+  window.ccQnaTab=function(t){ A.tab=t; admDraw(); };
+  window.ccQnaAdmLoad=async function(){ if(!admBox()||typeof sb==="undefined"||!sb) return;
+    try{ const r=await sb.from("cc_qna").select("*").order("created_at",{ascending:true}).limit(1000); if(r.error) throw r.error; A.rows=r.data||[]; A.err=null;
+      const ids=Array.from(new Set(A.rows.map(function(x){ return x.user_id; }))); if(ids.length){ const q=await sb.from("cc_profiles").select("id,name,login_id,track").in("id",ids); (q.data||[]).forEach(function(n){ A.names[n.id]=n; }); }
+    }catch(e){ console.warn("[질문함 관리]",e); A.err=e; }
+    admDraw(); };
+  window.ccQnaSend=async function(id){ const ta=document.getElementById("qnaA"+id); const v=ta?ta.value.trim():""; if(!v){ alert("답변을 적어 주세요"); return; }
+    try{ const r=await sb.rpc("cc_qna_answer",{p_id:id,p_a:v}); if(r.error) throw r.error; try{ toast("답변을 보냈습니다"); }catch(e){} ccQnaAdmLoad(); }
+    catch(e){ alert("보내지 못했습니다 — "+(typeof ccErr==="function"?ccErr(e):e.message)); } };
+  try{ const o=window.ccOpenAdmin; if(o) window.ccOpenAdmin=ccOpenAdmin=async function(){ const r=await o.apply(this,arguments); try{ ccQnaAdmLoad(); }catch(e){} return r; }; }catch(e){}
+  /* 스타일 */
+  const st=document.createElement("style"); st.type="text/nx-css"; st.textContent=
+   'html #chat .qnai{margin:4px 0 10px;background:#fbf6e6;border:1px solid #efe2b5;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.6;color:#0D1F3C}'+
+   'html #chat .qnai small{display:block;margin-top:4px;font-size:12px;color:#6b7488}html #chat .qnae{font-size:12.5px;color:#6b7488;margin:6px 0}'+
+   'html #chat .qnaq{border:1px solid #e3dccb;border-radius:12px;padding:10px 12px;margin:10px 0;background:#fff;color:#0D1F3C}'+
+   'html #chat .qnaq .qm{display:flex;justify-content:space-between;gap:8px;font-size:11.5px;color:#6b7488;margin-bottom:5px}'+
+   'html #chat .qs{font-weight:800;border-radius:999px;padding:1px 8px;font-size:11px;white-space:nowrap}html #chat .qs.w{background:#f1eee6;color:#6b7488}html #chat .qs.ok{background:#e4f3e9;color:#1e6b3f}'+
+   'html #chat .qs i{font-style:normal;margin-left:5px;background:#b0391f;color:#fff;font-size:10px;border-radius:999px;padding:0 6px}'+
+   'html #chat .qnaq .qt{font-size:14px;line-height:1.6}'+
+   'html #chat .qa{margin-top:8px;background:#f4faf5;border-left:3px solid #8cc5a0;border-radius:0 10px 10px 0;padding:8px 10px;font-size:13.5px;line-height:1.65}html #chat .qa b{display:block;font-size:12px;color:#1e6b3f;margin-bottom:2px}'+
+   'html #chat .cinput{flex-direction:column;align-items:stretch;gap:8px}html #chat #cq{width:100%;box-sizing:border-box;min-height:64px;resize:vertical;font:inherit;font-size:13.5px;border-radius:12px;padding:9px 11px}'+
+   'html #chat#chat#chat#chat .csend{width:100%!important;padding:10px!important;font-weight:800!important;font-size:14px!important}'+
+   'html .qnab{position:absolute;top:-6px;right:-6px;font-style:normal;background:#b0391f;color:#fff;font-size:11px;font-weight:800;border-radius:999px;padding:1px 7px;writing-mode:horizontal-tb}html #qaDock,html #fab{position:fixed}'+
+   'html #ccQnaAdm .qnaw{display:flex;gap:16px;align-items:flex-start;margin-top:10px}html #ccQnaAdm .qnat{display:flex;flex-direction:column;gap:6px;width:130px;flex:none}html #ccQnaAdm .qnat .mini.on{background:#C9A227;color:#0D1F3C;border-color:#C9A227}'+
+   'html #ccQnaAdm .qnal{flex:1}html #ccQnaAdm .qnaa{border:1px solid rgba(127,127,127,.25);border-radius:12px;padding:12px 14px;margin-bottom:12px}html #ccQnaAdm .qm{font-size:12px;opacity:.8;margin-bottom:6px}html #ccQnaAdm .qt{font-size:14px;line-height:1.6}'+
+   'html #ccQnaAdm textarea{width:100%;box-sizing:border-box;min-height:64px;margin-top:10px;border-radius:10px;padding:8px 10px;font:inherit;font-size:13px}html #ccQnaAdm .qnab2{display:flex;flex-direction:column;width:150px;margin-top:8px}';
+  document.head.appendChild(st);
+  try{ document.adoptedStyleSheets=document.adoptedStyleSheets.concat([(function(){ const c=new CSSStyleSheet(); c.replaceSync(st.textContent); return c; })()]); }catch(e){}
 })();
 </script>
 </body>
