@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-23 15:00 복습시간박스_유지">
+<meta name="cc-build" content="2026-11-23 15:08 여유시간문구">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9224,12 +9224,12 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
       const doneM=wk.filter(isD).reduce(function(a,x){ return a+lm(x); },0), rest=wk.filter(function(x){ return !isD(x); }), needM=rest.reduce(function(a,x){ return a+lm(x); },0);
       const wkLeft=Math.max(0,wkL-doneM), slack=wkLeft-needM, one=rest.length&&rest.every(function(x){ return lm(x)===lm(rest[0]); });
       const nxtM=rest.length?lm(rest[rest.length-1]):(wk.length?lm(wk[wk.length-1]):60), addN=Math.floor(Math.max(0,slack)/nxtM);
-      const slk=rest.length?'<div class="wkslk">예정된 남은 강의 '+rest.length+'강 '+(one?'× '+MN(lm(rest[0]))+' = ':'수업시간 합계 ')+MN(needM)+' → '+(slack>=0?'여유 <b>'+MN(slack)+'</b>'+(addN?' · <b class="add">약 '+addN+'강 추가수강 가능</b>':'')+' <span class="rvnote">※ 이 시간을 활용하면 추가수강이 가능합니다.</span>':'<b class="lack">'+MN(-slack)+' 부족</b>')+'</div>':'';
-      cols[0]=cols[0].replace('@@WKAV@@','이번주 이용가능시간: 총 <b>'+MN(wkLeft)+'</b>(복습시간을 공제하고 남은 시간)</div>'+slk+'<div style="display:none">');
+      const slk=rest.length?'<div class="wkslk">3. 예정된 남은 강의 '+rest.length+'강 '+(one?'× '+MN(lm(rest[0]))+' = ':'수업시간 합계 ')+MN(needM)+' → '+(slack>=0?'여유 <b>'+MN(slack)+'</b>'+(addN?' · <b class="add">약 '+addN+'강 추가수강 가능</b>':'')+'</div><div><span class="rvnote">※ 여유시간을 활용하면 추가수강이 가능합니다.</span>':'<b class="lack">'+MN(-slack)+' 부족</b>')+'</div>':'';
+      cols[0]=cols[0].replace('@@WKAV@@','2. 이번주 이용가능시간: 총 <b>'+MN(wkLeft)+'</b>(복습시간을 공제하고 남은 시간)</div>'+slk+'<div style="display:none">');
       /* 강의당 평균 = (한 주 공부시간 − 한 주 복습시간) ÷ 이번 주 강의 수 (2026-11-23) — 오늘 남은 시간에 비추어 몇 강을 들을 수 있는지 */
       /* 1단: 이번 주 듣는 단계의 1강당 수업시간(학습규칙) (2026-11-23) */
       const LH=[]; wk.forEach(function(x){ const nm=(ccIsDual()?x.t+' ':'')+CC_STAGES[x.t][x.o.si], s=nm+' 1강당 수업시간: <b>'+MN(ccLecHour(x.t,x.o.si)*60)+'</b>'; if(LH.indexOf(s)<0) LH.push(s); });
-      cols[0]=cols[0].replace('@@LECH@@',LH.length?'<div>'+LH.join(' · ')+'</div>':'');
+      cols[0]=cols[0].replace('@@LECH@@',LH.length?'<div>1. '+LH.join(' · ')+'</div>':'');
       let chip=''; if(wkH&&wk.length&&wkL<=0) chip='<div class="rvchip over">⚠ 이번 주는 복습이 공부시간을 넘습니다 — 복습부터</div>';
       cols[0]=cols[0].replace('@@LECCHIP@@',chip);
       if(window.__nxHow) HOW='<div class="ordr nxhow">'+
