@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-23 16:20 합격설계_총일수">
+<meta name="cc-build" content="2026-11-23 16:22 이번주_날짜">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9209,7 +9209,7 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
     tracks.forEach(function(t){ const p=PJ[t]; if(!p) return; p.f.forEach(function(o,j){ const a=p.A[o.key]; if(a&&a>=M&&a<=S7) wk.push({o:o,t:t,a:a,j:j}); }); });
     wk.sort(function(x,y){ return (x.a<y.a?-1:x.a>y.a?1:0)||(x.t<y.t?-1:x.t>y.t?1:0)||(x.j-y.j); });
     const wDone=wk.filter(function(x){ return D[dk(0,x.t+"|"+x.o.key)]; }).length;
-    let c1='<div class="col"><h3><i class="k0">이번 주</i>이번 주 수강강의목록<button type="button" class="ordb wkib'+(window.__nxWkInfo?' on':'')+'" onclick="event.stopPropagation();window.__nxWkInfo=!window.__nxWkInfo;nxRender()">수강정보 '+(window.__nxWkInfo?'▲':'▼')+'</button> <span class="cnt">'+wDone+' / '+wk.length+'</span></h3>'+
+    let c1='<div class="col"><h3><i class="k0">이번 주</i>이번 주('+ccMD(mon)+'-'+ccMD(sun)+') 수강강의목록<button type="button" class="ordb wkib'+(window.__nxWkInfo?' on':'')+'" onclick="event.stopPropagation();window.__nxWkInfo=!window.__nxWkInfo;nxRender()">수강정보 '+(window.__nxWkInfo?'▲':'▼')+'</button> <span class="cnt">'+wDone+' / '+wk.length+'</span></h3>'+
       '<div class="s wkh'+(window.__nxWkInfo?' on':'')+'">@@LECH@@<div>@@WKAV@@</div></div>'+'@@LECCHIP@@';
     c1+=wk.length?wk.map(function(x,n){ return itemHTML(itemOf(x.t,x.o),0,n+1,x.a===T?'tdy':(x.a>T?'future':'')); }).join(""):'<div class="empty">이번 주에 들을 강의가 없습니다</div>';
     if(!window.ccViewUid&&!window.ccPreview) c1+='<div class="addlec"><button type="button" onclick="nxAddLec(1)">＋ 수강강의 추가</button></div>';
