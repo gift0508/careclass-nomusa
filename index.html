@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-23 16:52 조언버튼_나란히">
+<meta name="cc-build" content="2026-11-23 17:08 조언버튼_간격">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -5219,12 +5219,16 @@ window.nmOneLine=function(D,G){ try{ if(!D||!D.has) return null;
   return {pre:nos.filter(function(x){ return !started(x.subj); }).map(function(x){ return x.subj; }), emp:nos.filter(function(x){ return started(x.subj); }).map(function(x){ return x.subj; }),
     risk:D.curDots.t, goal:R.name, gaps:gaps, best:best?{name:best.name,mine:mine(best),rec:!!best.rec}:null, hasG:!!G, started:started};
   }catch(e){ console.warn("[한줄조언]",e); return null; } };
+/* 필요점수 표: 과목명 | 필요점수 | 필요문항수 (아주 얇은 실선) */
+window.nmGapsHTML=function(s){ return String(s).replace(/@@IND@@/g,'<span class="nmind" style="display:inline-block;width:1.4em"></span>').replace(/@@GAPS:(.*?)@@(<br>)?/g,function(_,b){ const td='padding:3px 10px;border:1px solid #e3e1da;font-size:.84em;text-align:center';
+  return '<table style="border-collapse:collapse;margin:5px 0 2px;min-width:70%"><tr><th style="'+td+';font-weight:700;color:#6b7280">과목명</th><th style="'+td+';font-weight:700;color:#6b7280">필요점수</th><th style="'+td+';font-weight:700;color:#6b7280">필요문항수</th></tr>'+
+    b.split(";").map(function(r){ const c=r.split("|"); return '<tr><td style="'+td+';text-align:left">'+c[0]+'</td><td style="'+td+'">+'+c[1]+'점</td><td style="'+td+'">'+c[2]+'문항</td></tr>'; }).join("")+'</table>'; }); };
 window.nmOneLineTxt=function(O){ if(!O) return []; const L=[];
   if(O.pre.length) L.push("📅 "+O.pre.join(" · ")+"은 아직 수강전 — 수강이 시작되면 함께 진단");
   if(O.emp.length) L.push("📝 "+O.emp.join(" · ")+"은 수강이 시작되었는데 풀이 기록이 없습니다");
   L.push("⚠️ 현재 페이스 유지 — 시험일 "+O.risk);
-  L.push("🎯 "+O.goal+"까지 남은 과목별 필요점수:\n"+(O.gaps.length?O.gaps.map(function(g){ return g[0]+" "+Math.ceil(g[1]/2.5-1e-9)+"문항 +"+g[1]+"점"; }).join(", "):"모든 과목이 목표선에 도달해 있어요 🎉"));
-  if(O.best) L.push("💡 "+(O.best.mine?"현재까지 선택한 "+O.best.name+"이 가장 효과적":"현재까지 "+O.best.name+"이 가장 효과적. 300점 합격조합 300점 합격진단에서 선택가능"));
+  L.push("🎯 "+O.goal+"까지 남은 과목별 필요점수:"+(O.gaps.length?"@@GAPS:"+O.gaps.map(function(g){ return g[0]+"|"+g[1]+"|"+Math.ceil(g[1]/2.5-1e-9); }).join(";")+"@@":"\n모든 과목이 목표선에 도달해 있어요 🎉"));
+  if(O.best) L.push("💡 "+(O.best.mine?"현재까지 선택한 "+O.best.name+"이 가장 효과적":"현재까지 "+O.best.name+"이 가장 효과적\n@@IND@@300점합격조합을 300점합격진단에서 변경가능"));
   return L; };
 window.nmDiagOpen=async function(){
   try{ if(typeof ccTracks==="function"&&ccTracks().length&&ccTracks().indexOf("1차")<0){ toast("300점 합격 진단은 노무사 1차 수강생용입니다"); return; } }catch(e){}
@@ -5265,7 +5269,7 @@ window.nmDiagOpen=async function(){
   const R=nmGoalPlan(G,D)||D.plans.find(function(p){ return p.rec; });
   const SRC='<div class="nmdh"><span class="nmdno">2</span>진단자료</div><div class="nmdsrc"><span>🔘 OX풀이</span><span>📚 5지택일 · 선다형</span><span>📝 과목별 객관식문제풀이</span></div><div class="nmdsrcn">※ 진단자료를 모두 성실하게 매일 학습으로 풀이를 하여야 진단이 정확해집니다.</div><div class="nmdsrcn">※ 1차 OX · 객관식(5지택일 · 선다형) 문항풀이 후 「찍어정답」을 누르면 그 문항은 실력에 절반만 반영되어 진단이 더 정확해집니다.</div>';
   const OL=nmOneLine(D,G), OLT=nmOneLineTxt(OL).map(function(t){ return t.replace(/&/g,"&amp;").replace(/</g,"&lt;"); });
-  let ADV='<div class="nmdh"><span class="nmdno">4</span>한줄조언</div><div class="nmdadv">'+OLT.filter(function(t){ return nmGoalView()?t.indexOf("💡")!==0:true; }).map(function(t){ return '<div'+(t.indexOf("⚠️")===0?' class="w"':(t.indexOf("💡")===0?' class="b"':''))+'>'+t.replace(/\n/g,'<br>')+'</div>'; }).join("")+'</div>';   /* (2026-11-23) 과목별 강의 안내 줄 삭제 */
+  let ADV='<div class="nmdh"><span class="nmdno">4</span>한줄조언</div><div class="nmdadv">'+OLT.filter(function(t){ return nmGoalView()?t.indexOf("💡")!==0:true; }).map(function(t){ return '<div'+(t.indexOf("⚠️")===0?' class="w"':(t.indexOf("💡")===0?' class="b"':''))+'>'+nmGapsHTML(t.replace(/\n/g,'<br>'))+'</div>'; }).join("")+'</div>';   /* (2026-11-23) 과목별 강의 안내 줄 삭제 */
   h+=PLN+SRC+TBL+ADV;
   /* (2026-11-21) 시험장 시간 배분 삭제 */
   /* (2026-11-23) [진단방법] 버튼 삭제 — 내용은 ② 진단자료 · ③ 진단결과의 ※ 문구로 */
@@ -6698,14 +6702,14 @@ window.nmAdvPopup=async function(preview){
   unread.slice(0,2).forEach(function(a){ items.push({who:"t",txt:a.msg,act:a.act}); });
   S.filter(function(s){ return !unread.some(function(a){ return a.kind===s.k; }); }).slice(0,Math.max(1,3-items.length)).forEach(function(s){ items.push({who:"a",txt:s.stu,act:s.act}); });
   const past=adv.filter(function(a){ return a.read_at; }).slice(0,3);
-  const btn=function(a){ return String(a||"").split("|").map(function(k){ const A=NM_ADV_ACT[k]; return A?'<button class="mini" style="margin:6px 6px 0 0" onclick="document.getElementById(\'nmAdvPop\').classList.remove(\'on\');nmAdvRead();'+A[1]+'">'+A[0]+' →</button>':''; }).join(""); };
+  const btn=function(a){ return String(a||"").split("|").map(function(k){ const A=NM_ADV_ACT[k]; return A?'<button class="mini" style="margin:14px 12px 0 0" onclick="document.getElementById(\'nmAdvPop\').classList.remove(\'on\');nmAdvRead();'+A[1]+'">'+A[0]+' →</button>':''; }).join(""); };
   const m=nmAdvBox("nmAdvPop"); window.__nmAdvIds=view?[]:unread.slice(0,2).map(function(a){ return a.id; });
   const d=new Date();
   m.innerHTML='<div class="tkbox" style="max-width:520px"><button class="tkx" onclick="document.getElementById(\'nmAdvPop\').classList.remove(\'on\');nmAdvRead()">✕</button>'+
     '<h3>💬 오늘의 합격조언 <small>'+(d.getMonth()+1)+'월 '+d.getDate()+'일'+(view?' · 관리자 미리보기 — 읽음 처리되지 않음':'')+'</small></h3>'+
     (items.length?items.map(function(it){ return '<div style="margin:10px 0;padding:12px 14px;border-radius:12px;border:1px solid '+(it.who==="t"?'var(--gold)':'var(--line)')+';background:'+(it.who==="t"?'rgba(232,185,60,.08)':'transparent')+'">'+
       (it.who==="t"?'<div style="font-size:.74rem;font-weight:700;color:var(--gold);margin-bottom:4px">📌 선생님 조언</div>':'')+
-      '<div style="font-size:.92rem;line-height:1.65">'+nmAdvE(it.txt).replace(/\n/g,'<br>')+'</div>'+btn(it.act)+'</div>'; }).join(""):'<div class="tksub">오늘은 따로 드릴 조언이 없습니다</div>')+
+      '<div style="font-size:.92rem;line-height:1.65">'+(window.nmGapsHTML?nmGapsHTML(nmAdvE(it.txt).replace(/\n/g,'<br>')):nmAdvE(it.txt).replace(/\n/g,'<br>'))+'</div>'+(it.who==="a"?'<div style="padding-left:1.4em">'+btn(it.act)+'</div>':btn(it.act))+'</div>'; }).join(""):'<div class="tksub">오늘은 따로 드릴 조언이 없습니다</div>')+
     (past.length?'<details style="margin-top:8px"><summary style="cursor:pointer;font-size:.8rem;color:var(--mute)">지난 조언 다시 보기</summary>'+past.map(function(a){ return '<div style="padding:6px 0;border-top:1px dashed var(--line);font-size:.82rem"><small style="color:var(--mute)">'+nmAdvDate(a.created_at)+'</small> '+nmAdvE(a.msg)+'</div>'; }).join("")+'</details>':'')+
     '<div style="text-align:right;margin-top:10px"><button class="mini" style="background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700" onclick="document.getElementById(\'nmAdvPop\').classList.remove(\'on\');nmAdvRead()">확인</button></div></div>';
   m.classList.add("on");
@@ -6774,13 +6778,13 @@ window.nmAdvPopup=async function(mode){
   const past=adv.filter(function(a){ return shown.indexOf(a.id)<0; }).slice(0,3);
   window.__nmAdvIds=view?[]:tch.filter(function(a){ return !a.read_at; }).map(function(a){ return a.id; });
   const close="document.getElementById('nmAdvPop').classList.remove('on');nmAdvRead();";
-  const btn=function(a){ return String(a||"").split("|").map(function(k){ const A=NM_ADV_ACT[k]; return A?'<button class="mini" style="margin:6px 6px 0 0" onclick="'+close+A[1]+'">'+A[0]+' →</button>':''; }).join(""); };
+  const btn=function(a){ return String(a||"").split("|").map(function(k){ const A=NM_ADV_ACT[k]; return A?'<button class="mini" style="margin:14px 12px 0 0" onclick="'+close+A[1]+'">'+A[0]+' →</button>':''; }).join(""); };
   const m=nmAdvBox("nmAdvPop"), d=new Date();
   m.innerHTML='<div class="tkbox" style="max-width:520px"><button class="tkx" onclick="'+close+'">✕</button>'+
     '<h3>💬 오늘의 합격조언 <small>'+(d.getMonth()+1)+'월 '+d.getDate()+'일'+(view?' · 관리자 미리보기 — 읽음 처리되지 않음':'')+'</small></h3>'+
     (items.length?items.map(function(it){ return '<div style="margin:10px 0;padding:12px 14px;border-radius:12px;border:1px solid '+(it.who==="t"?'var(--gold)':'var(--line)')+';background:'+(it.who==="t"?'rgba(232,185,60,.08)':'transparent')+'">'+
       (it.who==="t"?'<div style="font-size:.74rem;font-weight:700;color:var(--gold);margin-bottom:4px">📌 선생님 조언 · '+nmAdvDate(it.a.created_at)+'</div>':'')+
-      '<div style="font-size:.92rem;line-height:1.65">'+nmAdvE(it.txt).replace(/\n/g,'<br>')+'</div>'+btn(it.act)+(it.who==="t"?nmAdvDoneBtn(it.a,view,"pop"):'')+'</div>'; }).join(""):'<div class="tksub">오늘은 따로 드릴 조언이 없습니다 · 지금 리듬대로 이어 가세요</div>')+
+      '<div style="font-size:.92rem;line-height:1.65">'+(window.nmGapsHTML?nmGapsHTML(nmAdvE(it.txt).replace(/\n/g,'<br>')):nmAdvE(it.txt).replace(/\n/g,'<br>'))+'</div>'+(it.who==="a"?'<div style="padding-left:1.4em">'+btn(it.act)+'</div>':btn(it.act))+(it.who==="t"?nmAdvDoneBtn(it.a,view,"pop"):'')+'</div>'; }).join(""):'<div class="tksub">오늘은 따로 드릴 조언이 없습니다 · 지금 리듬대로 이어 가세요</div>')+
     (past.length?'<details style="margin-top:8px"><summary style="cursor:pointer;font-size:.8rem;color:var(--mute)">지난 조언 다시 보기</summary>'+past.map(function(a){ return '<div style="padding:6px 0;border-top:1px dashed var(--line);font-size:.82rem"><small style="color:var(--mute)">'+nmAdvDate(a.created_at)+(a.done_at?' · 실천함 ✓':'')+'</small> '+nmAdvE(a.msg)+'</div>'; }).join("")+'</details>':'')+
     '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px"><button class="mini" onclick="'+close+'ccOpenRecords(\'advice\')">💬 받은 조언 전체</button><button class="mini" style="background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700" onclick="'+close+'">확인</button></div></div>';
   m.classList.add("on");
@@ -8168,7 +8172,7 @@ window.nmGoalSigs=function(L,D1){
     const rest=G.left.slice(1,3).map(function(x){ return x.subj+" +"+nmGF(x.gap)+"점"; });
     out.push({k:"goal",lvl:"weak",
       adm:"내 목표 <b>"+nmAdvE(G.name)+"</b>("+md+" 선택) — "+G.left.map(function(x){ return nmAdvE(x.subj)+" 목표 "+nmGF(x.tg)+" · 예상 "+nmGF(x.cur)+" (+"+nmGF(x.gap)+")"; }).join(", ")+(G.move!=null?" · 지난주 대비 "+(G.move>0?"+":"")+nmGF(G.move)+"점 접근":""),
-      stu:mv+"내 목표("+G.name+")에서 "+s+nmGJ(s,"은","는")+" "+nmGF(r.tg)+"점이 목표인데 지금 시험일 예상은 "+nmGF(r.cur)+"점이에요. 이번 주는 "+s+" "+(tr===1?"문제풀이부터 챙기세요 — 약 "+Math.ceil(r.gap/2.5-1e-9)+"문항 더 맞히면 목표선입니다.":"사례형 답안부터 쓰세요.")+(rest.length?" (그다음: "+rest.join(", ")+")":""),
+      stu:tr===1?((mv?mv.trim()+"\n":"")+"• "+G.name+"에서 "+s+nmGJ(s,"은","는")+" "+nmGF(r.tg)+"점이 목표\n• 시험일 예상은 "+nmGF(r.cur)+"점\n• "+nmGF(r.gap)+"점, 약 "+Math.ceil(r.gap/2.5-1e-9)+"문항이 필요점수"):(mv+"내 목표("+G.name+")에서 "+s+nmGJ(s,"은","는")+" "+nmGF(r.tg)+"점이 목표인데 지금 시험일 예상은 "+nmGF(r.cur)+"점이에요. 이번 주는 "+s+" 사례형 답안부터 쓰세요."+(rest.length?" (그다음: "+rest.join(", ")+")":"")),
       act:akey});
   };
   try{ let D=D1; if(L&&L.goal1&&!D){ try{ D=nmDiag(L,NMD.W||{}); }catch(e){} } if(D) one(1,D); }catch(e){}
