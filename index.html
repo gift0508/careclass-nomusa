@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-23 12:50 틀린문제복습">
+<meta name="cc-build" content="2026-11-23 13:00 학습순서_동차">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9147,7 +9147,7 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
     const rn=ccRvN();
     let h='<div class="top"><h2>✅ 오늘할당된학습하기 <button type="button" class="ordb'+(window.__nxOrd?' on':'')+'" onclick="window.__nxOrd=!window.__nxOrd;nxRender()">학습순서 '+(window.__nxOrd?'▲':'▼')+'</button><button type="button" class="ordb'+(window.__nxHow?' on':'')+'" onclick="window.__nxHow=!window.__nxHow;nxRender()">학습설명 '+(window.__nxHow?'▲':'▼')+'</button><button type="button" class="ordb'+(window.__nxRvHow?' on':'')+'" onclick="window.__nxRvHow=!window.__nxRvHow;nxRender()">복습방법 '+(window.__nxRvHow?'▲':'▼')+'</button></h2></div>';
     /* 학습순서 (2026-11-20) — 제목 옆 [학습순서] 버튼을 누르면 아래로 펼침 */
-    if(window.__nxOrd){ const has2=tracks.indexOf("2차")>=0;
+    if(window.__nxOrd){ const has2=tracks.indexOf("2차")>=0, has1=tracks.indexOf("1차")>=0;   /* 내 응시시험에 맞는 것만 (2026-11-23) */
       const row=function(n,t){ const L=(CC_LAWS[t]||[]).filter(function(l){ return !(t==="2차"&&(CC_OPT["2차"]||[]).indexOf(l)>=0); }), S=nxReq(t).map(function(si){ return CC_STAGES[t][si]; });
         const SJ=L.map(E); if(t==="2차") SJ.push(has2&&typeof nmOpt2==="function"?E(nmOpt2()):'선택과목');
         const fl=function(a,c){ return '<div class="ofl">'+a.map(function(x,i){ return (i?'<i class="oar">›</i>':'')+'<span class="opl '+c+'"><em>'+(i+1)+'</em>'+x+'</span>'; }).join('')+'</div>'; };
@@ -9163,15 +9163,15 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
           '<span class="olb s">1차</span><div class="ofl full">'+pf(a1,'s',1)+'</div><div class="oexl"></div><div class="ofl"><span class="orest">끝</span></div><div></div>'+
           '<span class="olb t2">2차</span><div class="ofl full">'+pf(b2,'t2',1)+'</div><div class="oexl"></div><div class="ofl">'+pf(c2,'t2',b2.length+1)+'</div><div></div></div></div>'; };
       const row3='<div class="oi ocard"><div class="oth"><span class="otg">동차생</span>학습순서</div>'+
-        dwr("1","1차중심형",'1차 시험 전 공부시간 1차 2 : 2차 1 (3시간 기준)',S1,S2.slice(0,1),S2.slice(1),'2차에 전부')+
-        dwr("2","2차중심형",'1차 시험 전 공부시간 1차 1 : 2차 2 (3시간 기준) · 1차는 강의만(복습 없음)',S1,["핵심이론","테마특강"],S2.filter(function(x){ return x!=="핵심이론"&&x!=="테마특강"; }),'2차에 전부')+
-        dwr("0","1차만 듣기",'1차 시험 전에는 1차만',S1,[],S2,'2차에 전부')+
+        (true?dwr("1","1차중심형",'1차 시험 전 공부시간 1차 2 : 2차 1 (3시간 기준)',S1,S2.slice(0,1),S2.slice(1),'2차에 전부'):'')+
+        (true?dwr("2","2차중심형",'1차 시험 전 공부시간 1차 1 : 2차 2 (3시간 기준) · 1차는 강의만(복습 없음)',S1,["핵심이론","테마특강"],S2.filter(function(x){ return x!=="핵심이론"&&x!=="테마특강"; }),'2차에 전부'):'')+
+        (true?dwr("0","1차만 듣기",'1차 시험 전에는 1차만',S1,[],S2,'2차에 전부'):'')+
         '<div class="ont"><div>✓ 어느 쪽이든 1차는 1차 시험 2주 전까지 끝내고, 1차 시험 다음 날부터 공부시간을 <b>2차에 전부</b> 씁니다</div><div>✓ 한쪽 강의가 먼저 끝나면 그 시간은 다른 쪽으로</div>'+(ex?ex.replace('<div>','<div>✓ '):'')+'<div>✓ 1차는 1차 학습순서대로, 2차는 2차 학습순서대로 각각 이어집니다</div></div></div>';
       const rule=function(t,a){ return '<div class="orw"><span class="olb r">'+t+'</span><div class="ofl">'+a.map(function(x){ return '<span class="opl r">'+x[0]+'<b>'+x[1]+'</b></span>'; }).join('')+'</div></div>'; };
       const row4='<div class="oi ocard"><div class="oth"><span class="otg">규칙</span>학습규칙 — 1강당 시간</div>'+
-        rule("1차",[["기본이론","1시간"],["문제풀이","1시간 30분"],["핵지총특강","1시간 30분"],["기출특강","1시간 30분"]])+
-        rule("2차",[["핵심이론","1시간 30분"],["답안작성특강","1시간 30분"],["문제풀이","2시간"],["테마특강","1시간"]])+'</div>';
-      h+='<div class="ordr">'+row(1,"1차")+row(2,"2차")+row3+row4+'<div class="mu" style="font-size:12px;margin:2px 2px 0">단계마다 과목 순서대로 한 과목씩 차례로 배정됩니다. 다만 회사사정으로 인하여 과목순서가 변경될 수 있습니다.</div></div>'; }
+        (has1?rule("1차",[["기본이론","1시간"],["문제풀이","1시간 30분"],["핵지총특강","1시간 30분"],["기출특강","1시간 30분"]]):'')+
+        (!has2?'':rule("2차",[["핵심이론","1시간 30분"],["답안작성특강","1시간 30분"],["문제풀이","2시간"],["테마특강","1시간"]]))+'</div>';
+      h+='<div class="ordr">'+(ccIsDual()?row3:((has1?row(1,"1차"):'')+(has2?row(2,"2차"):'')))+row4+'<div class="mu" style="font-size:12px;margin:2px 2px 0">단계마다 과목 순서대로 한 과목씩 차례로 배정됩니다. 다만 회사사정으로 인하여 과목순서가 변경될 수 있습니다.</div></div>'; }
     if(!any){ el.innerHTML=h+'<div class="need">1주 공부시간과 학습스타일을 정하면 이번 주에 들을 강의가 여기에 나옵니다.<br><button onclick="nxWizOpen(true)">당신의 합격 설계 시작하기 →</button></div>'; return; }
     /* 적응기 (처음 2주) — 날마다 한 줄 안내 (2026-11-20) */
     window.__nxAdpPh=null;
