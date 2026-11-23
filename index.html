@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-23 13:00 학습순서_동차">
+<meta name="cc-build" content="2026-11-23 13:50 복습방법_복습대상2줄">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9189,7 +9189,7 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
     wk.sort(function(x,y){ return (x.a<y.a?-1:x.a>y.a?1:0)||(x.t<y.t?-1:x.t>y.t?1:0)||(x.j-y.j); });
     const wDone=wk.filter(function(x){ return D[dk(0,x.t+"|"+x.o.key)]; }).length;
     let c1='<div class="col"><h3><i class="k0">이번 주</i>이번 주 수강강의목록 <span class="cnt">'+wDone+' / '+wk.length+'</span></h3>'+
-      '<div class="s">'+ccMD(mon)+'(월) ~ '+ccMD(sun)+'(일) · 이번 주에 들을 강의 · 다 들은 강의에 체크</div>'+'@@LECCHIP@@';
+      '<div class="s">@@WKAV@@</div>'+'@@LECCHIP@@';
     c1+=wk.length?wk.map(function(x,n){ return itemHTML(itemOf(x.t,x.o),0,n+1,x.a===T?'tdy':(x.a>T?'future':'')); }).join(""):'<div class="empty">이번 주에 들을 강의가 없습니다</div>';
     if(!window.ccViewUid&&!window.ccPreview) c1+='<div class="addlec"><button type="button" onclick="nxAddLec(1)">＋ 수강강의 추가</button></div>';
     c1+='</div>';
@@ -9209,14 +9209,25 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
     /* 오늘 공부시간 − 오늘 복습 총량 = 강의에 쓸 시간 → 오늘 강의당 이용가능 시간 (2026-11-22) */
     let HOW='';
     try{ const v=ccProfGet(), wd=ccToday().getDay(), H=v?((wd===0||wd===6)?+v.we:+v.wd):0, nT=wk.filter(function(x){ return x.a===T; }).length, left=H*60-RVSUM;
-      let chip='';
-      if(H&&nT){ chip=left>0?'<div class="rvchip lec">📘 강의당 '+MN(left/nT)+' 이용가능</div>':'<div class="rvchip over">⚠ 오늘은 복습이 공부시간을 넘습니다 — 복습부터</div>'; }
+      /* 이번주 이용가능시간 (2026-11-23): 한 주 공부시간 − 이번 주 복습시간(2·6·14일째 40·20·10분, 오늘은 실제 복습량) */
+      let wkH=0, wkR=0; const NR2=RD("cc_nxnorv"), RE2=RD("cc_nxrvend");
+      for(let i=0;i<7;i++){ const d=ccAddDays(mon,i), di=ccISO(d), we=(d.getDay()===0||d.getDay()===6); wkH+=(v?(we?+v.we:+v.wd):0)*60;
+        if(di===T){ wkR+=RVSUM; continue; }
+        [[2,40,0,2],[6,20,1,4],[14,10,2,8]].forEach(function(z){ const src=ccISO(ccAddDays(d,-z[0]));
+          tracks.forEach(function(t){ const p=PJ[t]; if(!p) return; p.f.forEach(function(o){ if(p.A[o.key]!==src) return; const K=t+"|"+o.key;
+            if(ccRvNFor(t,o.si)>=z[2]+1&&!NR2[K]&&!(RE2[K]&&+RE2[K]<z[3])) wkR+=z[1]; }); }); }); }
+      /* 체크한 강의만큼 줄어듦: 남은 시간 = (한 주 시간 − 복습) × 아직 안 들은 강의 ÷ 이번 주 강의 */
+      const wkL=Math.max(0,wkH-wkR), wkLeft=wk.length?wkL*(wk.length-wDone)/wk.length:wkL;
+      cols[0]=cols[0].replace('@@WKAV@@','이번주 이용가능시간: 총 <b>'+MN(wkLeft)+'</b>(복습시간을 공제하고 남은 시간)');
+      /* 강의당 평균 = (한 주 공부시간 − 한 주 복습시간) ÷ 이번 주 강의 수 (2026-11-23) — 오늘 남은 시간에 비추어 몇 강을 들을 수 있는지 */
+      let chip=''; if(wkH&&wk.length) chip=wkL>0?'<div class="rvchip lec">📘 강의당 평균 '+MN(wkL/wk.length)+'</div>':'<div class="rvchip over">⚠ 이번 주는 복습이 공부시간을 넘습니다 — 복습부터</div>';
       cols[0]=cols[0].replace('@@LECCHIP@@',chip);
       if(window.__nxHow) HOW='<div class="ordr nxhow">'+
         '<div class="oi"><div>· 복습시간: 2일째 1강-40분/6일째 1강-20분/14일째 1강-10분</div><div>· 복습날과 복습수강강의수에 따라 오늘 수강할 강의목록수가 증가하거나 감소합니다.</div></div></div>';
-    }catch(e){ cols[0]=cols[0].replace('@@LECCHIP@@',''); }
+    }catch(e){ console.warn(e); cols[0]=cols[0].replace('@@LECCHIP@@','').replace('@@WKAV@@',''); }
+    cols[0]=cols[0].replace('@@WKAV@@','');
     h+=HOW;
-    if(window.__nxRvHow) h+='<div class="ordr nxhow rvhow"><div class="rvr"><span class="rvl">복습대상</span><div>플래시카드 → 필수암기문장 → OX풀이 → 5지택일</div></div>'+
+    if(window.__nxRvHow) h+='<div class="ordr nxhow rvhow"><div class="rvr"><span class="rvl">복습대상</span><div><div>1. 플래시카드 → 필수암기문장 → OX풀이 → 5지택일</div><div>2. 복습실행 후 다음복습필요나 다음복습불필요버튼을 눌러서 복습여부를 선택</div></div></div>'+
       '<div class="rvr"><span class="rvl">복습생략이용</span><div><div>1. 강의가 밀려서 이번주 강의수강수를 늘려야 하는 경우 또는 실제적으로 복습이 불필요한 경우</div><div>2. 복습생략버튼 누른 후 다음복습필요나 다음복습불필요버튼을 눌러서 복습여부를 선택</div></div></div></div>';
     /* 복습 먼저 → 오늘 공부 (2026-11-23): 14일 전 → 6일 전 → 2일 전 → 이번 주 수강강의목록 */
     const ord=cols.slice(1).filter(function(x){ return x.indexOf('class="empty"')<0; }).reverse().concat([cols[0]]);   /* 빈 복습 칸은 숨김 (2026-11-23) */
@@ -9801,7 +9812,25 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
   /* 그 과정이 그날 들을 강의가 남았는지 (동차: 1차 시험 전 2차는 정해진 단계까지만) */
   const idleAt=function(t,iso,v){ try{ const pl=ccPlanOf(t); const x=stageInfo(t,pl,iso); if(x.done) return true;
       if(t==="2차"){ const ex1=dualEx1(); if(ex1&&ccParse(iso)<=ex1&&GATE[ccDW(v)].indexOf(CC_STAGES["2차"][x.si])<0) return true; } return false; }catch(e){ return false; } };
-  window.ccPerDayS=function(t,iso,si,v){ if(!v) return 0; const r=ccStyleR(t,si,v), dur=ccLecHour(t,si)*(window.ccLecK?ccLecK(t,v):1);
+  /* 그날 실제 복습시간 (2026-11-23): 2 · 6 · 14일 전에 들은 강의 × 40 · 20 · 10분 (그 강의 단계의 학습스타일 복습 횟수까지)
+     · 오늘까지는 실제 배정(수강완료 · 다음복습불필요 반영) · 앞날은 그날 들을 강의 수를 하루씩 이어서 계산 */
+  const RVD=[[2,40,1,2],[6,20,2,4],[14,10,3,8]], PDM={};
+  const rvnOf=function(t,si,v){ if(t==="1차"&&ccIsDual()&&ccDW(v)==="2") return 0; return (window.CC_RS_RVN||{})[ccStyleR(t,si,v)]||0; };
+  const pdCtx=function(t,v){ const pl=ccPlanOf(t), T=ccISO(ccToday()); let M=PDM[t+"|"+DEP];
+    const key=JSON.stringify(v)+"|"+(pl.start||"")+"|"+T+"|"+Object.keys(pl.asg||{}).length+"|"+(localStorage.getItem("cc_nxrvend")||"")+"|"+(localStorage.getItem("cc_nxnorv")||"")+"|"+(ccIsDual()?1:0);
+    if(!M||M.key!==key){ const by={}, A=pl.asg||{}, NR=JSON.parse(localStorage.getItem("cc_nxnorv")||"{}")||{}, RE=JSON.parse(localStorage.getItem("cc_nxrvend")||"{}")||{};
+      try{ ccFlat(t,pl).forEach(function(o){ const a=A[o.key]; if(!a||a>T) return; const K=t+"|"+o.key; (by[a]=by[a]||[]).push({si:o.si,no:!!NR[K],end:RE[K]!=null?+RE[K]:null}); }); }catch(e){}
+      M=PDM[t+"|"+DEP]={key:key,by:by,n:{},T:T,st:pl.start||T}; }
+    return M; };
+  const rvOn=function(t,iso,si,v,M){ let m=0;
+    RVD.forEach(function(z){ const d=ccISO(ccAddDays(ccParse(iso),-z[0])); if(d<M.st) return;
+      if(d<M.T||(d===M.T&&M.by[d])){ (M.by[d]||[]).forEach(function(x){ if(!x.no&&rvnOf(t,x.si,v)>=z[2]&&!(x.end!=null&&x.end<z[3])) m+=z[1]; }); }
+      else if(rvnOf(t,si,v)>=z[2]) m+=z[1]*ccPerDayS(t,d,si,v); });
+    return m; };
+  window.ccRvMinOn=function(t,iso,si,v){ v=v||window.__ccSimV||ccProfGet(); if(!v) return 0; return rvOn(t,iso,si,v,pdCtx(t,v)); };
+  window.ccPerDayS=function(t,iso,si,v){ if(!v) return 0; const M=pdCtx(t,v), mk=iso+"|"+si; if(M.n[mk]!=null) return M.n[mk]; M.n[mk]=0;
+    const out=perDay0(t,iso,si,v,M); M.n[mk]=out; return out; };
+  const perDay0=function(t,iso,si,v,M){ const r=ccStyleR(t,si,v), dur=ccLecHour(t,si)*(window.ccLecK?ccLecK(t,v):1);
     const dual=(typeof ccIsDual==="function"&&ccIsDual()), ex1=dual?dualEx1():null, w=dual?ccDW(v):null;
     /* 동차: 1차 시험 전 2차는 정해진 단계까지만 */
     if(dual&&t==="2차"&&ex1&&ccParse(iso)<=ex1&&GATE[w].indexOf(CC_STAGES["2차"][si])<0) return 0;
@@ -9810,7 +9839,8 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
     const shOf=function(x){ if(!dual) return 1; if(ex1&&x>ex1) return t==="2차"?1:0; if(moveAll) return 1;
       const w1=w==="2"?1/3:(w==="0"?1:2/3); return t==="2차"?1-w1:w1; };
     const D=ccParse(iso), mon=ccAddDays(D,-((D.getDay()+6)%7)); let C=0, Cp=0;
-    const T1=dur+(window.ccRvMinOf?ccRvMinOf(r):0)/60;   /* 복습시간은 강의 길이와 관계없이 고정 (2026-11-21) */ for(let x=mon; x<=D; x=ccAddDays(x,1)){ Cp=C; C+=hrs(v,ccISO(x))*shOf(x)/T1; }   /* 하루 강의 수 = 공부시간 ÷ (1강당 시간 + 그 강의의 복습시간) (2026-11-21) */
+    /* 하루 강의 수 = (그날 공부시간 − 그날 실제 복습시간) ÷ 1강당 시간 · 자투리는 한 주 안에서 다음 날로 (2026-11-23) */
+    for(let x=mon; x<=D; x=ccAddDays(x,1)){ Cp=C; const xi=ccISO(x); C+=Math.max(0,hrs(v,xi)*shOf(x)-(xi<M.st?0:rvOn(t,xi,si,v,M))/60)/dur; }   /* 하루 강의 수 = 공부시간 ÷ (1강당 시간 + 그 강의의 복습시간) (2026-11-21) */
     return Math.max(0,Math.min(CC_PER_MAX,Math.floor(C+1e-9)-Math.floor(Cp+1e-9))); };
   /* 그날 듣는 단계: 그날 전까지 배정된 강의 다음 강의의 단계 · 배정이 없는 앞날은 하루씩 이어서 셈 */
   const SC={};
@@ -10361,6 +10391,7 @@ window.nmRvCf=function(on){ const c=NM_RVR&&NM_RVR.cur; if(!c||!c.q||!!c.cf===!!
 (function(){
   const KC={};
   window.ccLecK=function(t,v){
+    if(!window.CC_K_ON) return 1;   /* 1강당 시간 = 학습규칙 고정 (2026-11-23): 많이 공부할수록 빨리 끝남 · 자동 늘림은 끔 */
     if(window.__ccKtest) return window.__ccKtest;
     try{ v=v||window.__ccSimV||ccProfGet(); if(!v||window.CC_K_OFF||(typeof ccIsDual==="function"&&ccIsDual())) return 1;
       const T=ccISO(ccToday()), pl=ccPlanOf(t), A=pl.asg||{}, R=(typeof nxReq==="function")?nxReq(t):null;
