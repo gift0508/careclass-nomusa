@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-23 14:00 환불문구">
+<meta name="cc-build" content="2026-11-23 15:00 복습시간박스_유지">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9145,7 +9145,7 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
     const tracks=ccTracks(), PJ={}; let any=false;
     tracks.forEach(function(t){ try{ ccPlanSync(t); }catch(e){} PJ[t]=project(t); if(PJ[t]) any=true; });
     const rn=ccRvN();
-    let h='<div class="top"><h2>✅ 오늘할당된학습하기 <button type="button" class="ordb'+(window.__nxOrd?' on':'')+'" onclick="window.__nxOrd=!window.__nxOrd;nxRender()">학습순서 '+(window.__nxOrd?'▲':'▼')+'</button><button type="button" class="ordb'+(window.__nxHow?' on':'')+'" onclick="window.__nxHow=!window.__nxHow;nxRender()">학습설명 '+(window.__nxHow?'▲':'▼')+'</button><button type="button" class="ordb'+(window.__nxRvHow?' on':'')+'" onclick="window.__nxRvHow=!window.__nxRvHow;nxRender()">복습방법 '+(window.__nxRvHow?'▲':'▼')+'</button></h2></div>';
+    let h='<div class="top"><h2>✅ 오늘할당된학습하기 <button type="button" class="ordb'+(window.__nxOrd?' on':'')+'" onclick="window.__nxOrd=!window.__nxOrd;nxRender()">학습순서 '+(window.__nxOrd?'▲':'▼')+'</button><button type="button" class="ordb'+(window.__nxHow?' on':'')+'" onclick="window.__nxHow=!window.__nxHow;nxRender()">학습설명 '+(window.__nxHow?'▲':'▼')+'</button></h2></div>';
     /* 학습순서 (2026-11-20) — 제목 옆 [학습순서] 버튼을 누르면 아래로 펼침 */
     if(window.__nxOrd){ const has2=tracks.indexOf("2차")>=0, has1=tracks.indexOf("1차")>=0;   /* 내 응시시험에 맞는 것만 (2026-11-23) */
       const row=function(n,t){ const L=(CC_LAWS[t]||[]).filter(function(l){ return !(t==="2차"&&(CC_OPT["2차"]||[]).indexOf(l)>=0); }), S=nxReq(t).map(function(si){ return CC_STAGES[t][si]; });
@@ -9188,8 +9188,8 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
     tracks.forEach(function(t){ const p=PJ[t]; if(!p) return; p.f.forEach(function(o,j){ const a=p.A[o.key]; if(a&&a>=M&&a<=S7) wk.push({o:o,t:t,a:a,j:j}); }); });
     wk.sort(function(x,y){ return (x.a<y.a?-1:x.a>y.a?1:0)||(x.t<y.t?-1:x.t>y.t?1:0)||(x.j-y.j); });
     const wDone=wk.filter(function(x){ return D[dk(0,x.t+"|"+x.o.key)]; }).length;
-    let c1='<div class="col"><h3><i class="k0">이번 주</i>이번 주 수강강의목록 <span class="cnt">'+wDone+' / '+wk.length+'</span></h3>'+
-      '<div class="s">@@WKAV@@</div>'+'@@LECCHIP@@';
+    let c1='<div class="col"><h3><i class="k0">이번 주</i>이번 주 수강강의목록<button type="button" class="ordb wkib'+(window.__nxWkInfo?' on':'')+'" onclick="event.stopPropagation();window.__nxWkInfo=!window.__nxWkInfo;nxRender()">수강정보 '+(window.__nxWkInfo?'▲':'▼')+'</button> <span class="cnt">'+wDone+' / '+wk.length+'</span></h3>'+
+      '<div class="s wkh'+(window.__nxWkInfo?' on':'')+'">@@LECH@@<div>@@WKAV@@</div></div>'+'@@LECCHIP@@';
     c1+=wk.length?wk.map(function(x,n){ return itemHTML(itemOf(x.t,x.o),0,n+1,x.a===T?'tdy':(x.a>T?'future':'')); }).join(""):'<div class="empty">이번 주에 들을 강의가 없습니다</div>';
     if(!window.ccViewUid&&!window.ccPreview) c1+='<div class="addlec"><button type="button" onclick="nxAddLec(1)">＋ 수강강의 추가</button></div>';
     c1+='</div>';
@@ -9202,7 +9202,9 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
       const arr=((MS&&MS[c[0]])||[]).filter(function(x){ return !x.rv; });
       const its=[]; arr.forEach(function(x){ const t=x.track, p=PJ[t]; if(!p) return; const ok=x.key.slice(t.length+1), o=p.f.filter(function(z){ return z.key===ok; })[0]; if(o&&ccRvNFor(t,o.si)>=ci+1&&!NRV[x.key]&&!(RVE[x.key]&&+RVE[x.key]<c[0])) its.push(itemOf(t,o)); });
       const SKP=RD("cc_nxrvskip"), dn=its.filter(function(o){ return D[dk(c[0],o.key)]; }).length, nsk=its.filter(function(o){ return SKP[dk(c[0],o.key)]; }).length, rvm=(its.length-nsk)*c[5]; RVSUM+=rvm;
-      cols.push('<div class="col"><h3><i class="'+c[1]+'">'+c[2]+'</i>'+c[3]+' <span class="cnt">'+dn+' / '+its.length+'</span></h3><div class="s">'+c[4]+' · '+ccMD(dIso)+' 들은 강의</div>'+
+      const rvOpen=!!(window.__nxRvInfo||{})[c[0]];   /* [복습정보] 버튼 안에 (2026-11-23) */
+      cols.push('<div class="col"><h3><i class="'+c[1]+'">'+c[2]+'</i>'+c[3]+'<button type="button" class="ordb wkib'+(rvOpen?' on':'')+'" onclick="event.stopPropagation();window.__nxRvInfo=window.__nxRvInfo||{};window.__nxRvInfo['+c[0]+']=!window.__nxRvInfo['+c[0]+'];nxRender()">복습정보 '+(rvOpen?'▲':'▼')+'</button> <span class="cnt">'+dn+' / '+its.length+'</span></h3>'+
+        (rvOpen?'<div class="s wkh on rvhow">'+(its.length?'@@RVHOW@@':'')+'<div class="rvr"><span class="rvl">복습정보</span><div><div>1. '+c[4]+': '+ccMD(dIso)+'에 들은 강의</div>'+(its.length?'<div>2. 강의당 복습시간: <b>'+MN(c[5])+'</b></div><div>3. 복습 생략할 강의 미리 선택</div><div>4. 복습시간: '+(rvm>0?'<b>'+MN(rvm)+'</b>':'모두 생략')+'</div>':'')+'</div></div></div>':'<div class="s wkh"></div>')+
         (its.length?'<div class="rvtb">⏱ 강의당 복습시간: '+MN(c[5])+' - '+(rvm>0?MN(rvm)+' 안에 끝내주세요':'모두 생략')+'</div>':'')+
         (its.length?its.map(function(o){ return itemHTML(o,c[0],0,''); }).join(""):'<div class="empty">아직 이 간격에\n올라온 강의가 없습니다</div>')+'</div>');
     });
@@ -9217,18 +9219,27 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
           tracks.forEach(function(t){ const p=PJ[t]; if(!p) return; p.f.forEach(function(o){ if(p.A[o.key]!==src) return; const K=t+"|"+o.key;
             if(ccRvNFor(t,o.si)>=z[2]+1&&!NR2[K]&&!(RE2[K]&&+RE2[K]<z[3])) wkR+=z[1]; }); }); }); }
       /* 체크한 강의만큼 줄어듦: 남은 시간 = (한 주 시간 − 복습) × 아직 안 들은 강의 ÷ 이번 주 강의 */
-      const wkL=Math.max(0,wkH-wkR), wkLeft=wk.length?wkL*(wk.length-wDone)/wk.length:wkL;
-      cols[0]=cols[0].replace('@@WKAV@@','이번주 이용가능시간: 총 <b>'+MN(wkLeft)+'</b>(복습시간을 공제하고 남은 시간)');
+      /* 남은 시간 = (한 주 시간 − 복습) − 들은 강의의 수업시간 · 여유 = 남은 시간 − 남은 강의의 수업시간 (2026-11-23) */
+      const wkL=Math.max(0,wkH-wkR), lm=function(x){ return ccLecHour(x.t,x.o.si)*60; }, isD=function(x){ return !!D[dk(0,x.t+"|"+x.o.key)]; };
+      const doneM=wk.filter(isD).reduce(function(a,x){ return a+lm(x); },0), rest=wk.filter(function(x){ return !isD(x); }), needM=rest.reduce(function(a,x){ return a+lm(x); },0);
+      const wkLeft=Math.max(0,wkL-doneM), slack=wkLeft-needM, one=rest.length&&rest.every(function(x){ return lm(x)===lm(rest[0]); });
+      const nxtM=rest.length?lm(rest[rest.length-1]):(wk.length?lm(wk[wk.length-1]):60), addN=Math.floor(Math.max(0,slack)/nxtM);
+      const slk=rest.length?'<div class="wkslk">예정된 남은 강의 '+rest.length+'강 '+(one?'× '+MN(lm(rest[0]))+' = ':'수업시간 합계 ')+MN(needM)+' → '+(slack>=0?'여유 <b>'+MN(slack)+'</b>'+(addN?' · <b class="add">약 '+addN+'강 추가수강 가능</b>':'')+' <span class="rvnote">※ 이 시간을 활용하면 추가수강이 가능합니다.</span>':'<b class="lack">'+MN(-slack)+' 부족</b>')+'</div>':'';
+      cols[0]=cols[0].replace('@@WKAV@@','이번주 이용가능시간: 총 <b>'+MN(wkLeft)+'</b>(복습시간을 공제하고 남은 시간)</div>'+slk+'<div style="display:none">');
       /* 강의당 평균 = (한 주 공부시간 − 한 주 복습시간) ÷ 이번 주 강의 수 (2026-11-23) — 오늘 남은 시간에 비추어 몇 강을 들을 수 있는지 */
-      let chip=''; if(wkH&&wk.length) chip=wkL>0?'<div class="rvrow"><div class="rvchip lec">📘 1강당 사용가능시간 '+MN(wkL/wk.length)+'</div><span class="rvnote">※ 이 시간을 아끼면 추가수강이 가능합니다.</span></div>':'<div class="rvchip over">⚠ 이번 주는 복습이 공부시간을 넘습니다 — 복습부터</div>';
+      /* 1단: 이번 주 듣는 단계의 1강당 수업시간(학습규칙) (2026-11-23) */
+      const LH=[]; wk.forEach(function(x){ const nm=(ccIsDual()?x.t+' ':'')+CC_STAGES[x.t][x.o.si], s=nm+' 1강당 수업시간: <b>'+MN(ccLecHour(x.t,x.o.si)*60)+'</b>'; if(LH.indexOf(s)<0) LH.push(s); });
+      cols[0]=cols[0].replace('@@LECH@@',LH.length?'<div>'+LH.join(' · ')+'</div>':'');
+      let chip=''; if(wkH&&wk.length&&wkL<=0) chip='<div class="rvchip over">⚠ 이번 주는 복습이 공부시간을 넘습니다 — 복습부터</div>';
       cols[0]=cols[0].replace('@@LECCHIP@@',chip);
       if(window.__nxHow) HOW='<div class="ordr nxhow">'+
         '<div class="oi"><div>· 복습시간: 2일째 1강-40분/6일째 1강-20분/14일째 1강-10분</div><div>· 복습날과 복습수강강의수에 따라 오늘 수강할 강의목록수가 증가하거나 감소합니다.</div></div></div>';
-    }catch(e){ console.warn(e); cols[0]=cols[0].replace('@@LECCHIP@@','').replace('@@WKAV@@',''); }
-    cols[0]=cols[0].replace('@@WKAV@@','');
+    }catch(e){ console.warn(e); cols[0]=cols[0].replace('@@LECCHIP@@','').replace('@@WKAV@@','').replace('@@LECH@@',''); }
+    cols[0]=cols[0].replace('@@WKAV@@','').replace('@@LECH@@','');
     h+=HOW;
-    if(window.__nxRvHow) h+='<div class="ordr nxhow rvhow"><div class="rvr"><span class="rvl">복습대상</span><div><div>1. 플래시카드 → 필수암기문장 → OX풀이 → 5지택일</div><div>2. 복습실행 후 다음복습필요나 다음복습불필요버튼을 눌러서 복습여부를 선택</div></div></div>'+
-      '<div class="rvr"><span class="rvl">복습생략이용</span><div><div>1. 강의가 밀려서 이번주 강의수강수를 늘려야 하는 경우 또는 실제적으로 복습이 불필요한 경우</div><div>2. 복습생략버튼 누른 후 다음복습필요나 다음복습불필요버튼을 눌러서 복습여부를 선택</div></div></div></div>';
+    const RVHOW='<div class="rvr"><span class="rvl">복습대상</span><div><div>1. 플래시카드 → 필수암기문장 → OX풀이 → 5지택일</div><div>2. 복습실행 후 다음복습필요나 다음복습불필요버튼을 눌러서 복습여부를 선택</div></div></div>'+
+      '<div class="rvr"><span class="rvl">복습생략이용</span><div><div>1. 강의가 밀려서 이번주 강의수강수를 늘려야 하는 경우 또는 실제적으로 복습이 불필요한 경우</div><div>2. 복습생략버튼 누른 후 다음복습필요나 다음복습불필요버튼을 눌러서 복습여부를 선택</div></div></div>';
+    { let done=false; for(let q=cols.length-1;q>=1;q--){ if(!done&&cols[q].indexOf('@@RVHOW@@')>=0){ cols[q]=cols[q].replace('@@RVHOW@@',RVHOW); done=true; } else cols[q]=cols[q].split('@@RVHOW@@').join(''); } }   /* 복습방법 = 맨 앞 복습 칸의 [복습정보] 안 (2026-11-23) */
     /* 복습 먼저 → 오늘 공부 (2026-11-23): 14일 전 → 6일 전 → 2일 전 → 이번 주 수강강의목록 */
     const ord=cols.slice(1).filter(function(x){ return x.indexOf('class="empty"')<0; }).reverse().concat([cols[0]]);   /* 빈 복습 칸은 숨김 (2026-11-23) */
     const gtc=ord.map(function(x,i){ return (i?"24px ":"")+(i===ord.length-1?"1.25fr":"1fr"); }).join(" ");
@@ -10519,8 +10530,11 @@ window.nxRvEnd=function(k,day,end){ if(window.ccPreview){ try{ toast("관리자 
 (function(){ try{ const c=new CSSStyleSheet(); c.replaceSync(
   'html #nxMine#nxMine .rvtb{display:inline-block;background:#fff8ec;border:1px solid #edcf95;color:#7a4b00;font-weight:600;font-size:11.2px;letter-spacing:-.2px;line-height:1.45;border-radius:7px;padding:4px 9px;margin:6px 0 10px}'+
   'html #nxMine#nxMine .rvsel button.nx.on{background:#c66a1d;color:#fff}'+
+  'html #nxMine#nxMine .s.wkh:not(.on){height:0;overflow:hidden;margin:0 0 10px;padding:0;border:0}html #nxMine#nxMine .wkib{margin-left:8px}html #nxMine#nxMine .s.wkh.on{background:#fff;border:1px solid #e6dfcd;border-radius:9px;padding:8px 11px}'+
+  'html #nxMine#nxMine .s.wkh{line-height:1.7;margin-bottom:8px}html #nxMine#nxMine .s.wkh b{color:#0D1F3C}'+
+  'html #nxMine#nxMine .wkslk{color:#6b7280}html #nxMine#nxMine .wkslk b.add{color:#2f7d4f}html #nxMine#nxMine .wkslk b.lack{color:#c62828}'+
   'html #nxMine#nxMine .rvrow{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;margin-bottom:8px}html #nxMine#nxMine .rvrow .rvchip{margin:0}html #nxMine#nxMine .rvnote{font-size:11.2px;color:#c62828;font-weight:800}'+
-  'html #nxMine#nxMine .rvhow .rvr{display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:start;padding:6px 0;font-size:13px;line-height:1.65}html #nxMine#nxMine .rvhow .rvr+.rvr{border-top:1px dashed #e6dfcd}html #nxMine#nxMine .rvhow .rvl{font-size:11.2px;font-weight:800;text-align:center;border-radius:7px;padding:3px 0;background:#0D1F3C;color:#fff;margin-top:1px}'+
+  'html #nxMine#nxMine .rvhow .rvr{display:grid;grid-template-columns:84px 1fr;gap:8px;align-items:start;padding:5px 0;font-size:12px;line-height:1.6}html #nxMine#nxMine .rvhow .rvr+.rvr{border-top:1px dashed #e6dfcd}html #nxMine#nxMine .rvhow .rvl{font-size:11.2px;font-weight:800;text-align:center;border-radius:7px;padding:3px 0;background:#0D1F3C;color:#fff;margin-top:1px}'+
   'html #nxMine#nxMine .rvtg{display:inline-block;font-size:11.2px;font-weight:600;letter-spacing:-.2px;color:#2f6b47;background:#f3f9f5;border:1px solid #d3e8da;border-radius:7px;padding:4px 9px;margin:6px 0 0;line-height:1.45}'+
   'html #nxMine#nxMine#nxMine .ocard{background:#fff;border:1.5px solid #e6dfcd;border-radius:14px;padding:12px 14px 10px;margin:0 0 12px;box-shadow:0 2px 8px rgba(13,31,60,.05)}html #nxMine#nxMine#nxMine .oth{font-weight:900;font-size:14px;color:#0D1F3C;margin-bottom:10px;display:flex;align-items:center;gap:8px}html #nxMine#nxMine#nxMine .otg{background:#0D1F3C;color:#fff;font-size:11px;font-weight:800;border-radius:6px;padding:2px 7px}html #nxMine#nxMine#nxMine .orw{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:center;margin:7px 0}html #nxMine#nxMine#nxMine .olb{font-size:11.5px;font-weight:900;text-align:center;border-radius:7px;padding:5px 0}html #nxMine#nxMine#nxMine .olb.s{background:#eaf0fa;color:#2d5aa0}html #nxMine#nxMine#nxMine .olb.j{background:#fbf3dc;color:#8a6a12}html #nxMine#nxMine#nxMine .ofl{display:flex;flex-wrap:wrap;align-items:center;gap:5px}html #nxMine#nxMine#nxMine .opl{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;border-radius:9px;padding:5px 10px;border:1.5px solid}html #nxMine#nxMine#nxMine .opl em{font-style:normal;font-size:10.5px;font-weight:900;width:17px;height:17px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff}html #nxMine#nxMine#nxMine .opl.s{background:#f5f8fd;border-color:#c5d3ea;color:#1d3d70}html #nxMine#nxMine#nxMine .opl.s em{background:#2d5aa0}html #nxMine#nxMine#nxMine .opl.j{background:#fffbf0;border-color:#ead9a6;color:#6b5210}html #nxMine#nxMine#nxMine .opl.j em{background:#C9A227}html #nxMine#nxMine#nxMine .oar{font-style:normal;color:#b9b2a0;font-weight:900;font-size:15px}html #nxMine#nxMine#nxMine .odw{border:1.5px solid #ece6d6;border-radius:11px;padding:9px 11px;margin:7px 0;background:#fdfcf8}html #nxMine#nxMine#nxMine .odw.me{border-color:#C9A227;background:#fffaea;box-shadow:0 0 0 1px #C9A227}html #nxMine#nxMine#nxMine .odn{font-weight:900;font-size:13px;color:#0D1F3C;margin-bottom:7px;display:flex;align-items:center;gap:6px}html #nxMine#nxMine#nxMine .ome{background:#C9A227;color:#0D1F3C;font-size:10.5px;font-weight:900;border-radius:6px;padding:1px 6px}html #nxMine#nxMine#nxMine .oph{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:stretch}html #nxMine#nxMine#nxMine .oph .oar{align-self:center}html #nxMine#nxMine#nxMine .opb{background:#fff;border:1.5px solid #e3e8f2;border-radius:9px;padding:7px 10px;font-size:12.5px;line-height:1.55;color:#24324d}html #nxMine#nxMine#nxMine .opb small{display:block;font-size:10.5px;font-weight:900;color:#2d5aa0;margin-bottom:2px}html #nxMine#nxMine#nxMine .osm{font-size:11px;color:#7a8599;margin-left:2px}html #nxMine#nxMine#nxMine .ont{margin-top:9px;padding:9px 11px;border-radius:10px;background:#f6f8fb;font-size:12.5px;line-height:1.7;color:#3a4660}html #nxMine#nxMine#nxMine .olb.r{background:#0D1F3C;color:#fff}html #nxMine#nxMine#nxMine .osub{font-weight:600;font-size:11.5px;color:#7a8599;margin-left:4px}html #nxMine#nxMine#nxMine .otl{display:grid;grid-template-columns:40px minmax(0,1fr) 74px minmax(0,1fr) 40px;column-gap:8px;row-gap:7px;align-items:center}html #nxMine#nxMine#nxMine .otl>.ofl:nth-child(5n+2),html #nxMine#nxMine#nxMine .otl>.otp:nth-child(2){justify-content:flex-end;text-align:right}html #nxMine#nxMine#nxMine .otl .opl{font-size:12px;padding:4px 8px;gap:5px}html #nxMine#nxMine#nxMine .otl .opl em{width:16px;height:16px;font-size:10px}html #nxMine#nxMine#nxMine .otl .oar{font-size:13px}html #nxMine#nxMine#nxMine .oex b{display:inline-block;background:#fdecea;border:1.5px solid #e9a89f;border-radius:7px;padding:2px 7px;font-size:11px}html #nxMine#nxMine#nxMine .otp{font-size:10.5px;font-weight:900;color:#2d5aa0}html #nxMine#nxMine#nxMine .oex{text-align:center;font-size:10.5px;color:#b0391f}html #nxMine#nxMine#nxMine .oexl{align-self:stretch;justify-self:center;width:0;border-left:2px dashed #d0352b;min-height:30px}html #nxMine#nxMine#nxMine .olb.t2{background:#e7f4ec;color:#2f7d4f}html #nxMine#nxMine#nxMine .opl.t2{background:#f4fbf6;border-color:#b9dcc6;color:#1f5a37}html #nxMine#nxMine#nxMine .opl.t2 em{background:#2f7d4f}html #nxMine#nxMine#nxMine .orest{font-size:12px;color:#9aa1ad;font-weight:700;padding:5px 4px}html #nxMine#nxMine#nxMine .otl .ofl.full{flex-wrap:nowrap}html #nxMine#nxMine#nxMine .otl .opl em{flex:none}html #nxMine#nxMine#nxMine .otl .ofl.full .opl{flex:1 1 0;justify-content:center;min-width:0;white-space:nowrap;overflow:hidden}html #nxMine#nxMine#nxMine .otl .ofl.full .orest{flex:1;text-align:center;border:1.5px dashed #d6d1c4;border-radius:9px;background:#faf9f5}@media(max-width:700px){html #nxMine#nxMine#nxMine .otl{grid-template-columns:34px minmax(0,1fr) 18px minmax(0,1fr) 0}html #nxMine#nxMine#nxMine .oex b{display:none}}html #nxMine#nxMine#nxMine .opl.r{background:#f7f7f4;border-color:#dedad0;color:#3a4660;font-weight:600}html #nxMine#nxMine#nxMine .opl.r b{color:#0D1F3C;font-weight:900;margin-left:2px}@media(max-width:640px){html #nxMine#nxMine#nxMine .oph{grid-template-columns:1fr}html #nxMine#nxMine#nxMine .oph .oar{display:none}}'+
   'html #nxMine#nxMine .rvsel.r3{max-width:none;margin-left:0}html #nxMine#nxMine#nxMine#nxMine .rvsel.r3 button{flex:1 1 auto;white-space:nowrap;font-size:10.5px!important;letter-spacing:-.4px;padding:6px 2px!important}html #nxMine#nxMine .rvsel button.sk.on{background:#6b7280;color:#fff}'+
