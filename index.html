@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-23 15:08 여유시간문구">
+<meta name="cc-build" content="2026-11-23 16:12 기록없음50점안내">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -5221,36 +5221,50 @@ window.nmDiagOpen=async function(){
     h+='<div class="nmdempty">아직 풀이 기록이 없습니다.<br>과목별실전문제풀이에서 문제를 풀면 지금 위치와 300점 조합이 여기에 나옵니다.</div></div>';
     m.innerHTML=h; m.classList.add("on"); return;
   }
-  h+='<div class="nmdh">시험일 예상 진단 <span class="nmddots">'+D.curDots.dots+'</span> <small>지금 페이스대로 가면 시험일에 — '+D.curDots.t+'</small></div>'+
-    '<table class="nmdt"><tr><th>과목</th><th>시험일 예상 점수</th>'+(G?'<th>내 목표</th>':'')+'<th>푼 문항</th><th>추세</th></tr>'+
+  /* 진단 화면 순서 (2026-11-23): ① 합격 조합 → ② 진단자료 → ③ 진단결과 → ④ 한줄조언 */
+  const T0=ccISO(ccToday()), PL1=(function(){ try{ return ccPlanOf("1차"); }catch(e){ return null; } })();
+  const started=function(subj){ try{ const A=(PL1&&PL1.asg)||{}; return ccFlat("1차",PL1).some(function(o){ return o.l===subj&&A[o.key]&&A[o.key]<=T0; }); }catch(e){ return true; } };
+  let TBL='<div class="nmdh"><span class="nmdno">3</span>진단결과 <span class="nmddots">'+D.curDots.dots+'</span></div>'+
+    '<table class="nmdt"><tr><th>과목</th><th>시험일 예상 점수</th>'+(G?'<th>내 목표</th>':'')+'</tr>'+
     D.S.map(function(x){ const pv=D.prev&&D.prev.s&&D.prev.s[x.subj], dl=(pv!=null&&x.score!=null)?Math.round((x.score-pv)*10)/10:null;
       const hard=x.alert&&!x.alert.soft, soft=x.alert&&x.alert.soft;
-      return '<tr'+(hard?' class="al"':(soft?' class="so"':''))+'><td>'+nmdEsc(x.subj)+(hard?' <b class="nmdal">⚠ '+x.alert.t+'</b>':(soft?' <b class="nmdso">△ 주의</b>':''))+'</td><td>'+(x.score==null?'<span class="nmdmu">기록 없음</span>':'<b>'+x.score+'</b>점'+(x.slope==null?' <small class="nmdmu">(지금 점수 기준)</small>':' <small class="nmdmu">(지금 '+x.now+'점)</small>'))+(dl==null||Math.abs(dl)<0.5?'':' <span class="'+(dl>0?'nmdup':'nmddn')+'" title="지난주 대비">'+(dl>0?'▲ +':'▼ ')+dl+'</span>')+'</td>'+nmGoalTd(G,x.subj)+'<td>'+x.n+'</td><td>'+tr(x)+'</td></tr>'; }).join("")+'</table>';
-  if(D.prev&&D.prev.n){ const dn=D.curDots.n-D.prev.n;
-    h+='<div class="nmdchg '+(dn>0?'up':(dn<0?'dn':''))+'">'+(dn>0?'🎉 지난주보다 합격 가능성이 <b>'+dn+'칸 올랐어요</b> ▲':(dn<0?'지난주보다 합격 가능성이 '+(-dn)+'칸 내려갔어요 ▼ — 아래 조합대로 다시 끌어올려 봐요':'지난주와 같은 칸입니다 — 표의 ▲▼로 과목별 변화를 확인하세요'))+'</div>'; }
-  h+=nmGoalBox(GT,G,D);
+      return '<tr'+(hard?' class="al"':(soft?' class="so"':''))+'><td>'+nmdEsc(x.subj)+(hard?' <b class="nmdal">⚠ '+x.alert.t+'</b>':(soft?' <b class="nmdso">△ 주의</b>':''))+'</td><td>'+(x.score==null?'<span class="nmdmu">'+(started(x.subj)?'기록 없음':'진도 전')+'</span>':'<b>'+x.score+'</b>점'+(dl==null?'':' <span class="nmdtr '+(dl>=0.5?'up':(dl<=-0.5?'dn':'eq'))+'" title="지난주 대비">'+(dl>=0.5?'▲'+dl:(dl<=-0.5?'▼'+(-dl):'-'))+'</span>'))+'</td>'+nmGoalTd(G,x.subj)+'</tr>'; }).join("")+'</table>';
+  TBL+='<div class="nmdsrcn">※ 「시험일 예상 점수」는 주별 기록이 3주 이상 쌓인 과목부터 시험일까지 지속적으로 계산합니다.</div>';
   const none=D.S.filter(function(x){ return x.n===0; }).map(function(x){ return x.subj; });
   /* (2026-11-21 안내 문구 삭제 — 기록 없는 과목은 계산에서 그대로 50점(2차 50%)으로 가정) */
   const AH=D.S.filter(function(x){ return x.alert&&!x.alert.soft; }), AS=D.S.filter(function(x){ return x.alert&&x.alert.soft; });
-  if(AH.length) h+='<div class="nmdwarn">⚠ <b>과락 경보</b> — '+AH.map(function(x){ return nmdEsc(x.subj)+'('+x.alert.t+')'; }).join(", ")+'. 한 과목이라도 40점 아래면 총점과 관계없이 불합격입니다. 이 과목 문제풀이와 오답노트를 먼저 챙기세요.</div>';
-  if(AS.length) h+='<div class="nmdsoft">△ <b>주의</b> — '+AS.map(function(x){ return nmdEsc(x.subj); }).join(" · ")+' — 지금은 과락선에 가까운 40점대에 있어요. 아직 기록이 쌓이는 중이라 확정된 것은 아니니 너무 걱정하지 마세요. 기본기를 다지면서 이 과목 문제를 조금 더 자주 풀어 50점선을 넘겨 봐요.</div>';
-  h+='<div class="nmdh">내가 선택하는 300점 합격 조합 <small>목표 점수(맞혀야 할 문항 수) · +는 예상보다 더 올려야 할 문항</small></div>'+
-    '<div class="nmdwhy">💡 <b>약한 과목이 50점인 이유:</b> 확실한 합격을 위해</div><div class="nmdplans">'+
-    D.plans.map(function(p){ return '<div class="nmdp'+(p.rec?' rec':'')+(G&&G.key===p.key?' goal':'')+'">'+(p.rec?'<span class="nmdrec">추천</span>':'')+nmGoalBadge(p,G)+'<div class="nmdpn">'+p.name+'</div>'+
-      (p.key==="strong"&&!nmGoalView()?'<div class="nmdsel">과목을 누르면 90점 과목이 바뀝니다 (90점 2과목 · 50점 3과목)</div>':'')+
+  if(AH.length) TBL+='<div class="nmdwarn">⚠ <b>과락 경보</b> — '+AH.map(function(x){ return nmdEsc(x.subj)+'('+x.alert.t+')'; }).join(", ")+'. 한 과목이라도 40점 아래면 총점과 관계없이 불합격입니다. 이 과목 문제풀이와 오답노트를 먼저 챙기세요.</div>';
+  if(AS.length) TBL+='<div class="nmdsoft">△ <b>주의</b> — '+AS.map(function(x){ return nmdEsc(x.subj); }).join(" · ")+' — 지금은 과락선에 가까운 40점대에 있어요. 아직 기록이 쌓이는 중이라 확정된 것은 아니니 너무 걱정하지 마세요. 기본기를 다지면서 이 과목 문제를 조금 더 자주 풀어 50점선을 넘겨 봐요.</div>';
+  const sel=function(p){ if(nmGoalView()) return ''; const mine=!!(G&&(G.key===p.key||(p.alias||[]).indexOf(G.key)>=0)); return mine?'<span class="nmdsel2 on">✓ 선택됨</span>':'<button class="nmdsel2" onclick="nmGoalSet(1,\''+p.key+'\')">선택</button>'; };
+  let PLN='<div class="nmdh"><span class="nmdno">1</span>내가 선택하는 300점 합격 조합 <small>목표 점수</small></div>'+
+    '<div class="nmdplans">'+
+    D.plans.map(function(p){ return '<div class="nmdp'+(p.rec?' rec':'')+(G&&G.key===p.key?' goal':'')+'">'+(p.rec?'<span class="nmdrec">추천</span>':'')+nmGoalBadge(p,G)+'<div class="nmdpn">'+p.name+sel(p)+'</div>'+
       D.laws.map(function(l,i){ const sk=p.key==="strong"&&!nmGoalView(), w40=p.t[i]<=40;
         return '<div class="nmdr'+(sk?' pick'+(p.t[i]>=90?' on':''):'')+(w40?' w40':'')+'"'+(sk?' onclick="nmStrongPick(\''+nmdEsc(l)+'\')"':'')+'><span>'+nmdEsc(l)+'</span><b>'+p.t[i]+'점</b><small>'+p.q[i]+'문항'+(D.S[i].score==null?' · 기록 없음':(p.gainQ[i]?' · +'+p.gainQ[i]:''))+(p.tight[i]?' <em>빠듯</em>':'')+'</small></div>'+(w40?'<div class="nmd40">⚠ '+nmdEsc(l)+' — 40점 이하 · 과락위험이 있습니다</div>':''); }).join("")+
       '<div class="nmdsum">총점 <b>'+p.sum+'</b>점 · 합격 가능성 <span class="nmddots">'+p.dots.dots+'</span></div>'+
-      '<div class="nmdpw">'+(p.gain?'예상보다 <b>'+p.gain+'문항</b> 더 · 시험까지 주당 약 '+p.perWeek+'문항씩 더 올리기':'<b>지금 페이스 그대로면 도달</b> — 페이스를 지키세요')+'</div>'+nmGoalBtn(GT,p,G)+'</div>'; }).join("")+'</div>';
+      '<div class="nmdpw">'+(p.gain?'현재 <b>'+p.gain+'문항</b>, 즉 <b>'+(Math.round(p.gain*2.5*10)/10)+'점</b>이 시험일에 부족합니다.':'<b>지금 페이스 그대로면 도달</b> — 페이스를 지키세요')+'</div>'+(p.key==="strong"&&!nmGoalView()?'<div class="nmdsel" style="margin-top:8px;font-size:9.5px;line-height:1.4;padding:4px 8px;letter-spacing:-.2px">과목을 누르면 90점 강점과목이 변경됩니다. (90점 2과목 · 50점 3과목)</div>':'')+'</div>'; }).join("")+'</div>'+(D.S.some(function(x){ return x.score==null; })?'<div class="nmdsrcn">※ 기록이 없는 과목은 50점상태를 가정합니다.</div>':'');
   const R=nmGoalPlan(G,D)||D.plans.find(function(p){ return p.rec; });
-  h+='<div class="nmdh">'+(G?'내 목표에서 바라본 현재상태':'시대에듀의 추천 : '+R.name)+'</div><div id="nmdUnits" class="nmdunits"><span class="nmdmu">과목별로 어느 강의에서 문항을 더 맞힐지 찾는 중…</span></div>';
+  const SRC='<div class="nmdh"><span class="nmdno">2</span>진단자료</div><div class="nmdsrc"><span>🔘 OX풀이</span><span>📚 5지택일 · 선다형</span><span>📝 과목별 객관식문제풀이</span></div><div class="nmdsrcn">※ 진단자료를 모두 성실하게 매일 학습으로 풀이를 하여야 진단이 정확해집니다.</div><div class="nmdsrcn">※ 1차 OX · 객관식(5지택일 · 선다형) 문항풀이 후 「찍어정답」을 누르면 그 문항은 실력에 절반만 반영되어 진단이 더 정확해집니다.</div>';
+  const nos=D.S.filter(function(x){ return x.score==null; }), pre=nos.filter(function(x){ return !started(x.subj); }).map(function(x){ return nmdEsc(x.subj); }), emp=nos.filter(function(x){ return started(x.subj); }).map(function(x){ return nmdEsc(x.subj); });
+  const gl=[]; D.laws.forEach(function(l,i){ const sc=D.S[i].score; if(sc==null) return; const gp=Math.round((R.t[i]-sc)*10)/10; if(gp>=0.5) gl.push('<b>'+nmdEsc(l)+' +'+gp+'점</b>'); });
+  let best=null; try{ const sc=D.S.filter(function(x){ return x.score!=null; }).length; if(sc>=2){ let bv=1e9; D.plans.forEach(function(p){ const v=p.gain||0; if(v<bv-1e-9){ bv=v; best=p; } });   /* 예상보다 더 맞혀야 할 문항이 가장 적은 조합 */ } }catch(e){}
+  const isMine=function(p){ return !!(G&&p&&(G.key===p.key||(p.alias||[]).indexOf(G.key)>=0)); };
+  let ADV='<div class="nmdh"><span class="nmdno">4</span>한줄조언</div><div class="nmdadv">'+
+    (pre.length?'<div>📅 <b>'+pre.join(' · ')+'</b>은 아직 수강 진도 전이라 진단에서 빠져 있습니다 — 진도가 시작되면 함께 진단됩니다</div>':'')+
+    (emp.length?'<div>📝 <b>'+emp.join(' · ')+'</b>은 수강이 시작되었는데 풀이 기록이 없습니다</div>':'')+
+    '<div class="w">⚠️ 지금 페이스대로 가면 시험일에 — <b>'+D.curDots.t+'</b></div>'+
+    '<div>🎯 <b>'+nmdEsc(R.name)+'</b>까지 남은 과목별 필요점수 — '+(gl.length?gl.join(' · '):'모든 과목이 목표선에 도달해 있어요 🎉')+'</div>'+
+    (best&&!nmGoalView()?'<div class="b">💡 '+(isMine(best)?'지금 선택한 <b>'+nmdEsc(best.name)+'</b>이 가장 효과적입니다.':(!G&&best.rec)?'시대에듀 추천 <b>'+nmdEsc(best.name)+'</b>이 가장 효과적입니다. 합격조합에서 선택해 내 목표로 정하세요.':'지금 상태로는 <b>'+nmdEsc(best.name)+'</b>이 더 효과적입니다. 변경을 원하시면 합격조합에서 선택하면 됩니다.')+'</div>':'')+
+    '</div>';   /* (2026-11-23) 과목별 강의 안내 줄 삭제 */
+  h+=PLN+SRC+TBL+ADV;
   /* (2026-11-21) 시험장 시간 배분 삭제 */
-  h+='<details class="nmdhow"><summary>진단방법 <span class="nza">▾</span></summary><div class="nmdfoot">• 모든 강의의 1차 OX풀이와 객관식(5지택일 · 선다형) 풀이 기록이 모두 진단에 들어갑니다.<br>• 모든 강의에서 푸는 1차 OX · 객관식(5지택일 · 선다형) 문항풀이 후 「찍어정답」을 누르면 그 문항은 실력에 절반만 반영되어 진단이 더 정확해집니다.<br>• '+(D.trend?'최근 주별 기록으로 과목별 흔들림과 상승 추세를 시험일까지 이어서 예상했습니다.':'「시험일 예상 점수」는 주별 기록이 3주 이상 쌓인 과목부터 상승 추세를 시험일까지 이어서 계산합니다 — 그 전에는 지금 점수를 그대로 씁니다.')+' 예상 점수와 조합은 문제를 풀 때마다 다시 계산되어 시험일까지 계속 바뀝니다.</div></details></div>';
+  /* (2026-11-23) [진단방법] 버튼 삭제 — 내용은 ② 진단자료 · ③ 진단결과의 ※ 문구로 */
+  h+='</div>';
   m.innerHTML=h; m.classList.add("on");
   /* 단원 배정 */
   try{
     const parts=[];
-    for(let i=0;i<D.laws.length;i++){ if(D.S[i].score==null){ parts.push('<div class="nmdu"><b>'+nmdEsc(D.laws[i])+'</b> → <span class="nmdmu">이 과목 문제부터 풀어 지금 위치를 확인하세요 (목표 '+R.t[i]+'점)</span></div>'); continue; } if(!R.gainQ[i]) continue; const U=await nmDiagUnits(D.laws[i],R.gainQ[i]);
+    for(let i=0;i<D.laws.length;i++){ if(D.S[i].score==null){ if(!started(D.laws[i])) continue; parts.push('<div class="nmdu"><b>'+nmdEsc(D.laws[i])+'</b> → <span class="nmdmu">이 과목 문제부터 풀어 지금 위치를 확인하세요 (목표 '+R.t[i]+'점)</span></div>'); continue; } if(!R.gainQ[i]) continue; const U=await nmDiagUnits(D.laws[i],R.gainQ[i]);
       parts.push('<div class="nmdu"><b>'+nmdEsc(D.laws[i])+' +'+R.gainQ[i]+'문항</b> → '+(U.length?U.map(function(u){ return '<button class="nmdub" onclick="document.getElementById(\'nmdModal\').classList.remove(\'on\');ccOpenQB(\''+D.laws[i]+'\',\''+u.stage+'\','+u.lec+',null,\'1차\')">'+nmdEsc(u.stage)+' '+nmdEsc(ccJindo(u.lec))+(u.title?' '+nmdEsc(u.title):'')+' <i>+'+u.give+'</i></button>'; }).join(" "):'<span class="nmdmu">풀이 기록이 더 쌓이면 강의를 짚어 드립니다 — 이 과목 문제풀이부터</span>')+'</div>'); }
     const el=document.getElementById("nmdUnits"); if(el) el.innerHTML=parts.length?parts.join(""):'<span class="nmdmu">지금 페이스대로면 '+(G?'내 목표에':'추천 조합에')+' 도달합니다 — 페이스를 지키세요</span>';
   }catch(e){ const el=document.getElementById("nmdUnits"); if(el) el.innerHTML=""; }
@@ -5282,7 +5296,14 @@ window.nmDiagBrief=function(){
     '.nmdunits .nmdu{font-size:.84rem;margin:5px 0}.nmdub{font:inherit;font-size:.78rem;border:1px solid #e4e1d8;background:#fff;border-radius:8px;padding:3px 8px;margin:2px 3px;cursor:pointer}.nmdub:hover{border-color:#C9A227;background:#FFF8E6}.nmdub i{font-style:normal;color:#8a6a10;font-weight:800}'+
     '.nmdtime{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:.84rem}@media(max-width:640px){.nmdtime{grid-template-columns:1fr}}.nmdg{border:1px solid #e4e1d8;border-radius:10px;padding:9px 11px}.nmdg>div{padding:2px 0}'+
     '.nmdwhy{margin:0 0 10px;font-size:.82rem;line-height:1.6;background:#FFF8E6;border:1px solid #F5DFA0;border-radius:10px;padding:9px 12px;color:#5a4410}.nmdnote{margin-top:8px;font-size:.8rem;background:#f3f6fb;border-radius:10px;padding:7px 11px;color:#3a4a6d}.nmdtip{grid-column:1/-1;font-size:.78rem;color:#5a6070}.nmdfoot{margin-top:14px;font-size:.74rem;color:#7a7f8c;line-height:1.6}.nmdempty{padding:26px 6px;text-align:center;color:#5a6070}'+
-    '.nmdbtn{margin-left:6px}'; document.head.appendChild(st); }catch(e){}
+    '.nmdbtn{margin-left:6px}'+
+    '.nmdno{display:inline-block;background:#0D1F3C;color:#fff;font-size:.7rem;font-weight:900;border-radius:6px;padding:1px 7px;margin-right:7px;vertical-align:1px}'+
+    '.nmdpn{display:flex;align-items:center;justify-content:space-between;gap:6px}.nmdsel2{font:inherit;font-size:11.2px!important;font-weight:700;border:1px solid #c9d1e0;background:#fff;color:#0D1F3C;border-radius:7px;padding:3px 9px!important;cursor:pointer;white-space:nowrap}.nmdsel2.on{background:#2d5aa0;border-color:#2d5aa0;color:#fff}'+
+    '.nmdsrc{display:flex;flex-wrap:wrap;gap:6px}.nmdsrc span{border:1px solid #d6dce8;background:#f5f8fd;border-radius:7px;padding:3px 9px;font-size:.78rem;font-weight:700;color:#2d5aa0}.nmdsrcn{margin-top:6px;font-size:.78rem;color:#c62828;font-weight:700}'+
+    '.nmdp .nmdpw{font-size:.7rem;letter-spacing:-.3px;word-break:keep-all}.nmdp .nmdpw b{color:#c62828}'+
+    '.nmdp .nmdr span{font-size:.74rem;white-space:nowrap;letter-spacing:-.2px}.nmdp .nmdr b{font-size:.8rem;white-space:nowrap}.nmdp .nmdr small{font-size:.66rem;white-space:nowrap;min-width:0}.nmdp .nmdr{gap:4px}'+
+    '.nmdtr{font-size:.74rem;font-weight:900;margin-left:4px}.nmdtr.up{color:#2f7d4f}.nmdtr.dn{color:#c62828}.nmdtr.eq{color:#9aa1ad}'+
+    '.nmdadv{border:1.5px solid #C9A227;background:#fffaea;border-radius:11px;padding:4px 13px;font-size:.86rem;line-height:1.65;color:#2a2f3a}.nmdadv>div{padding:6px 0}.nmdadv>div+div{border-top:1px dashed #e6cf86}.nmdadv .w{color:#8a1c1c}.nmdadv .b{color:#6b5210}'; document.head.appendChild(st); }catch(e){}
   /* 머리 단추 · 주 단위 기록 */
   const addBtn=function(){ const u=document.getElementById("userchip"); if(!u||document.getElementById("nmdBtn")) return; const q=u.querySelector(".qatop");
     const b=document.createElement("button"); b.id="nmdBtn"; b.className="mini nmdbtn"; b.style.cssText="border-color:var(--gold);color:var(--gold)"; b.textContent="🎯 300점 합격 진단"; b.onclick=nmDiagOpen;
@@ -8105,7 +8126,7 @@ window.nmGoalBtn=function(tr,p,G){
 window.nmGoalTd=function(G,subj){
   if(!G) return '';
   const r=G.rows.find(function(x){ return x.subj===subj; }); if(!r) return '<td>–</td>';
-  return '<td class="nmdgtd"><b>'+nmGF(r.tg)+'</b>점'+(r.gap==null?' <small class="nmdmu">기록 없음</small>':(r.gap>=0.5?' <small class="nmdgap">+'+nmGF(r.gap)+' 남음</small>':' <small class="nmdup">✓ 도달</small>'))+'</td>';
+  return '<td class="nmdgtd"><b>'+nmGF(r.tg)+'</b>점'+(r.gap==null?'':(r.gap>=0.5?' <small class="nmdgap">+'+nmGF(r.gap)+' 남음</small>':' <small class="nmdup">✓ 도달</small>'))+'</td>';
 };
 window.nmGoalBox=function(tr,G,D){
   const view=nmGoalView();
@@ -10324,11 +10345,13 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
     const z=zone(two); if(!z) return;
     const N=NM[z.k];
     const card=document.createElement("div"); card.className="nmzone "+z.k;
-    card.innerHTML='<div class="nzt">'+N[0]+' '+N[1]+'</div>';
+    let mv=''; try{ const DD=two?nmDiag2():((window.NMD&&NMD.last)||nmDiag()), GG=nmGoalOf(two?2:1,DD);   /* 지난주 대비 목표까지 (2026-11-23) */
+      if(GG&&GG.move!=null){ const m=GG.move; mv=m>=0.5?'<span class="nzmv up">지난주보다 목표에 '+nmGF(m)+'점 가까워졌어요 ▲</span>':(m<=-0.5?'<span class="nzmv dn">지난주보다 목표에서 '+nmGF(-m)+'점 멀어졌어요 ▼</span>':'<span class="nzmv eq">지난주와 목표점수에서 변동이 없습니다 -</span>'); } }catch(e){}
+    card.innerHTML='<div class="nzt">'+N[0]+' '+N[1]+mv+'</div>';
     const info=document.createElement("div"); info.className="nmzone nzinfo "+z.k;
     info.innerHTML='<div class="nzs">시험일 예상 총점 <b>'+z.tot+'점</b> · 예상합격선 '+z.line+'점 <b>('+(z.d>=0?'+':'')+z.d+'점)</b></div>'+
       (z.fail.length?'<div class="nzf">⚠ 과락 예상 — '+z.fail.map(E).join(" · ")+' (한 과목이라도 40% 아래면 총점과 관계없이 불합격)</div>':'')+
-      '<div class="nzm">'+N[2]+'</div>';
+      '<div class="nzm">'+N[2]+'</div>'+((function(){ try{ const DD=two?nmDiag2():((window.NMD&&NMD.last)||nmDiag()); return DD.S.some(function(x){ return x.score==null; }); }catch(e){ return false; } })()?'<div class="nzm" style="font-size:11.5px;opacity:.8">※ 기록이 없는 과목은 '+(two?'50%':'50점')+'상태를 가정합니다.</div>':'');
     const det=document.createElement("details"); det.className="nmzdet";
     det.innerHTML='<summary>진단내용 <span class="nza">▾</span></summary>'; if(window.__nmzOpen){ det.open=true; window.__nmzOpen=false; }
     const body=document.createElement("div"); body.className="nmzbody"; body.appendChild(info);
@@ -10339,7 +10362,7 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
   try{ const c=new CSSStyleSheet(); c.replaceSync(
     'html .nmdbox .nmzone{margin:12px 0 10px;border-radius:14px;padding:16px 18px;border:2px solid;text-align:center}'+
     'html .nmdbox .nmzone.ok{background:#eaf6ee;border-color:#2f7d4f;color:#1e5a37}html .nmdbox .nmzone.mid{background:#fff6dc;border-color:#C9A227;color:#6B5312}html .nmdbox .nmzone.no{background:#fdeceb;border-color:#c4453f;color:#8a2a24}'+
-    'html .nmdbox .nmzone .nzt{font-size:24px;font-weight:900}html .nmdbox .nmzone.nzinfo{margin-top:0;padding:10px 14px;border-width:1.5px}html .nmdbox .nmzone .nzs{font-size:14px;color:#1d2433}html .nmdbox .nmzone .nzf{font-size:13px;font-weight:800;color:#b0391f;margin-top:6px}html .nmdbox .nmzone .nzm{font-size:13px;margin-top:6px}'+
+    'html .nmdbox .nmzone .nzt{font-size:24px;font-weight:900}html body #nmdModal#nmdModal .nmdsel2.on{background:#2d5aa0!important;border-color:#2d5aa0!important;color:#fff!important}html .nmdbox .nmzone .nzt{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}html .nmdbox .nzmv{border:1.5px solid;border-radius:8px;padding:3px 10px;font-size:12px;font-weight:800;background:#fff}html .nmdbox .nzmv.up{border-color:#2f7d4f;color:#2f7d4f}html .nmdbox .nzmv.dn{border-color:#c62828;color:#c62828}html .nmdbox .nzmv.eq{border-color:#6b7280;color:#4b5563}html .nmdbox .nmzone.nzinfo{margin-top:0;padding:10px 14px;border-width:1.5px}html .nmdbox .nmzone .nzs{font-size:14px;color:#1d2433}html .nmdbox .nmzone .nzf{font-size:13px;font-weight:800;color:#b0391f;margin-top:6px}html .nmdbox .nmzone .nzm{font-size:13px;margin-top:6px}'+
     'html .nmdbox details.nmzdet>summary{list-style:none;cursor:pointer;display:block;width:100%;max-width:320px;margin:4px auto 0;box-sizing:border-box;text-align:center;padding:10px 14px;border-radius:10px;border:1.5px solid #2d5aa0;background:#fff;color:#1f4a8a;font-weight:800;font-size:14px}'+
     'html .nmdbox details.nmzdet>summary::-webkit-details-marker{display:none}html .nmdbox details.nmzdet[open] .nza{display:inline-block;transform:rotate(180deg)}html .nmdbox .nmzbody{margin-top:12px}');
     document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){}
