@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-23 13:58 안내문구_칩옆">
+<meta name="cc-build" content="2026-11-23 14:00 환불문구">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -10053,7 +10053,7 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
   const draw=function(){ const g=box(); if(!g) return; const I=G.info;
     /* 이용권 세 가지 (2026-11-21): 구매 · 시상 · 선물받은 */
     let h='<div class="tkh">🎫 내 이용권 나누어 보기</div><div class="gfkind">'+
-      '<div class="gk buy"><b>구매 이용권</b><span>'+(I?'구매 '+I.buy+'장 · 남은 <b>'+I.buy_left+'장</b>':'…')+'</span><em>환불대상</em></div>'+
+      '<div class="gk buy"><b>구매 이용권</b><span>'+(I?'구매 '+I.buy+'장 · 남은 <b>'+I.buy_left+'장</b>':'…')+'</span><em>환불이 가능합니다</em></div>'+
       '<div class="gk hof"><b>시상 이용권</b><span>'+(I?'받은 '+I.hof+'장 · 선물함 '+I.sent+'장 · 남은 <b>'+I.hof_left+'장</b>':'…')+'</span><em>환불대상 아님 · 선물 가능</em></div>'+
       '<div class="gk recv"><b>선물받은 이용권</b><span>'+(I?'받은 '+I.recv+'장 · 남은 <b>'+I.recv_left+'장</b>':'…')+'</span><em>환불대상 아님</em></div>'+
       '<div class="gknote">이용권을 쓸 때는 선물받은 이용권 → 시상 이용권 → 구매 이용권 순서로 씁니다</div></div>';
@@ -10116,7 +10116,7 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
     if(!I) return '<div class="tksub" style="padding:14px 2px">불러오는 중…</div>';
     let h='<div class="rtk">';
     h+='<div class="rtkh">🎫 이용권 현황 <small>남은 이용권 '+I.balance+'장</small></div>'+
-      '<div class="rtkk"><div class="gk buy"><b>구매한 이용권</b><span>구매 '+I.buy+'장 · 남은 <b>'+I.buy_left+'장</b></span><em>환불대상</em></div>'+
+      '<div class="rtkk"><div class="gk buy"><b>구매한 이용권</b><span>구매 '+I.buy+'장 · 남은 <b>'+I.buy_left+'장</b></span><em>환불이 가능합니다</em></div>'+
       '<div class="gk hof gkg"><b>시상받은 이용권</b><span>받은 '+I.hof+'장 · 선물함 '+I.sent+'장 · 남은 <b>'+I.hof_left+'장</b></span><em>환불대상 아님 · 선물 가능 (한 달 최대 2장 · 지금 '+Math.min(I.giftable,I.month_left)+'장)</em><button class="mini gkbtn" onclick="try{nmRvClose()}catch(e){}ccTkOpen()">🎁 선물하기</button></div>'+
       '<div class="gk recv"><b>선물받은 이용권</b><span>받은 '+I.recv+'장 · 남은 <b>'+I.recv_left+'장</b></span><em>환불대상 아님</em></div>'+
       '<div class="gknote">이용권을 쓸 때는 선물받은 이용권 → 시상 이용권 → 구매 이용권 순서로 씁니다</div></div>';
