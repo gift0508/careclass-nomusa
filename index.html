@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-23 16:12 기록없음50점안내">
+<meta name="cc-build" content="2026-11-23 16:20 합격설계_총일수">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9276,7 +9276,7 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
   /* ── 📈 내 페이스 점검 (1주 단위 · 기준: 시험 2주 전) ── */
   const NX2={};
   /* 완료예정일이 시험일 며칠 전인지 (2026-11-21) */
-  const exB=function(t,d){ if(!d) return ''; const ex=ccExamDate(t,ccToday()), n=Math.round((ex-d)/864e5); return n>0?n+'일 전':(n===0?'당일':(-n)+'일 뒤'); };
+  const exB=function(t,d){ if(!d) return ''; const ex=ccExamDate(t,ccToday()), n=Math.round((ex-d)/864e5); return n>0?'완료 후 시험까지 '+n+'일 남음':(n===0?'시험일 당일 완료':'시험일보다 '+(-n)+'일 늦음'); };
   window.ccExamBefore=exB;
   const simEnd=function(t,p,rem,capFn,missK){   /* 내일부터 rem강을 capFn(iso)로 들으면 끝나는 날 */
     if(rem<=0) return ccToday();
@@ -9337,7 +9337,7 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
       h+='<div class="pgbox"><div class="pgh">'+(dual?'<span class="ptag'+(t==="2차"?' t2':'')+'">'+t+'</span> ':'')+'🎯 합격 설계 대비 진행 <small>막대 = 합격 설계 기간 · 진한 부분 = 들은 강의 · 빨간 선 = 오늘</small></div>'+gantt(t,p)+'</div>'+
         '<div class="pcard'+(x.miss>0||over?' warn':'')+'">'+
         '<div class="pl1">지난주까지 '+st+' <small>(예정 '+x.plan+'강 · 들은 '+(x.act+x.ahead)+'강)</small></div>'+
-        '<div class="pl2">'+(over&&dual&&t==="1차"?'지금 공부시간으로는 1차 시험 전에 필수강의를 끝낼 수 없습니다':'필수강의 완료예정 '+ccYMD(x.end)+' · 시험일 '+exB(t,x.end))+en+'</div></div>'; });
+        '<div class="pl2">'+(over&&dual&&t==="1차"?'지금 공부시간으로는 1차 시험 전에 필수강의를 끝낼 수 없습니다':'필수강의 완료예정 '+ccYMD(x.end)+' · '+exB(t,x.end))+en+'</div></div>'; });
     /* 공부시간 · 학습스타일 바꾸기 (접힘) */
     const v=ccProfGet()||{wd:3,we:6,r:"12"}, d=NX2.all||v, sig=function(x){ return JSON.stringify([+x.wd,+x.we,x.dw||"1",x.rm?[x.rm,x.rm==="own"?x.rs:0,x.rm==="own"?x.rv:0]:String(x.r||"12")]); }, same=sig(d)===sig(v);
     const hs=function(k,val){ let o='<select data-k="'+k+'" onchange="nxPick2(\'all\',this)">'; for(let z=0;z<=16;z+=0.5) o+='<option value="'+z+'"'+(z===+val?' selected':'')+'>'+(z%1?z.toFixed(1):z)+'</option>'; return o+'</select>'; };
@@ -9347,7 +9347,7 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
     if(dm==="own"){ rs+='<div class="rsx">'+T.map(function(t){ return (dual?'<div class="rsxt">'+t+'</div>':'')+nxReq(t).map(function(si){ if(t==="1차"&&(d.dw||"1")==="2") return si===nxReq(t)[0]?'<div class="rsxr"><b>1차</b><span>2차중심형 — 강의만 · 복습 없음</span></div>':''; const nm=CC_STAGES[t][si], r0=ccStyleR(t,si,d), v0=(d.rv&&d.rv[t]&&+d.rv[t][nm])||((window.CC_RV_REC||{})[t]||{})[nm]||2;
         return '<div class="rsxr"><b>'+E(nm)+'</b><select data-k="rs|'+t+'|'+E(nm)+'" onchange="nxPick2(\'all\',this)">'+["21","11","12","10"].map(function(r){ return '<option value="'+r+'"'+(r===r0?' selected':'')+'>'+CC_RS_NAME[r]+' '+CC_RS_RT[r]+'</option>'; }).join("")+'</select></div>'; }).join(""); }).join("")+'</div>'; }
     let dg=''; if(!same){ dg=T.map(function(t){ const p=PJ[t], x=paceData(t,p), e2=simEnd(t,p,x.rem,capOf(t,d),x.missK), n2=e2?Math.round((e2-x.base)/864e5):null;
-        return '<div class="dg2'+(e2&&n2<=0?'':' no')+'">'+(dual?t+' — ':'')+(e2?(n2<=0?'완료예정 '+ccYMD(e2)+' · 시험일 '+exB(t,e2):'완료예정 '+ccYMD(e2)+' · 시험일 '+exB(t,e2)+(Math.round((e2-ccExamDate(t,ccToday()))/864e5)>0?' — 시험일 내로 들어오도록 학습시간이나 학습스타일을 조정하세요':'')):'⚠️ 이 공부시간으로는 강의를 들을 시간이 없습니다')+'</div>'; }).join("")+
+        return '<div class="dg2'+(e2&&n2<=0?'':' no')+'">'+(dual?t+' — ':'')+(e2?(n2<=0?'완료예정 '+ccYMD(e2)+' · '+exB(t,e2):'완료예정 '+ccYMD(e2)+' · '+exB(t,e2)+(Math.round((e2-ccExamDate(t,ccToday()))/864e5)>0?' — 시험일 내로 들어오도록 학습시간이나 학습스타일을 조정하세요':'')):'⚠️ 이 공부시간으로는 강의를 들을 시간이 없습니다')+'</div>'; }).join("")+
 ''; }
     dg+=(same?'<div class="pcok">✔ 지금 이대로 적용되어 있습니다</div>'
              :'');
@@ -9504,16 +9504,16 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
     window.__ccSimV=null;
     const fin=rng.length?rng[rng.length-1][2]:null;
     const rows=rng.map(function(z,i){ const x=z[0], a=z[1]||start, b=z[2]||a, r=ccStyleR(t,x[0],v), rv=(t==="1차"&&ccDW(v)==="2")?0:(({"21":1,"11":2,"12":3,"10":0})[r]||0);
-      const l=pos(a), w=Math.max(1.2,pos(ccAddDays(b,1))-l), lab=cf?(ccMD(a)+'~'+ccMD(b)+' (총 '+(Math.round((b-a)/864e5)+1)+'일)'):(x[2]+'강 · '+ccMD(a)+'~'+ccMD(b)), inside=w>=(cf?36:26), lp=inside?'':(l+w>66?'right:'+(100-l+1)+'%':'left:'+(l+w+1)+'%');
+      const l=pos(a), w=Math.max(1.2,pos(ccAddDays(b,1))-l), lab=cf?(ccMD(a)+'~'+ccMD(b)+' (총 '+(Math.round((b-a)/864e5)+1)+'일)'):(x[2]+'강 · '+ccMD(a)+'~'+ccMD(b)+' (총 '+(Math.round((b-a)/864e5)+1)+'일)'), inside=w>=(cf?36:26), lp=inside?'':(l+w>66?'right:'+(100-l+1)+'%':'left:'+(l+w+1)+'%');
       return '<div class="gr"><div class="lb">'+E(x[1])+''+'</div><div class="tr"><div class="bar c'+(i%5)+'" style="left:'+l+'%;width:'+w+'%">'+(inside?lab:'')+'</div>'+(inside?'':'<span class="olab" style="'+lp+'">'+lab+'</span>')+'</div></div>'; }).join("");
     const tk=[]; let m=new Date(start.getFullYear(),start.getMonth()+1,1); while(m<ex){ tk.push('<span style="left:'+pos(m)+'%">'+(m.getMonth()+1)+'월</span>'); m=new Date(m.getFullYear(),m.getMonth()+1,1); }
     const late=fin?Math.round((fin-dl)/864e5):null;
-    const verd=(fin&&late<=0)?'<div class="verd ok">✅ <b>시험 2주 전까지 필수강의를 모두 들을 수 있습니다</b> — 완료 예정 '+ccYMD(fin)+' · 시험일 '+Math.round((ex-fin)/864e5)+'일 전</div>'
+    const verd=(fin&&late<=0)?'<div class="verd ok">✅ <b>시험 2주 전까지 필수강의를 모두 들을 수 있습니다</b> — 완료 예정 '+ccYMD(fin)+' · 완료 후 시험까지 '+Math.round((ex-fin)/864e5)+'일 남음</div>'
       :'<div class="verd no">⚠️ <b>지금 공부시간으로는 필수강의 완료가 '+(fin?ccYMD(fin)+' — 기준일보다 '+late+'일 늦습니다':'시험일 이후로 늦어집니다')+'</b><br>공부시간을 늘리거나 학습스타일을 바꿔 보세요</div>';
     if(cf){ /* 학습스타일 재확인 화면 (2026-11-23): 시험 2주 전까지 / 시험일 안 / 시험일 넘김 */
       const gap=fin?Math.round((ex-fin)/864e5):-1;
-      const vd=(fin&&late<=0)?'<div class="verd ok">✅ <b>시험 2주 전까지 완료</b> — 완료 예정 '+ccYMD(fin)+' · 시험일 '+gap+'일 전</div>'
-        :(fin&&fin<ex)?'<div class="verd mid">⚠️ <b>시험일 안에는 들어오지만 시험 2주 전을 넘깁니다</b> — 완료 예정 '+ccYMD(fin)+' · 시험일 '+gap+'일 전</div>'
+      const vd=(fin&&late<=0)?'<div class="verd ok">✅ <b>시험 2주 전까지 완료</b> — 완료 예정 '+ccYMD(fin)+' · 완료 후 시험까지 '+gap+'일 남음</div>'
+        :(fin&&fin<ex)?'<div class="verd mid">⚠️ <b>시험일 안에는 들어오지만 시험 2주 전을 넘깁니다</b> — 완료 예정 '+ccYMD(fin)+' · 완료 후 시험까지 '+gap+'일 남음</div>'
         :'<div class="verd no">❌ <b>시험일 안에 학습을 완료하지 못합니다. 학습스타일을 재조정하세요.</b></div>';
       return '<div class="plan cf">'+(ccIsDual()?'<h4>'+t+'</h4>':'')+'<div class="gantt"><div class="dl" style="left:calc(var(--lbw,160px) + 10px + (100% - var(--lbw,160px) - 10px) * '+(pos(dl)/100)+')"><em>시험 2주 전</em></div><div class="dl ex" style="left:100%"><em>시험일</em></div>'+rows+'<div class="ax"><div></div><div class="tk">'+tk.join("")+'</div></div></div>'+vd+'</div>'; }
     let xt=''; if(t==="1차"){ const ai=ccAutoSI("1차"); let n=0; if(ai>=0) (CC_LAWS["1차"]||[]).forEach(function(l){ n+=(ccCat("1차",l)[ai]||0); }); if(n) xt='<div class="plh" style="margin:10px 0 0">📎 <b>기타특강('+n+'강)</b>은 수강생 자율수강</div>'; }
