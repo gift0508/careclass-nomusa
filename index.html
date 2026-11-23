@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-23 14:15 한줄조언_💡상시_목표카드위">
+<meta name="cc-build" content="2026-11-23 14:27 지난주비교_표기">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -5238,7 +5238,7 @@ window.nmDiagOpen=async function(){
   const D=nmDiag(); NMD.last=D; const GT=1, G=nmGoalOf(1,D);
   const tr=function(x){ return x.slope==null?'<span class="nmdmu">추세 확인 전</span>':(x.slope>=1?'<span class="nmdup">▲ 오르는 중</span>':(x.slope<=-1?'<span class="nmddn">▼ 내려가는 중</span>':'<span class="nmdmu">― 제자리</span>')); };
   let h='<div class="tkbox nmdbox"><button class="tkx" onclick="document.getElementById(\'nmdModal\').classList.remove(\'on\')">✕</button>'+
-    '<h3>🎯 300점 합격 진단 <small>노무사 1차 · 시험까지 '+D.days+'일</small></h3>'+
+    '<h3>🎯 오늘의 300점 합격 진단 <small>노무사 1차 · D-'+D.days+'</small></h3>'+
     '<div class="nmdrule">합격 = 영어 제외 <b>5과목 모두 40점 이상</b> + <b>총점 300점(평균 60점) 이상</b> · 1문항 2.5점</div>';
   if(!D.has){
     h+='<div class="nmdempty">아직 풀이 기록이 없습니다.<br>과목별실전문제풀이에서 문제를 풀면 지금 위치와 300점 조합이 여기에 나옵니다.</div></div>';
@@ -10362,7 +10362,7 @@ html #nxHofAdm .hr{display:grid;grid-template-columns:40px 1fr 110px 130px;gap:1
     const N=NM[z.k];
     const card=document.createElement("div"); card.className="nmzone "+z.k;
     let mv=''; try{ const DD=two?nmDiag2():((window.NMD&&NMD.last)||nmDiag()), GG=nmGoalOf(two?2:1,DD);   /* 지난주 대비 목표까지 (2026-11-23) */
-      if(GG&&GG.move!=null){ const m=GG.move; mv=m>=0.5?'<span class="nzmv up">지난주보다 목표에 '+nmGF(m)+'점 가까워졌어요 ▲</span>':(m<=-0.5?'<span class="nzmv dn">지난주보다 목표에서 '+nmGF(-m)+'점 멀어졌어요 ▼</span>':'<span class="nzmv eq">지난주와 목표점수에서 변동이 없습니다 -</span>'); } }catch(e){}
+      if(GG&&GG.move!=null){ const m=GG.move; mv=m>=0.5?'<span class="nzmv up">지난주 비교: +'+nmGF(m)+'점(상승)</span>':(m<=-0.5?'<span class="nzmv dn">지난주 비교: -'+nmGF(-m)+'점(하락)</span>':'<span class="nzmv eq">지난주 비교: +0(유지)</span>');   /* 표기 (2026-11-23) */ } }catch(e){}
     card.innerHTML='<div class="nzt">'+N[0]+' '+N[1]+mv+'</div>';
     const info=document.createElement("div"); info.className="nmzone nzinfo "+z.k;
     info.innerHTML='<div class="nzs">시험일 예상 총점 <b>'+z.tot+'점</b> · 예상합격선 '+z.line+'점 <b>('+(z.d>=0?'+':'')+z.d+'점)</b></div>'+
