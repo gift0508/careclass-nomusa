@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-24 23:05 조언발송_표시">
+<meta name="cc-build" content="2026-11-25 08:45 둘중반드시선택">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9184,19 +9184,19 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
     const k=dk(day,o.key); REG[k]={o:o,day:day};
     const D=RD("cc_nxdone"), P=RD("cc_nxstep"), done=!!D[k], S=steps(o,day), s=done?S.length:Math.min(P[k]||0,S.length), op=!!OPEN[k];
     let h='<div class="it'+(done?' done':'')+((day>0&&RD("cc_nxrvskip")[k])?' skip':'')+(cls?' '+cls:'')+(op?' open':'')+'" onclick="'+(op?'':'nxAdpTap('+day+');')+'nxTog(\''+J(k)+'\')"><input type="checkbox"'+(done?' checked':'')+' onclick="event.stopPropagation()" onchange="'+((day>0&&(day<8||o.t==="1차"))?'nxRvChk':'nxChk')+'(\''+J(k)+'\',this.checked)">'+
-      '<span'+((day>0&&!window.ccViewUid)?' class="rvh"':'')+'><b>'+(num?num+'. ':'')+E(o.name)+'</b>'+((day>0&&!window.ccViewUid)?'<button type="button" class="rvsk'+(RD("cc_nxrvskip")[k]?' on':'')+'" onclick="event.stopPropagation();nxRvSkip(\''+J(o.key)+'\','+day+')">복습생략</button>'+((!done&&(day<8||o.t==="1차"))?'<span class="rvmust t">※ 반드시 선택</span>':''):'')+(o.ttl?'<small>'+E(o.ttl)+'</small>':'')+'</span>'+'<span class="chev">'+(op?'▲':'▼')+'</span></div>';
+      '<span'+((day>0&&!window.ccViewUid)?' class="rvh"':'')+'><b>'+(num?num+'. ':'')+E(o.name)+'</b>'+((day>0&&!window.ccViewUid)?'<button type="button" class="rvsk'+(RD("cc_nxrvskip")[k]?' on':'')+'" onclick="event.stopPropagation();nxRvSkip(\''+J(o.key)+'\','+day+')">복습생략</button>'+''/* (2026-11-25) 「※ 반드시 선택」은 복습불필요 옆으로 */:'')+(o.ttl?'<small>'+E(o.ttl)+'</small>':'')+'</span>'+'<span class="chev">'+(op?'▲':'▼')+'</span></div>';
     /* 다 들은 강의: [복습필요 | 수강완료] (2026-11-23) — 기본 복습필요 · 수강완료를 누르면 이 강의는 복습에 올라오지 않음 */
     let wkRv='', rvRow='', rvLtn='';   /* (2026-11-24) 복습 강의도 [복습필요 | 복습불필요]를 펼친 칸의 마지막 줄로 */   /* (2026-11-24) 이번 주 강의: [복습필요 | 복습불필요]는 펼친 학습 단계의 「완료」 아래로 */
     if(day===0&&(done||s>=S.length)&&!window.ccViewUid){ let rvn=0; try{ rvn=ccRvNFor(o.t,o.si); }catch(e){}
       if(rvn>0){ const nr=!!RD("cc_nxnorv")[o.key];   /* (2026-11-24) 둘 중 하나를 누르면 체크 */
-        wkRv='<div class="rvsel wkin"><button type="button" class="'+(done&&!nr?'on':'')+'" onclick="nxNoRv(\''+J(o.key)+'\',false)">복습필요</button><button type="button" class="'+(done&&nr?'on':'')+'" onclick="nxNoRv(\''+J(o.key)+'\',true)">복습불필요</button></div>'+(done?'':'<span class="rvmust">※ 반드시 선택</span>'); } }
+        wkRv='<div class="rvsel wkin"><button type="button" class="'+(done&&!nr?'on':'')+'" onclick="nxNoRv(\''+J(o.key)+'\',false)">복습필요</button><button type="button" class="'+(done&&nr?'on':'')+'" onclick="nxNoRv(\''+J(o.key)+'\',true)">복습불필요</button></div>'+(done?'':'<span class="rvmust">※ 둘 중 반드시 선택</span>'); } }
     /* 복습 강의: [복습생략 | 다음복습필요 | 다음복습불필요] (2026-11-23) — 복습생략: 오늘 이 복습은 건너뜀(시간이 없어 이번 주 강의가 더 급할 때) · 그다음 다음복습필요/불필요 중 하나 · 14일째(마지막)는 [복습생략]만 */
     if(day>0&&!window.ccViewUid){ const E2=RD("cc_nxrvend"), en=E2[o.key]!=null&&+E2[o.key]===day, last=day>=8, sk=!!RD("cc_nxrvskip")[k];
       /* (2026-11-24) 복습생략은 강의명 옆으로 · 아래 줄은 [복습필요 | 복습불필요] 두 개 */
       if(last&&o.t==="1차"){ const LT=RD("cc_nxrvlater")[o.key], lt=!!(done&&LT);   /* 14일째 (2026-11-24): [수강완료 | 차후 재복습] — 차후 재복습 = 이 강의 OX · 5지택일 오답문항을 오답노트에 */
-        rvRow='<div class="rvsel rv2 wkin"><button type="button" class="'+(done&&!lt?'on':'')+'" onclick="nxRvFin(\''+J(o.key)+'\','+day+',false)">수강완료</button><button type="button" class="lt'+(lt?' on':'')+'" onclick="nxRvFin(\''+J(o.key)+'\','+day+',true)">차후 재복습</button></div>';
+        rvRow='<div class="rvsel rv2 wkin"><button type="button" class="'+(done&&!lt?'on':'')+'" onclick="nxRvFin(\''+J(o.key)+'\','+day+',false)">수강완료</button><button type="button" class="lt'+(lt?' on':'')+'" onclick="nxRvFin(\''+J(o.key)+'\','+day+',true)">차후 재복습</button></div>'+(done?'':'<span class="rvmust">※ 둘 중 반드시 선택</span>');
         rvLtn=(lt&&LT.n!=null?'<div class="rvltn">'+(LT.n?'→ OX 오답 '+LT.ox+'문항 · 5지택일 오답 '+LT.mc+'문항이 오답노트에 쌓였습니다':'→ 틀린 문항이 없어 오답노트에 쌓인 문항이 없습니다')+'</div>':''); }
-      if(!last) rvRow='<div class="rvsel rv2 wkin"><button type="button" class="nx'+(done&&!en?' on':'')+'" onclick="nxRvEnd(\''+J(o.key)+'\','+day+',false)">복습필요</button><button type="button" class="'+(done&&en?'on':'')+'" onclick="nxRvEnd(\''+J(o.key)+'\','+day+',true)">복습불필요</button>'+'</div>'; }
+      if(!last) rvRow='<div class="rvsel rv2 wkin"><button type="button" class="nx'+(done&&!en?' on':'')+'" onclick="nxRvEnd(\''+J(o.key)+'\','+day+',false)">복습필요</button><button type="button" class="'+(done&&en?'on':'')+'" onclick="nxRvEnd(\''+J(o.key)+'\','+day+',true)">복습불필요</button>'+'</div>'+(done?'':'<span class="rvmust">※ 둘 중 반드시 선택</span>'); }
     if(day===0&&!done&&!window.ccViewUid){ try{ const pl=ccPlanOf(o.t), T=ccISO(ccToday()); if((pl.xadd||{})[o.key]===T) h+='<div class="rvsel xs"><button type="button" onclick="nxAddLec(-1,\''+J(o.key)+'\')">− 이 강의 빼기 (추가한 강의)</button></div>'; }catch(e){} }
     if(op){
       h+='<div class="flow">'+(window.ccMyNoteRow?ccMyNoteRow(o):'')+S.map(function(x,i){ if(i>s) return ''; const ok=i<s;
