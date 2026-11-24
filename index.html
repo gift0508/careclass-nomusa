@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-24 22:35 선생님조언_탭이름">
+<meta name="cc-build" content="2026-11-24 22:45 내공부기록_빨간점">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -6722,7 +6722,9 @@ window.nmAdvRead=function(){
   if(window.ccViewUid||window.ccPreview||!ccUid) return;
   try{ localStorage.setItem("nm_adv_day",nmAdvT()); }catch(e){}
   const ids=window.__nmAdvIds||[]; window.__nmAdvIds=[]; if(!ids.length) return;
-  sb.from("cc_advice").update({read_at:new Date().toISOString()}).in("id",ids).then(function(){},function(){});
+  const now=new Date().toISOString(); try{ (NM_ADV.mine||[]).forEach(function(x){ if(ids.indexOf(x.id)>=0&&!x.read_at) x.read_at=now; }); }catch(e){}   /* (2026-11-24) 화면에도 바로 읽음 — 빨간 점 · 배지가 사라지게 */
+  sb.from("cc_advice").update({read_at:now}).in("id",ids).then(function(){},function(){});
+  try{ nmAdvBadgeUpd(); }catch(e){}
 };
 /* 로그인 직후(수강생 계정) — 직전 접속 시각을 잡아 두고 조언 창을 띄움 */
 (function(){
@@ -10722,6 +10724,22 @@ window.nmRvLtAns=async function(qk,v){
 (function(){ try{ const c=new CSSStyleSheet(); c.replaceSync('html body #nxMine#nxMine .rvsel.rv2 button.lt.on{background:#6d3fa0;border-color:#6d3fa0;color:#fff}html body #nxMine#nxMine .rvltn{font-size:11px;color:#6d3fa0;margin:2px 0 8px 64px}'+
   '.nmrvlt{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.nmrvlt button{font-size:12px;padding:5px 12px;border:1px solid #cfc7ae;border-radius:8px;background:#fff;color:#334155;cursor:pointer;text-align:left}.nmrvlt button:hover{border-color:#b8921d}');
   document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){} })();
+</script>
+<script>
+/* 📂 내 공부기록 빨간 점 (2026-11-24): 새 선생님조언(안 읽음) · 새 첨삭답안(첨삭 완료 · 안 열어 봄)이 있으면 점 — 읽으면 사라짐 */
+(function(){
+  try{ const c=new CSSStyleSheet(); c.replaceSync('html body button.ccdot{position:relative!important;overflow:visible!important}html body button.ccdot::after{content:"";position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:#e53935;box-shadow:0 0 0 2px #fff;pointer-events:none}');
+    document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){}
+  const tick=function(){ try{
+    const off=!!(window.ccViewUid||window.ccPreview||typeof user==="undefined"||!user);
+    const na=off?0:((window.NM_ADV&&NM_ADV.mine)||[]).filter(function(a){ return !a.read_at; }).length;
+    const nf=off?0:((window.NM_FB&&NM_FB.mine)||[]).filter(function(x){ return x.status==="첨삭 완료"&&!x.read_at; }).length;
+    document.querySelectorAll("[data-rec]").forEach(function(b){ b.classList.toggle("ccdot",b.getAttribute("data-rec")==="1"&&!!(na+nf)); });
+    document.querySelectorAll("#nmRvBody .nmrvtabs button").forEach(function(b){ const m=/CC_REC\.tab='(\w+)'/.exec(b.getAttribute("onclick")||""), k=m?m[1]:"";
+      b.classList.toggle("ccdot",(k==="advice"&&!!na)||(k==="fb"&&!!nf)); });
+  }catch(e){} };
+  setInterval(tick,1500); setTimeout(tick,500);
+})();
 </script>
 </body>
 </html>
