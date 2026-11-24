@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-25 09:00 탭이름_2차첨삭">
+<meta name="cc-build" content="2026-11-25 09:25 관리자_수강생목록_홈">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -6447,12 +6447,13 @@ function ccAdmStuPanel(){
   if(!(window.adminAuthed&&window.ccPreview)){ if(pn) pn.remove(); return; }
   if(!pn){ pn=document.createElement("div"); pn.id="ccAdmStu";
     pn.style.cssText="margin:14px 0 6px;padding:12px 14px;border:1.5px solid var(--gold);border-radius:12px;background:rgba(232,185,60,.07)";
-    const hb=ds.querySelector(".homebtn"); ds.insertBefore(pn,hb?hb.nextSibling:ds.firstChild); }
+    const hh=document.getElementById("homeHero");   /* (2026-11-25) 홈 화면에서도 보이게 — 홈 위로 */
+    if(hh&&hh.parentNode) hh.parentNode.insertBefore(pn,hh); else { const hb=ds.querySelector(".homebtn"); ds.insertBefore(pn,hb?hb.nextSibling:ds.firstChild); } }
   const L=ccAdmStuList(), q=CC_ASQ.trim(), cur=window.ccViewUid;
   const F=L.filter(function(pf){ return !q||String(pf.name||"").indexOf(q)>=0||String(pf.login_id||"").indexOf(q)>=0; });
   const chip=function(on,label,sub,fn){ return '<button class="mini" style="margin:3px 4px 3px 0;'+(on?'background:var(--gold);color:var(--navy);border-color:var(--gold);':'')+'" onclick="'+fn+'">'+label+(sub?' <small style="opacity:.75;font-weight:500">'+sub+'</small>':'')+'</button>'; };
   pn.innerHTML='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px"><b style="color:var(--gold)">👥 수강생 목록</b>'+
-    '<small style="color:var(--mute)">이름을 누르면 그 수강생의 전체학습계획과 모든 학습 창을 그대로 봅니다 (열람 전용) · 전체 '+L.length+'명</small>'+
+    '<small style="color:var(--mute)">이름을 누르면 그 수강생의 화면을 그대로 봅니다 (열람 전용) · 전체 '+L.length+'명</small>'+
     '<input id="ccAsQ" placeholder="이름·아이디 검색" value="'+ccEsc(q)+'" oninput="CC_ASQ=this.value;clearTimeout(window.__ccAsT);window.__ccAsT=setTimeout(function(){ccAdmStuPanel();var e=document.getElementById(\'ccAsQ\');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},250)" style="margin-left:auto;padding:5px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:.8rem;min-width:160px"></div>'+
     '<div style="max-height:150px;overflow:auto">'+chip(!cur,'📄 견본 화면','빈 계획',"ccAdmStuSample()")+
     (F.length?F.map(function(pf){ return chip(cur===pf.id,ccEsc(pf.name||pf.login_id),ccEsc((pf.track||"1차")+(pf.active===false?" · 정지":"")),"ccAdmStuGo('"+pf.id+"')"); }).join(""):
@@ -6461,9 +6462,9 @@ function ccAdmStuPanel(){
 window.ccAdmStuGo=async function(id){
   const pf=ccAdmStuList().find(function(x){ return x.id===id; }); if(!pf) return;
   await ccAdminViewPf(pf);
-  setTimeout(function(){ try{ showRoadmap(); }catch(e){} ccAdmStuPanel(); },120);
+  setTimeout(function(){ try{ nxHome(); }catch(e){} ccAdmStuPanel(); },120);   /* (2026-11-25) 수강생과 똑같이 홈부터 */
 };
-window.ccAdmStuSample=function(){ ccAdminPreview("1+2차"); setTimeout(function(){ try{ showRoadmap(); }catch(e){} ccAdmStuPanel(); },120); };
+window.ccAdmStuSample=function(){ ccAdminPreview("1+2차"); setTimeout(function(){ try{ nxHome(); }catch(e){} ccAdmStuPanel(); },120); };
 (function(){
   const pv=window.ccAdminPreview, vw=window.ccAdminViewPf, bk=window.ccAdminBack;
   if(pv) window.ccAdminPreview=function(){ const r=pv.apply(this,arguments);
@@ -7061,8 +7062,8 @@ window.nmFbBadge=function(){
     dr.apply(this,arguments); CC_REC.tab=want;
     const body=document.getElementById("nmRvBody"); if(!body) return;
     const tabs=body.querySelector(".nmrvtabs"); if(!tabs) return;
-    if(window.ccViewUid||window.ccPreview) return;
-    const L=(NM_FB.mine||[]);
+    /* (2026-11-25) 관리자 「화면 보기」에서도 탭이 보이게 */
+    const L=((window.ccPreview&&!window.ccViewUid)?[]:(NM_FB.mine||[]));
     tabs.insertAdjacentHTML("beforeend",'<button onclick="CC_REC.tab=\'fb\';ccRecDraw()">📄 2차축문첨삭답안 <small>'+L.filter(function(s){ return s.status==="첨삭 완료"; }).length+'</small></button>');
     if(want!=="fb") return;
     tabs.querySelectorAll("button").forEach(function(b,i,all){ b.classList.toggle("on",i===all.length-1); });
@@ -7349,12 +7350,13 @@ function nmRL(s){ return String(s||"").split(/[,\s·]+/).map(function(x){ return
 
 /* ── 수강생 제출 목록: 보완복습 칸까지 (SQL 전이면 기본 칸만) ── */
 window.nmFbLoad=async function(force){
-  if(!sb||!ccUid) return [];
-  if(NM_FB.mine&&!force) return NM_FB.mine;
+  const uid=window.ccViewUid||ccUid;   /* (2026-11-25) 관리자 「화면 보기」에서도 그 수강생의 첨삭답안 */
+  if(!sb||!uid) return [];
+  if(NM_FB.mine&&!force&&NM_FB.mineUid===uid) return NM_FB.mine;
   const base="id,problem,subject,status,created_at,done_at,read_at,summary,score,pdf_path,q_id";
-  try{ let r=await sb.from("cc_submissions").select(base+",review_lecs,review_done_at").eq("user_id",ccUid).order("created_at",{ascending:false}).limit(100);
-    if(r.error) r=await sb.from("cc_submissions").select(base).eq("user_id",ccUid).order("created_at",{ascending:false}).limit(100);
-    if(!r.error) NM_FB.mine=r.data||[]; }catch(e){}
+  try{ let r=await sb.from("cc_submissions").select(base+",review_lecs,review_done_at").eq("user_id",uid).order("created_at",{ascending:false}).limit(100);
+    if(r.error) r=await sb.from("cc_submissions").select(base).eq("user_id",uid).order("created_at",{ascending:false}).limit(100);
+    if(!r.error){ NM_FB.mine=r.data||[]; NM_FB.mineUid=uid; } }catch(e){}
   return NM_FB.mine||[];
 };
 /* 받은 첨삭 카드: 기한 · 보완복습 표시 */
@@ -10741,7 +10743,7 @@ window.nmRvLtAns=async function(qk,v){
     /* 기록을 아직 안 불러왔으면 한 번 불러옴 (로그인 · 열람 학생이 바뀔 때마다) */
     if(!off){ const uid=window.ccViewUid||(typeof ccUid!=="undefined"?ccUid:"");
       if(uid&&LA!==uid&&typeof nmAdvMine==="function"&&!(window.NM_ADV&&NM_ADV.mine&&NM_ADV.mineUid===uid)){ LA=uid; try{ nmAdvMine(); }catch(e){} }
-      if(uid&&!window.ccViewUid&&LF!==uid&&typeof nmFbLoad==="function"&&!(window.NM_FB&&NM_FB.mine)){ LF=uid; try{ nmFbLoad(); }catch(e){} } }
+      if(uid&&LF!==uid&&typeof nmFbLoad==="function"&&!(window.NM_FB&&NM_FB.mine&&NM_FB.mineUid===uid)){ LF=uid; try{ nmFbLoad(true); }catch(e){} } }
     const na=off?0:((window.NM_ADV&&NM_ADV.mine)||[]).filter(function(a){ return !a.read_at; }).length;
     const nf=off?0:((window.NM_FB&&NM_FB.mine)||[]).filter(function(x){ return x.status==="첨삭 완료"&&!x.read_at; }).length;
     document.querySelectorAll("[data-rec]").forEach(function(b){ b.classList.toggle("ccdot",b.getAttribute("data-rec")==="1"&&!!(na+nf)); });
