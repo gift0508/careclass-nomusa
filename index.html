@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-24 22:45 내공부기록_빨간점">
+<meta name="cc-build" content="2026-11-24 22:55 내공부기록_빨간점2">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -10730,8 +10730,13 @@ window.nmRvLtAns=async function(qk,v){
 (function(){
   try{ const c=new CSSStyleSheet(); c.replaceSync('html body button.ccdot{position:relative!important;overflow:visible!important}html body button.ccdot::after{content:"";position:absolute;top:-3px;right:-3px;width:9px;height:9px;border-radius:50%;background:#e53935;box-shadow:0 0 0 2px #fff;pointer-events:none}');
     document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){}
+  let LA="", LF="";
   const tick=function(){ try{
-    const off=!!(window.ccViewUid||window.ccPreview||typeof user==="undefined"||!user);
+    const off=!!(typeof user==="undefined"||!user||(window.ccPreview&&!window.ccViewUid));   /* 관리자 「이 수강생 화면으로 보기」에서도 그 학생 기준으로 보임 */
+    /* 기록을 아직 안 불러왔으면 한 번 불러옴 (로그인 · 열람 학생이 바뀔 때마다) */
+    if(!off){ const uid=window.ccViewUid||(typeof ccUid!=="undefined"?ccUid:"");
+      if(uid&&LA!==uid&&typeof nmAdvMine==="function"&&!(window.NM_ADV&&NM_ADV.mine&&NM_ADV.mineUid===uid)){ LA=uid; try{ nmAdvMine(); }catch(e){} }
+      if(uid&&!window.ccViewUid&&LF!==uid&&typeof nmFbLoad==="function"&&!(window.NM_FB&&NM_FB.mine)){ LF=uid; try{ nmFbLoad(); }catch(e){} } }
     const na=off?0:((window.NM_ADV&&NM_ADV.mine)||[]).filter(function(a){ return !a.read_at; }).length;
     const nf=off?0:((window.NM_FB&&NM_FB.mine)||[]).filter(function(x){ return x.status==="첨삭 완료"&&!x.read_at; }).length;
     document.querySelectorAll("[data-rec]").forEach(function(b){ b.classList.toggle("ccdot",b.getAttribute("data-rec")==="1"&&!!(na+nf)); });
