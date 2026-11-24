@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-24 17:50 14일째_수강완료_차후재복습">
+<meta name="cc-build" content="2026-11-24 18:10 관리자열람_홈부터">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9669,7 +9669,7 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
       /* 관리자 미리보기(특정 수강생이 아님): 예시 공부시간으로 화면을 채워 보여 줌 — 이 브라우저에만, 서버 저장 안 됨 */
       try{ if(!window.ccViewUid&&!ccProfGet()) localStorage.setItem("cc_prof",JSON.stringify({wd:4,we:8,r:"11",rm:"rec",demo:1}));
         const v=ccProfGet(); if(v) ccTracks().forEach(function(t){ if(!ccPlanOf(t).per){ if(t===TRACK) ccCapAuto(v); else ccPlanSetPer(t,ccPerOf(v)); } }); }catch(e){}
-      try{ nxShowMine(); }catch(e){ console.warn(e); }
+      try{ nxHome(); }catch(e){ console.warn(e); }   /* (2026-11-24) 관리자 열람도 수강생과 똑같이 홈부터 */
       return; }
     try{ ccTracks().forEach(function(t){ nxPassApply(t,false); }); }catch(e){ console.warn(e); }
     try{ nxDualSplit(); }catch(e){}
