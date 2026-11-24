@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-24 22:20 실천했어요_삭제">
+<meta name="cc-build" content="2026-11-24 22:35 선생님조언_탭이름">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -6790,7 +6790,7 @@ window.nmAdvPopup=async function(mode){
       (it.who==="t"?'<div style="font-size:.74rem;font-weight:700;color:var(--gold);margin-bottom:4px">📌 선생님 조언 · '+nmAdvDate(it.a.created_at)+'</div>':'')+
       '<div style="font-size:.92rem;line-height:1.65">'+(window.nmGapsHTML?nmGapsHTML(nmAdvE(it.txt).replace(/\n/g,'<br>')):nmAdvE(it.txt).replace(/\n/g,'<br>'))+'</div>'+(it.who==="a"&&String(it.txt||"").indexOf("@@IND@@")>=0?'<div style="padding-left:1.4em">'+btn(it.act)+'</div>':btn(it.act))+(it.who==="t"?nmAdvDoneBtn(it.a,view,"pop"):'')+'</div>'; }).join(""):'<div class="tksub">오늘은 따로 드릴 조언이 없습니다 · 지금 리듬대로 이어 가세요</div>')+
     (past.length?'<details style="margin-top:8px"><summary style="cursor:pointer;font-size:.8rem;color:var(--mute)">지난 조언 다시 보기</summary>'+past.map(function(a){ return '<div style="padding:6px 0;border-top:1px dashed var(--line);font-size:.82rem"><small style="color:var(--mute)">'+nmAdvDate(a.created_at)+'</small> '+nmAdvE(a.msg)+'</div>'; }).join("")+'</details>':'')+
-    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px"><button class="mini" onclick="'+close+'ccOpenRecords(\'advice\')">💬 받은 조언 전체</button><button class="mini" style="background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700" onclick="'+close+'">확인</button></div></div>';
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px"><button class="mini" onclick="'+close+'ccOpenRecords(\'advice\')">💬 선생님조언 전체</button><button class="mini" style="background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700" onclick="'+close+'">확인</button></div></div>';
   m.classList.add("on");
 };
 window.nmAdvRead=function(){
@@ -6851,7 +6851,7 @@ window.nmAdvBadgeUpd=function(){
     const body=document.getElementById("nmRvBody"); if(!body) return;
     const tabs=body.querySelector(".nmrvtabs"); if(!tabs) return;
     const adv=NM_ADV.mine||[], view=!!(window.ccViewUid||window.ccPreview);
-    tabs.insertAdjacentHTML("beforeend",'<button onclick="CC_REC.tab=\'advice\';ccRecDraw()">💬 받은 조언 <small>'+adv.length+'</small></button>');
+    tabs.insertAdjacentHTML("beforeend",'<button onclick="CC_REC.tab=\'advice\';ccRecDraw()">💬 선생님조언 <small>'+adv.length+'</small></button>');
     if(want!=="advice") return;
     tabs.querySelectorAll("button").forEach(function(b,i,all){ b.classList.toggle("on",i===all.length-1); });
     let el=tabs.nextSibling; while(el){ const nx=el.nextSibling; if(!(el.classList&&el.classList.contains("nmrvnav")&&!nx)) el.remove(); el=nx; }
@@ -6860,13 +6860,13 @@ window.nmAdvBadgeUpd=function(){
     /* (2026-11-24) 오늘의 합격조언과 같은 모양: 줄바꿈 · 필요점수 표 · 들여쓰기 · 버튼 여러 개(act "a|b") */
     const advTx=function(t){ const x=nmAdvE(t).replace(/\n/g,'<br>'); return window.nmGapsHTML?nmGapsHTML(x):x.replace(/@@IND@@/g,''); };
     const advBt=function(act){ return String(act||"").split("|").map(function(k){ const A=NM_ADV_ACT[k]; return A?'<button class="mini" style="margin:12px 6px 0 0" onclick="nmRvClose();'+A[1]+'">'+A[0]+' →</button>':''; }).join(""); };
-    if(S.length) h+='<div class="nmrvmeta" style="margin:10px 0 4px"><b style="color:#2a3a6e">💬 오늘의 합격조언</b></div>'+S.map(function(s){ const ind=String(s.stu||"").indexOf("@@IND@@")>=0;
+    if(false&&S.length) h+='<div class="nmrvmeta" style="margin:10px 0 4px"><b style="color:#2a3a6e">💬 오늘의 합격조언</b></div>'+S.map(function(s){ const ind=String(s.stu||"").indexOf("@@IND@@")>=0;
       return '<div class="nmrvitem"><div style="font-size:14px;line-height:1.65">'+advTx(s.stu)+'</div></div>'; }).join("");   /* (2026-11-24) 여기는 정리만 — 버튼은 홈 화면에 있으므로 뺌 */
     h+=adv.length?adv.map(function(a){ const A=NM_ADV_ACT[a.act];
       return '<div class="nmrvitem"><div class="nmrvmeta"><b style="color:#2a3a6e">📅 '+nmAdvDate(a.created_at)+' 조언</b> · '+nmAdvE(NM_ADV_KIND[a.kind]||"조언")+(a.read_at?'':' · <b style="color:#e0685a">새 조언</b>')+'</div>'+
         '<div class="nmrvq" style="font-weight:500;font-size:14px;line-height:1.65">'+nmAdvE(a.msg).replace(/\n/g,'<br>')+'</div>'+
         '<div>'+(A?'<button class="mini" style="margin:6px 6px 0 0" onclick="nmRvClose();'+A[1]+'">'+A[0]+' →</button>':'')+nmAdvDoneBtn(a,view,"rec")+'</div></div>'; }).join("")
-      :'<div class="tksub" style="padding:14px 2px">아직 받은 조언이 없습니다 · 선생님이 조언을 보내면 로그인할 때 「💬 오늘의 합격조언」으로 뜨고, 여기에 모입니다.</div>';
+      :'<div class="tksub" style="padding:14px 2px">아직 선생님조언이 없습니다 · 선생님이 조언을 보내면 로그인할 때 「💬 오늘의 합격조언」으로 뜨고, 여기에 모입니다.</div>';
     const nav=body.querySelector(".nmrvnav:last-child");
     if(nav) nav.insertAdjacentHTML("beforebegin",h); else body.insertAdjacentHTML("beforeend",h);
     /* 이 탭을 열면 안 읽은 조언은 읽음으로 */
@@ -8239,13 +8239,13 @@ window.nmGoalSigs=function(L,D1){
 /* 📂 내 공부기록 탭 순서·이름 (2026-11-12): 받은 조언 → 강의노트 → 오답노트 → 테마특강 암기노트 → 2차 제출답안 → 첨삭답안 */
 (function(){
   const dr=window.ccRecDraw; if(!dr) return;
-  const ORD=["advice","note","wrong","theme","case","fb"], NM={advice:"💬 받은 조언",note:"📝 강의노트",wrong:"📒 오답노트",theme:"🔁 테마특강 암기노트",case:"✍️ 2차 제출답안",fb:"📄 첨삭답안"};
+  const ORD=["advice","note","wrong","theme","case","fb"], NM={advice:"💬 선생님조언",note:"📝 강의노트",wrong:"📒 오답노트",theme:"🔁 테마특강 암기노트",case:"✍️ 2차 제출답안",fb:"📄 첨삭답안"};
   window.ccRecDraw=function(){ const none=!CC_REC.tab; if(none) CC_REC.tab="note";
     const r=dr.apply(this,arguments); if(none) CC_REC.tab="";
     try{ const tabs=document.querySelector("#nmRvBody .nmrvtabs"); if(!tabs) return r;
       if(none){ tabs.querySelectorAll("button").forEach(function(b){ b.classList.remove("on"); });
         let el=tabs.nextSibling; while(el){ const nx=el.nextSibling; if(!(el.classList&&el.classList.contains("nmrvnav")&&!nx)) el.remove(); el=nx; }
-        tabs.insertAdjacentHTML("afterend",'<div class="tksub" style="padding:22px 4px;text-align:center">위에서 보고 싶은 기록을 눌러 여세요 · 선생님 조언은 「💬 받은 조언」에 있습니다</div>'); }
+        tabs.insertAdjacentHTML("afterend",'<div class="tksub" style="padding:22px 4px;text-align:center">위에서 보고 싶은 기록을 눌러 여세요 · 선생님 조언은 「💬 선생님조언」에 있습니다</div>'); }
       const bs=[].slice.call(tabs.querySelectorAll("button")), key=function(b){ const m=/CC_REC\.tab='(\w+)'/.exec(b.getAttribute("onclick")||""); return m?m[1]:""; };
       bs.forEach(function(b){ const k=key(b); if(!NM[k]) return; const sm=b.querySelector("small"); b.textContent=NM[k]+" "; if(sm) b.appendChild(sm); });
       bs.sort(function(a,b){ const ia=ORD.indexOf(key(a)), ib=ORD.indexOf(key(b)); return (ia<0?99:ia)-(ib<0?99:ib); }).forEach(function(b){ tabs.appendChild(b); });
