@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-25 08:45 둘중반드시선택">
+<meta name="cc-build" content="2026-11-25 09:00 탭이름_2차첨삭">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -6382,7 +6382,7 @@ function ccRecDraw(){
   const body=document.getElementById("nmRvBody"); if(!body) return;
   const allN=ccRecNotes(), notes=allN.filter(function(x){ return ccRecKind(x)==="note"; }), wN=allN.filter(function(x){ return ccRecKind(x)==="wrong"; }), tN=allN.filter(function(x){ return ccRecKind(x)==="theme"; });
   const wrong=(window.nmRvNotesOf?nmRvNotesOf():[]), th=ccRecTheme(), cs=ccRecCase();
-  const tabs=[["note","📝 강의노트",notes.length],["wrong","📒 오답노트",wN.length+wrong.length],["theme","🔁 테마특강 암기노트",tN.length+th.filter(function(x){ return x.left; }).length],["case","✍️ 2차 제출답안",cs.length]];
+  const tabs=[["note","📝 강의노트",notes.length],["wrong","📒 오답노트",wN.length+wrong.length],["theme","🔁 테마특강 암기노트",tN.length+th.filter(function(x){ return x.left; }).length],["case","✍️ 2차간단첨삭답안",cs.length]];
   const view=!!window.ccViewUid;
   let h='<h3>📂 내 공부기록'+(view?' <small class="nmrvpos">관리자 열람 — '+ccRecE(user&&user.name)+'</small>':'')+'</h3>'+
     '<div class="nmrvtabs ccrectabs">'+tabs.map(function(t){ return '<button class="'+(CC_REC.tab===t[0]?'on':'')+'" onclick="CC_REC.tab=\''+t[0]+'\';ccRecDraw()">'+t[1]+' <small>'+t[2]+'</small></button>'; }).join("")+'</div>';
@@ -7019,7 +7019,7 @@ window.nmFbPopup=async function(menu){
   m.innerHTML='<div class="tkbox" style="max-width:560px"><h3 style="margin:0 0 6px">📄 '+(N.length?'실전답안첨삭이 도착했습니다':'첨삭답안')+'</h3>'+
     '<div class="tksub" style="margin-bottom:10px">선생님이 내 답안을 직접 살펴 보완할 곳과 암기를 보충할 곳을 짚어 드렸습니다.</div>'+
     (show.length?show.map(function(s){ return nmFbCard(s); }).join(""):'<div class="tksub" style="padding:10px 0">아직 첨삭답안이 없습니다.</div>')+
-    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button class="mini" onclick="'+close+'ccOpenRecords(\'fb\')">📄 첨삭답안 전체</button><button class="mini" style="background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700" onclick="'+close+'">확인</button></div></div>';
+    '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button class="mini" onclick="'+close+'ccOpenRecords(\'fb\')">📄 2차축문첨삭답안 전체</button><button class="mini" style="background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700" onclick="'+close+'">확인</button></div></div>';
   m.classList.add("on");
 };
 function nmFbCard(s){
@@ -7063,7 +7063,7 @@ window.nmFbBadge=function(){
     const tabs=body.querySelector(".nmrvtabs"); if(!tabs) return;
     if(window.ccViewUid||window.ccPreview) return;
     const L=(NM_FB.mine||[]);
-    tabs.insertAdjacentHTML("beforeend",'<button onclick="CC_REC.tab=\'fb\';ccRecDraw()">📄 첨삭답안 <small>'+L.filter(function(s){ return s.status==="첨삭 완료"; }).length+'</small></button>');
+    tabs.insertAdjacentHTML("beforeend",'<button onclick="CC_REC.tab=\'fb\';ccRecDraw()">📄 2차축문첨삭답안 <small>'+L.filter(function(s){ return s.status==="첨삭 완료"; }).length+'</small></button>');
     if(want!=="fb") return;
     tabs.querySelectorAll("button").forEach(function(b,i,all){ b.classList.toggle("on",i===all.length-1); });
     let el=tabs.nextSibling; while(el){ const nx=el.nextSibling; if(!(el.classList&&el.classList.contains("nmrvnav")&&!nx)) el.remove(); el=nx; }
@@ -8246,7 +8246,7 @@ window.nmGoalSigs=function(L,D1){
 /* 📂 내 공부기록 탭 순서·이름 (2026-11-12): 받은 조언 → 강의노트 → 오답노트 → 테마특강 암기노트 → 2차 제출답안 → 첨삭답안 */
 (function(){
   const dr=window.ccRecDraw; if(!dr) return;
-  const ORD=["advice","note","wrong","theme","case","fb"], NM={advice:"💬 선생님조언",note:"📝 강의노트",wrong:"📒 오답노트",theme:"🔁 테마특강 암기노트",case:"✍️ 2차 제출답안",fb:"📄 첨삭답안"};
+  const ORD=["advice","fb","case","note","wrong","theme"]   /* (2026-11-25) 선생님조언 → 첨삭답안 → 2차 제출답안 → 강의노트 → 오답노트 → 테마특강 암기노트 → 이용권 */, NM={advice:"💬 선생님조언",note:"📝 강의노트",wrong:"📒 오답노트",theme:"🔁 테마특강 암기노트",case:"✍️ 2차간단첨삭답안",fb:"📄 2차축문첨삭답안"};
   window.ccRecDraw=function(){ const none=!CC_REC.tab; if(none) CC_REC.tab="note";
     const r=dr.apply(this,arguments); if(none) CC_REC.tab="";
     try{ const tabs=document.querySelector("#nmRvBody .nmrvtabs"); if(!tabs) return r;
