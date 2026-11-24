@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-24 21:55 수록집_총문항_정렬">
+<meta name="cc-build" content="2026-11-24 22:20 실천했어요_삭제">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -6635,7 +6635,7 @@ window.nmAdvCompose=async function(uid,kind,ex,draft,name){
       Object.keys(NM_ADV_ACT).map(function(k){ return '<option value="'+k+'"'+(k===act?' selected':'')+'>'+NM_ADV_ACT[k][0]+'</option>'; }).join("")+'</select>'+
       '<button class="mini" style="margin-left:auto" onclick="document.getElementById(\'nmAdvCm\').classList.remove(\'on\')">취소</button>'+
       '<button class="mini" style="background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700" onclick="nmAdvSend(\''+uid+'\',\''+kind+'\')">발송</button></div>'+
-    (hist.length?'<div class="tksub" style="margin-top:14px"><b>이 수강생에게 보낸 조언</b></div>'+hist.map(function(a){ return '<div style="padding:6px 0;border-top:1px dashed var(--line);font-size:.82rem"><small style="color:var(--mute)">'+nmAdvDate(a.created_at)+' · '+nmAdvE(NM_ADV_KIND[a.kind]||a.kind)+' · '+(a.done_at?'실천함 ✓ '+ccMD(new Date(a.done_at)):(a.read_at?'읽음 '+ccMD(new Date(a.read_at)):'안 읽음'))+'</small><br>'+nmAdvE(a.msg)+'</div>'; }).join(""):'')+
+    (hist.length?'<div class="tksub" style="margin-top:14px"><b>이 수강생에게 보낸 조언</b></div>'+hist.map(function(a){ return '<div style="padding:6px 0;border-top:1px dashed var(--line);font-size:.82rem"><small style="color:var(--mute)">'+nmAdvDate(a.created_at)+' · '+nmAdvE(NM_ADV_KIND[a.kind]||a.kind)+' · '+(a.read_at?'읽음 '+ccMD(new Date(a.read_at)):'안 읽음')+'</small><br>'+nmAdvE(a.msg)+'</div>'; }).join(""):'')+
     '</div>';
   m.classList.add("on");
 };
@@ -6682,7 +6682,7 @@ window.nmAdvCard=function(){
       '<div style="flex:1;font-size:.84rem;line-height:1.55">'+s.adm+'<br>'+nmAdvFollow(uid,s.k,true)+'</div><button class="mini" style="flex:none" onclick="nmAdvCompose(\''+uid+'\',\''+s.k+'\')">조언 쓰기</button></div>'; }).join(""):
       '<div class="tksub">아직 진단할 기록이 적습니다 (복습 기록이 쌓이면 신호가 잡힙니다)</div>')+
     (function(){ const H=NM_ADV.all.filter(function(a){ return a.user_id===uid; }).slice(0,4); if(!H.length) return "";
-      return '<div style="margin-top:6px;font-size:.8rem;color:var(--mute)"><b>보낸 조언</b> '+H.map(function(a){ return nmAdvDate(a.created_at)+' '+nmAdvE(NM_ADV_KIND[a.kind]||a.kind)+'('+(a.done_at?'실천함 ✓':(a.read_at?'읽음':'안 읽음'))+')'; }).join(' · ')+'</div>'; })()+
+      return '<div style="margin-top:6px;font-size:.8rem;color:var(--mute)"><b>보낸 조언</b> '+H.map(function(a){ return nmAdvDate(a.created_at)+' '+nmAdvE(NM_ADV_KIND[a.kind]||a.kind)+'('+(a.read_at?'읽음':'안 읽음')+')'; }).join(' · ')+'</div>'; })()+
     '</div>';
 };
 window.nmAdvBadge=function(uid){ try{ const n=nmChkFor(uid).filter(function(s){ return s.lvl!=="ok"; }).length; return n?' <b style="color:#e0685a">⚠'+n+'</b>':''; }catch(e){ return ""; } };
@@ -6789,7 +6789,7 @@ window.nmAdvPopup=async function(mode){
     (items.length?items.map(function(it){ return '<div style="margin:10px 0;padding:12px 14px;border-radius:12px;border:1px solid '+(it.who==="t"?'var(--gold)':'var(--line)')+';background:'+(it.who==="t"?'rgba(232,185,60,.08)':'transparent')+'">'+
       (it.who==="t"?'<div style="font-size:.74rem;font-weight:700;color:var(--gold);margin-bottom:4px">📌 선생님 조언 · '+nmAdvDate(it.a.created_at)+'</div>':'')+
       '<div style="font-size:.92rem;line-height:1.65">'+(window.nmGapsHTML?nmGapsHTML(nmAdvE(it.txt).replace(/\n/g,'<br>')):nmAdvE(it.txt).replace(/\n/g,'<br>'))+'</div>'+(it.who==="a"&&String(it.txt||"").indexOf("@@IND@@")>=0?'<div style="padding-left:1.4em">'+btn(it.act)+'</div>':btn(it.act))+(it.who==="t"?nmAdvDoneBtn(it.a,view,"pop"):'')+'</div>'; }).join(""):'<div class="tksub">오늘은 따로 드릴 조언이 없습니다 · 지금 리듬대로 이어 가세요</div>')+
-    (past.length?'<details style="margin-top:8px"><summary style="cursor:pointer;font-size:.8rem;color:var(--mute)">지난 조언 다시 보기</summary>'+past.map(function(a){ return '<div style="padding:6px 0;border-top:1px dashed var(--line);font-size:.82rem"><small style="color:var(--mute)">'+nmAdvDate(a.created_at)+(a.done_at?' · 실천함 ✓':'')+'</small> '+nmAdvE(a.msg)+'</div>'; }).join("")+'</details>':'')+
+    (past.length?'<details style="margin-top:8px"><summary style="cursor:pointer;font-size:.8rem;color:var(--mute)">지난 조언 다시 보기</summary>'+past.map(function(a){ return '<div style="padding:6px 0;border-top:1px dashed var(--line);font-size:.82rem"><small style="color:var(--mute)">'+nmAdvDate(a.created_at)+'</small> '+nmAdvE(a.msg)+'</div>'; }).join("")+'</details>':'')+
     '<div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px"><button class="mini" onclick="'+close+'ccOpenRecords(\'advice\')">💬 받은 조언 전체</button><button class="mini" style="background:var(--gold);color:var(--navy);border-color:var(--gold);font-weight:700" onclick="'+close+'">확인</button></div></div>';
   m.classList.add("on");
 };
@@ -6802,7 +6802,7 @@ window.nmAdvRead=function(){
   nmAdvBadgeUpd();
 };
 /* ④ 실천했어요 */
-function nmAdvDoneBtn(a,view,where){
+function nmAdvDoneBtn(a,view,where){ return '';   /* (2026-11-24) 「실천했어요 ✓」 삭제 — 실천은 매일의 학습 기록으로 봄 */
   if(a.done_at) return '<span style="display:inline-block;margin-top:6px;font-size:.78rem;font-weight:700;color:#3fb27f">실천함 ✓ '+ccMD(new Date(a.done_at))+'</span>';
   if(view) return '<span style="display:inline-block;margin-top:6px;font-size:.78rem;color:var(--mute)">아직 실천 표시 전</span>';
   return '<button class="mini" style="margin-top:6px;border-color:#3fb27f;color:#3fb27f;font-weight:700" onclick="nmAdvDone('+a.id+',\''+where+'\')">실천했어요 ✓</button>';
@@ -6856,12 +6856,15 @@ window.nmAdvBadgeUpd=function(){
     tabs.querySelectorAll("button").forEach(function(b,i,all){ b.classList.toggle("on",i===all.length-1); });
     let el=tabs.nextSibling; while(el){ const nx=el.nextSibling; if(!(el.classList&&el.classList.contains("nmrvnav")&&!nx)) el.remove(); el=nx; }
     const S=NM_ADV.mineS||[];
-    let h='<div class="tksub" style="margin:8px 0">선생님이 보내 주신 조언이 모두 여기에 모입니다 · 실천한 조언은 「실천했어요 ✓」를 눌러 알려 주세요</div>';
-    if(S.length) h+='<div class="nmrvitem"><div class="nmrvmeta">🩺 지금 내 학습 점검</div>'+S.map(function(s){ const A=NM_ADV_ACT[s.act];
-      return '<div style="padding:6px 0;font-size:14px;line-height:1.6">· '+nmAdvE(s.stu)+(A?' <button class="mini" onclick="nmRvClose();'+A[1]+'">'+A[0]+' →</button>':'')+'</div>'; }).join("")+'</div>';
+    let h='';   /* (2026-11-24) 안내 문장 삭제 */
+    /* (2026-11-24) 오늘의 합격조언과 같은 모양: 줄바꿈 · 필요점수 표 · 들여쓰기 · 버튼 여러 개(act "a|b") */
+    const advTx=function(t){ const x=nmAdvE(t).replace(/\n/g,'<br>'); return window.nmGapsHTML?nmGapsHTML(x):x.replace(/@@IND@@/g,''); };
+    const advBt=function(act){ return String(act||"").split("|").map(function(k){ const A=NM_ADV_ACT[k]; return A?'<button class="mini" style="margin:12px 6px 0 0" onclick="nmRvClose();'+A[1]+'">'+A[0]+' →</button>':''; }).join(""); };
+    if(S.length) h+='<div class="nmrvmeta" style="margin:10px 0 4px"><b style="color:#2a3a6e">💬 오늘의 합격조언</b></div>'+S.map(function(s){ const ind=String(s.stu||"").indexOf("@@IND@@")>=0;
+      return '<div class="nmrvitem"><div style="font-size:14px;line-height:1.65">'+advTx(s.stu)+'</div></div>'; }).join("");   /* (2026-11-24) 여기는 정리만 — 버튼은 홈 화면에 있으므로 뺌 */
     h+=adv.length?adv.map(function(a){ const A=NM_ADV_ACT[a.act];
       return '<div class="nmrvitem"><div class="nmrvmeta"><b style="color:#2a3a6e">📅 '+nmAdvDate(a.created_at)+' 조언</b> · '+nmAdvE(NM_ADV_KIND[a.kind]||"조언")+(a.read_at?'':' · <b style="color:#e0685a">새 조언</b>')+'</div>'+
-        '<div class="nmrvq" style="font-weight:500;font-size:14px;line-height:1.65">'+nmAdvE(a.msg)+'</div>'+
+        '<div class="nmrvq" style="font-weight:500;font-size:14px;line-height:1.65">'+nmAdvE(a.msg).replace(/\n/g,'<br>')+'</div>'+
         '<div>'+(A?'<button class="mini" style="margin:6px 6px 0 0" onclick="nmRvClose();'+A[1]+'">'+A[0]+' →</button>':'')+nmAdvDoneBtn(a,view,"rec")+'</div></div>'; }).join("")
       :'<div class="tksub" style="padding:14px 2px">아직 받은 조언이 없습니다 · 선생님이 조언을 보내면 로그인할 때 「💬 오늘의 합격조언」으로 뜨고, 여기에 모입니다.</div>';
     const nav=body.querySelector(".nmrvnav:last-child");
@@ -6910,7 +6913,7 @@ window.nmAdvBand=function(){
   window.nmAdvFollow=function(uid,kind,sig){
     const s=f.apply(this,arguments); if(!s) return s;
     const a=NM_ADV.all.find(function(x){ return x.user_id===uid&&x.kind===kind; });
-    return a&&a.done_at?s.replace("</small>",' · <b style="color:#3fb27f">실천함 ✓</b></small>'):s; };
+    return s; };   /* (2026-11-24) 실천함 표시 삭제 */
 })();
 
 </script>
