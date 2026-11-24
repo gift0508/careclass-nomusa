@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-24 19:08 다시_재학습">
+<meta name="cc-build" content="2026-11-24 19:35 뇌각인안내문">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9145,7 +9145,16 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
       const b=d.createElement("button"); b.id="nxDoneFab"; b.type="button"; b.textContent="✅ 수업완료 — 나의 학습으로";
       b.setAttribute("style","position:fixed;right:18px;bottom:18px;z-index:99999;font:inherit;font-size:14px;font-weight:800;padding:12px 18px;border-radius:12px;border:none;background:#C9A227;color:#0D1F3C;box-shadow:0 6px 20px rgba(0,0,0,.25);cursor:pointer");
       b.onclick=function(){ try{ parent.nxEngDone(); }catch(e){} };
-      d.body.appendChild(b); }catch(e){} }); })();
+      d.body.appendChild(b);
+      /* (2026-11-24) 뇌각인 화면의 [✓ 뇌각인 완료] = 나의 학습 ① 뇌각인 완료 · [🔘 OX풀이로 →] = 나의 학습 ② OX풀이 시작 */
+      try{ const w=f.contentWindow, L=window.__nxLast, r=L&&REG[L.k];
+        if(r&&w&&typeof w.markRead==="function"){ const S=steps(r.o,r.day), cur=S[L.idx];
+          if(cur&&cur[2]==="sum"){
+            const mr=w.markRead; w.markRead=function(){ const out=mr.apply(this,arguments); try{ if(window.__nxLast&&window.__nxLast.k===L.k&&window.__nxLast.idx===L.idx){ nxStepDone(L.k,L.idx,true); window.__nxPending=false; nxRender(); } }catch(e){} return out; };
+            const oi=S.findIndex(function(x,i){ return i>L.idx&&(x[2]==="ox"||x[2]==="oxw"); });
+            if(oi>=0&&typeof w.goOX==="function"){ const go=w.goOX; w.goOX=function(){ try{ const P=RD("cc_nxstep"); if((P[L.k]||0)<oi){ nxStepDone(L.k,L.idx,true); } nxGo(L.k,oi); return; }catch(e){} return go.apply(this,arguments); }; }
+          } } }catch(e){ console.warn("[뇌각인 연결]",e); }
+      }catch(e){} }); })();
   window.nxWrong=function(k){ const r=REG[k]; if(r) try{ run(r.o,r.day,"wrong"); }catch(e){ console.warn(e); } };
   window.nxTog=function(k){ OPEN[k]=!OPEN[k]; nxRender(); };
   window.nxChk=function(k,on){ if(prev()){ nxRender(); return; } const D=RD("cc_nxdone"); if(on) D[k]=ccISO(ccToday()); else delete D[k]; WR("cc_nxdone",D);
@@ -9170,7 +9179,7 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
     if(day===0&&!done&&!window.ccViewUid){ try{ const pl=ccPlanOf(o.t), T=ccISO(ccToday()); if((pl.xadd||{})[o.key]===T) h+='<div class="rvsel xs"><button type="button" onclick="nxAddLec(-1,\''+J(o.key)+'\')">− 이 강의 빼기 (추가한 강의)</button></div>'; }catch(e){} }
     if(op){
       h+='<div class="flow">'+(window.ccMyNoteRow?ccMyNoteRow(o):'')+S.map(function(x,i){ if(i>s) return ''; const ok=i<s;
-        return '<div class="st'+(ok?' ok':'')+'"><span class="nn">'+(ok?'✓':(i+1))+'</span><b>'+x[0]+' '+E(x[1])+'</b>'+(ok?'<span class="dn">완료</span><button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">재학습</button>':(STARTED[k]===i?'<button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">다시 열기</button><button class="okb" onclick="event.stopPropagation();nxStepDone(\''+J(k)+'\','+i+')">✅ 완료</button>':'<button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">시작 →</button>'))+'</div>'; }).join("")+
+        return '<div class="st'+(ok?' ok':'')+'"><span class="nn">'+(ok?'✓':(i+1))+'</span><b>'+x[0]+' '+E(x[1])+'</b>'+((day===0&&!ok&&x[2]==="sum")?'<span class="sumtip">※ 뇌각인시작으로 들어가서 하단의 뇌각인 완료버튼을 누르면 학습을 생략할 수 있습니다.단, ox풀이와 5지택일풀이는 필수입니다.</span>':'')+(ok?'<span class="dn">완료</span><button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">재학습</button>':(STARTED[k]===i?'<button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">다시 열기</button><button class="okb" onclick="event.stopPropagation();nxStepDone(\''+J(k)+'\','+i+')">✅ 완료</button>':'<button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">시작 →</button>'))+'</div>'; }).join("")+
         (rvRow?('<div class="st fin fwk">'+rvRow+'</div>'+rvLtn):(s<S.length?(s<S.length-1?'':'<div class="st lock">마지막 단계입니다 — 마치고 「✅ 완료」를 누르면 이 강의가 체크됩니다</div>'):(wkRv?'<div class="st fin fwk">'+wkRv+'</div>':'<div class="st fin">✅ 이 강의 학습 완료 — 체크되었습니다</div>')))+
         ((o.t==="1차"&&o.stage==="문제풀이"&&day===0)?'<div class="st ex"><button onclick="event.stopPropagation();nxWrong(\''+J(k)+'\')">📒 오답노트 '+(noteHas("오답|"+o.key)?'보기 ✓':'올리기')+'</button></div>':'')+
         '</div>';
@@ -10641,7 +10650,7 @@ window.nxRvChk=function(k,on){
   if(on){ try{ toast(parseInt(k,10)>=8?"수강완료 · 차후 재복습 중 하나를 선택하세요":"복습필요 · 복습불필요 중 하나를 선택하세요"); }catch(e){} try{ nxRender(); }catch(e){} return; }
   try{ const day=parseInt(k,10), key=k.slice(String(day).length+1), M=JSON.parse(localStorage.getItem("cc_nxrvend")||"{}")||{}; if(+M[key]===day){ delete M[key]; localStorage.setItem("cc_nxrvend",JSON.stringify(M)); } }catch(e){}
   nxChk(k,false); };
-(function(){ try{ const c=new CSSStyleSheet(); c.replaceSync('html body #nxMine#nxMine .rvrw{display:flex;align-items:center}html body #nxMine#nxMine .flow .st.fwk{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;padding-left:46px}html body #nxMine#nxMine .flow .rvsel.wkin{margin:0;width:220px;flex:0 0 220px}html body #nxMine#nxMine .rvrw>.rvsel{flex:0 0 240px;width:240px}html body #nxMine#nxMine .it .rvmust.t{margin-left:10px;font-size:11px;font-weight:700;color:#c62828;white-space:nowrap}html body #nxMine#nxMine .rvltn{margin:0 0 6px 34px!important}html body #nxMine#nxMine .st.fwk .rvmust,html body #nxMine#nxMine .rvrw .rvmust{flex:0 0 auto;margin-left:10px;font-size:11px;font-weight:700;color:#c62828;white-space:nowrap;background:none;border:0}');
+(function(){ try{ const c=new CSSStyleSheet(); c.replaceSync('html body #nxMine#nxMine .rvrw{display:flex;align-items:center}html body #nxMine#nxMine .flow .st.fwk{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;padding-left:46px}html body #nxMine#nxMine .flow .rvsel.wkin{margin:0;width:220px;flex:0 0 220px}html body #nxMine#nxMine .rvrw>.rvsel{flex:0 0 240px;width:240px}html body #nxMine#nxMine .flow .st .sumtip{margin-left:10px;font-size:11px;color:#6b7280;font-weight:700;flex:1 1 auto;text-align:left}html body #nxMine#nxMine .flow .st:has(.sumtip)>b{flex:0 0 auto!important}html body #nxMine#nxMine .it .rvmust.t{margin-left:10px;font-size:11px;font-weight:700;color:#c62828;white-space:nowrap}html body #nxMine#nxMine .rvltn{margin:0 0 6px 34px!important}html body #nxMine#nxMine .st.fwk .rvmust,html body #nxMine#nxMine .rvrw .rvmust{flex:0 0 auto;margin-left:10px;font-size:11px;font-weight:700;color:#c62828;white-space:nowrap;background:none;border:0}');
   document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){} })();
 </script>
 <script>
