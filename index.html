@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-24 20:45 끝화면_완료버튼하나">
+<meta name="cc-build" content="2026-11-24 21:00 강의칸_하나만열림2">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -9119,14 +9119,14 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
     const P=RD("cc_nxstep"), done=!!RD("cc_nxdone")[k], s=done?S.length:Math.min(P[k]||0,S.length);
     if(idx>=s){ STARTED[k]=idx; window.__nxLast={k:k,idx:idx}; window.__nxPending=true; } else { window.__nxPending=false; }
     try{ window.__nxLecLabel=r.o.name||((r.o.subj||"")+" "+(r.o.stage||"")+" "+(r.o.lecNo||"")+"강"); }catch(e){}
-    OPEN[k]=true;
+    (Object.keys(OPEN).forEach(function(x){ if(x!==k) OPEN[x]=false; }),OPEN[k]=true);
     try{ run(r.o,r.day,x[2]); }catch(e){ console.warn(e); }
     nxRender();
   };
   window.nxStepDone=function(k,idx,quiet){
     const r=REG[k]; if(!r||prev()) return ""; const S=steps(r.o,r.day), P=RD("cc_nxstep"); let msg;
     if((P[k]||0)<=idx){ P[k]=idx+1; WR("cc_nxstep",P); }
-    delete STARTED[k]; OPEN[k]=true;
+    delete STARTED[k]; (Object.keys(OPEN).forEach(function(x){ if(x!==k) OPEN[x]=false; }),OPEN[k]=true);
     if(idx+1>=S.length&&r.day>0&&(r.day<8||r.o.t==="1차")&&!RD("cc_nxdone")[k]) msg="✅ 복습 완료 — 복습필요 · 복습불필요 중 하나를 반드시 선택하세요";   /* (2026-11-24) 복습은 선택해야 끝남 */
     else if(idx+1>=S.length&&r.day===0&&!RD("cc_nxdone")[k]&&(function(){ try{ return ccRvNFor(r.o.t,r.o.si)>0; }catch(e){ return false; } })()) msg="✅ 이 강의 학습 완료 — 복습필요 · 복습불필요 중 하나를 선택하세요";   /* (2026-11-24) 고르면 체크 */
     else if(idx+1>=S.length){ const D=RD("cc_nxdone"); D[k]=ccISO(ccToday()); WR("cc_nxdone",D); msg="✅ 이 강의 학습 완료 — 체크되었습니다"; }
@@ -9168,7 +9168,7 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
       }catch(e){ console.warn("[뇌각인 연결]",e); }
       }catch(e){} }); })();
   window.nxWrong=function(k){ const r=REG[k]; if(r) try{ run(r.o,r.day,"wrong"); }catch(e){ console.warn(e); } };
-  window.nxTog=function(k){ OPEN[k]=!OPEN[k]; nxRender(); };
+  window.nxTog=function(k){ const on=!OPEN[k]; if(on) Object.keys(OPEN).forEach(function(x){ OPEN[x]=false; }); OPEN[k]=on; nxRender(); };   /* (2026-11-24) 한 강의를 열면 다른 강의 칸은 닫힘 */
   window.nxChk=function(k,on){ if(prev()){ nxRender(); return; } const D=RD("cc_nxdone"); if(on) D[k]=ccISO(ccToday()); else delete D[k]; WR("cc_nxdone",D);
     if(on){ const r=REG[k]; if(r){ const P=RD("cc_nxstep"); P[k]=Math.max(P[k]||0,steps(r.o,r.day).length); WR("cc_nxstep",P); } } nxRender(); };
   const itemHTML=function(o,day,num,cls){
