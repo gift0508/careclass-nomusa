@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-23 14:27 지난주비교_표기">
+<meta name="cc-build" content="2026-11-24 17:50 14일째_수강완료_차후재복습">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -4417,7 +4417,7 @@ async function nmRvBank(){
   const rows=await ccQBLoadRaw("1차");
   if(NM_RV.bank&&NM_RV.bankN===rows.length) return NM_RV.bank;
   const byKey={}, byLec={};
-  rows.forEach(function(q){ if(q.qtype!=="5지택일"&&q.qtype!=="콤보형") return; byKey[nmRvKey(q)]=q;
+  rows.forEach(function(q){ if(q.qtype!=="5지택일"&&q.qtype!=="콤보형"&&q.qtype!=="OX") return; byKey[nmRvKey(q)]=q; if(q.qtype==="OX") return;   /* OX: 차후 재복습 오답노트용 (2026-11-24) */
     if(q.stage==="기본이론"&&q.keywords!=="교재기출"){ const k=q.subject+"|"+q.lec+"|"+(q.src||""); (byLec[k]=byLec[k]||[]).push(q); } });
   NM_RV.bank={byKey:byKey,byLec:byLec}; NM_RV.bankN=rows.length; return NM_RV.bank;
 }
@@ -4487,7 +4487,7 @@ window.nmRvNotesOf=function(s){ return nmRvNotes(s); };
 /* 과목별실전문제풀이 「오답집 받기」에서 오답노트 문항 고르기 */
 window.nmRvNoteItems=async function(subj){
   await nmRvLoad(); try{ await nmRvBank(); }catch(e){}
-  return nmRvNotes(subj).map(function(r){ const q=NM_RV.bank&&NM_RV.bank.byKey[r.qkey]; return {id:q?q.id:r.qid,reason:r.note_reason||"",memo:r.note_memo||""}; });
+  return nmRvNotes(subj).filter(function(r){ return r.mark!=="재복습"; }).map(function(r){ const q=NM_RV.bank&&NM_RV.bank.byKey[r.qkey]; return {id:q?q.id:r.qid,reason:r.note_reason||"",memo:r.note_memo||""}; });
 };
 /* 테마특강(최종정리)에 들어선 과목 — 계획상 마지막으로 들은(오늘까지 배정된) 강의의 단계가 테마특강 · 기출특강 */
 function nmRvFinalSubjects(){
@@ -4504,7 +4504,7 @@ function nmRvFinalSubjects(){
     let si=cur[l]?cur[l].si:null;
     if(si==null){ try{ if(TRACK==="1차"&&typeof STAGEMAP!=="undefined") si=STAGEMAP[l]; }catch(e){} }
     if(si==null||(si!==a&&si!==b&&si!==c)) return;
-    const n=nmRvNotes(l).filter(function(r){ return !r.final_done&&!r.graduated; }).length;
+    const n=nmRvNotes(l).filter(function(r){ return !r.final_done&&!r.graduated&&r.mark!=="재복습"; }).length;
     if(n) out.push({subj:l,n:n});
   });
   return out;
@@ -4566,7 +4566,7 @@ window.nmRvStart=async function(mode,subj){
   const body=document.getElementById("nmRvBody"); body.innerHTML='<div class="tksub">불러오는 중…</div>';
   try{ await nmRvLoad(); await nmRvBank(); }catch(e){ body.innerHTML='<div class="tksub">문항을 불러오지 못했습니다 — '+nmRvEsc(ccErr(e))+'</div>'; return; }
   if(NM_RV.err){ body.innerHTML='<h3>🔁 문제 복습</h3><div class="tksub">'+nmRvEsc(nmRvErrText())+'</div>'; return; }
-  const list=mode==="final"?nmRvNotes(subj).filter(function(r){ return !r.final_done&&!r.graduated; }):(mode==="last"?[].concat.apply([],String(subj||"").split(",").map(function(x){ return nmRvNotes(x); })):nmRvPlan().list);
+  const list=(mode==="final"?nmRvNotes(subj).filter(function(r){ return !r.final_done&&!r.graduated; }):(mode==="last"?[].concat.apply([],String(subj||"").split(",").map(function(x){ return nmRvNotes(x); })):nmRvPlan().list)).filter(function(r){ return r.mark!=="재복습"; });   /* 차후 재복습 문항은 오답노트에서만 */
   NM_RVR={mode:mode,subj:subj||"",list:list,i:0,ok:0,ng:0,grad:0,note:0,cur:null};
   if(!list.length){ body.innerHTML='<h3>🔁 문제 복습</h3><div class="tksub">오늘 복습할 문제가 없습니다.</div>'; return; }
   nmRvShow();
@@ -4675,6 +4675,7 @@ function nmRvNoteDraw(){
     '<div class="nmrvtabs">'+L.map(function(l){ const n=nmRvNotes(l).length; return '<button class="'+(l===subj?'on':'')+'" onclick="nmRvNoteSubj(\''+nmRvEsc(l)+'\')">'+nmRvEsc(l)+' <small>'+n+'</small></button>'; }).join("")+'</div>';
   if(!list.length) h+='<div class="tksub" style="padding:14px 2px">'+nmRvEsc(subj)+' 오답노트가 비어 있습니다.</div>';
   list.forEach(function(r,i){ const q=B.byKey[r.qkey]; if(!q) return; const ch=nmRvChoices(q), a=(parseInt(q.answer,10)||0)-1;
+    if(r.mark==="재복습"){ h+=nmRvLtItem(r,q,i); return; }
     h+='<div class="nmrvitem"><div class="nmrvmeta">'+(i+1)+'. 문제풀이 '+nmRvEsc(ccJindo(r.lec||1))+' · '+nmRvMD(r.first_date)+' 수강'+(r.final_done?(r.final_ok?' · <span class="nmrvdone">✓ 최종정리 전 다시 풀어 맞힘</span>':' · <span class="nmrvagain">최종정리 전 다시 풀기: 틀림</span>'):'')+'</div>'+
       '<div class="nmrvq sm">'+nmRvEsc(q.question)+'</div>'+
       '<details class="nmrvdet"><summary>문제 · 정답 · 해설 보기</summary>'+(q.case_text?'<div class="nmrvcase">'+nmRvEsc(q.case_text)+'</div>':'')+
@@ -4928,6 +4929,7 @@ function nmThAll(subj,src,lec){
     const p=String(r.qkey).split("|"); if(p[1]!=="문제풀이"||(p[4]||"o")!==src) return false;
     if(String(M[p[2]+"|"+p[3]])!==String(lec)) return false;
     if(!(r.mark!=="확실"||r.in_note)) return false;
+    if(r.mark==="재복습") return false;
     return !!B.byKey[r.qkey];
   }).sort(function(a,b){ return a.qkey<b.qkey?-1:1; });
 }
@@ -9122,7 +9124,8 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
     const r=REG[k]; if(!r||prev()) return ""; const S=steps(r.o,r.day), P=RD("cc_nxstep"); let msg;
     if((P[k]||0)<=idx){ P[k]=idx+1; WR("cc_nxstep",P); }
     delete STARTED[k]; OPEN[k]=true;
-    if(idx+1>=S.length){ const D=RD("cc_nxdone"); D[k]=ccISO(ccToday()); WR("cc_nxdone",D); msg="✅ 이 강의 학습 완료 — 체크되었습니다"; }
+    if(idx+1>=S.length&&r.day>0&&(r.day<8||r.o.t==="1차")&&!RD("cc_nxdone")[k]) msg="✅ 복습 완료 — 복습필요 · 복습불필요 중 하나를 반드시 선택하세요";   /* (2026-11-24) 복습은 선택해야 끝남 */
+    else if(idx+1>=S.length){ const D=RD("cc_nxdone"); D[k]=ccISO(ccToday()); WR("cc_nxdone",D); msg="✅ 이 강의 학습 완료 — 체크되었습니다"; }
     else msg="✅ 수업완료 — 다음 단계 「"+S[idx+1][1]+"」가 열렸습니다";
     if(!quiet){ try{ toast(msg); }catch(e){} nxRender(); }
     return msg;
@@ -9149,21 +9152,24 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
   const itemHTML=function(o,day,num,cls){
     const k=dk(day,o.key); REG[k]={o:o,day:day};
     const D=RD("cc_nxdone"), P=RD("cc_nxstep"), done=!!D[k], S=steps(o,day), s=done?S.length:Math.min(P[k]||0,S.length), op=!!OPEN[k];
-    let h='<div class="it'+(done?' done':'')+((day>0&&RD("cc_nxrvskip")[k])?' skip':'')+(cls?' '+cls:'')+(op?' open':'')+'" onclick="'+(op?'':'nxAdpTap('+day+');')+'nxTog(\''+J(k)+'\')"><input type="checkbox"'+(done?' checked':'')+' onclick="event.stopPropagation()" onchange="nxChk(\''+J(k)+'\',this.checked)">'+
-      '<span><b>'+(num?num+'. ':'')+E(o.name)+'</b>'+(o.ttl?'<small>'+E(o.ttl)+'</small>':'')+'</span><span class="chev">'+(op?'▲':'▼')+'</span></div>';
+    let h='<div class="it'+(done?' done':'')+((day>0&&RD("cc_nxrvskip")[k])?' skip':'')+(cls?' '+cls:'')+(op?' open':'')+'" onclick="'+(op?'':'nxAdpTap('+day+');')+'nxTog(\''+J(k)+'\')"><input type="checkbox"'+(done?' checked':'')+' onclick="event.stopPropagation()" onchange="'+((day>0&&(day<8||o.t==="1차"))?'nxRvChk':'nxChk')+'(\''+J(k)+'\',this.checked)">'+
+      '<span'+((day>0&&!window.ccViewUid)?' class="rvh"':'')+'><b>'+(num?num+'. ':'')+E(o.name)+'</b>'+((day>0&&!window.ccViewUid)?'<button type="button" class="rvsk'+(RD("cc_nxrvskip")[k]?' on':'')+'" onclick="event.stopPropagation();nxRvSkip(\''+J(o.key)+'\','+day+')">복습생략</button>':'')+(o.ttl?'<small>'+E(o.ttl)+'</small>':'')+'</span>'+'<span class="chev">'+(op?'▲':'▼')+'</span></div>';
     /* 다 들은 강의: [복습필요 | 수강완료] (2026-11-23) — 기본 복습필요 · 수강완료를 누르면 이 강의는 복습에 올라오지 않음 */
     if(day===0&&done&&!window.ccViewUid){ let rvn=0; try{ rvn=ccRvNFor(o.t,o.si); }catch(e){}
       if(rvn>0){ const nr=!!RD("cc_nxnorv")[o.key];
-        h+='<div class="rvsel"><button type="button" class="'+(nr?'':'on')+'" onclick="nxNoRv(\''+J(o.key)+'\',false)">복습필요</button><button type="button" class="'+(nr?'on':'')+'" onclick="nxNoRv(\''+J(o.key)+'\',true)">수강완료</button></div>'; } }
+        h+='<div class="rvsel"><button type="button" class="'+(nr?'':'on')+'" onclick="nxNoRv(\''+J(o.key)+'\',false)">복습필요</button><button type="button" class="'+(nr?'on':'')+'" onclick="nxNoRv(\''+J(o.key)+'\',true)">복습불필요</button></div>'; } }
     /* 복습 강의: [복습생략 | 다음복습필요 | 다음복습불필요] (2026-11-23) — 복습생략: 오늘 이 복습은 건너뜀(시간이 없어 이번 주 강의가 더 급할 때) · 그다음 다음복습필요/불필요 중 하나 · 14일째(마지막)는 [복습생략]만 */
     if(day>0&&!window.ccViewUid){ const E2=RD("cc_nxrvend"), en=E2[o.key]!=null&&+E2[o.key]===day, last=day>=8, sk=!!RD("cc_nxrvskip")[k];
-      h+='<div class="rvsel r3">'+'<button type="button" class="sk'+(sk?' on':'')+'" onclick="nxRvSkip(\''+J(o.key)+'\','+day+')">복습생략</button>'+
-        (last?'':'<button type="button" class="nx'+(done&&!en?' on':'')+'" onclick="nxRvEnd(\''+J(o.key)+'\','+day+',false)">다음복습필요</button><button type="button" class="'+(done&&en?'on':'')+'" onclick="nxRvEnd(\''+J(o.key)+'\','+day+',true)">다음복습불필요</button>')+'</div>'; }
+      /* (2026-11-24) 복습생략은 강의명 옆으로 · 아래 줄은 [복습필요 | 복습불필요] 두 개 */
+      if(last&&o.t==="1차"){ const LT=RD("cc_nxrvlater")[o.key], lt=!!(done&&LT);   /* 14일째 (2026-11-24): [수강완료 | 차후 재복습] — 차후 재복습 = 이 강의 OX · 5지택일 오답문항을 오답노트에 */
+        h+='<div class="rvrw"><div class="rvsel rv2"><button type="button" class="'+(done&&!lt?'on':'')+'" onclick="nxRvFin(\''+J(o.key)+'\','+day+',false)">수강완료</button><button type="button" class="lt'+(lt?' on':'')+'" onclick="nxRvFin(\''+J(o.key)+'\','+day+',true)">차후 재복습</button></div>'+(done?'':'<span class="rvmust">※ 반드시 선택</span>')+'</div>'+
+          (lt&&LT.n!=null?'<div class="rvltn">'+(LT.n?'→ OX 오답 '+LT.ox+'문항 · 5지택일 오답 '+LT.mc+'문항이 오답노트에 쌓였습니다':'→ 틀린 문항이 없어 오답노트에 쌓인 문항이 없습니다')+'</div>':''); }
+      if(!last) h+='<div class="rvrw"><div class="rvsel rv2"><button type="button" class="nx'+(done&&!en?' on':'')+'" onclick="nxRvEnd(\''+J(o.key)+'\','+day+',false)">복습필요</button><button type="button" class="'+(done&&en?'on':'')+'" onclick="nxRvEnd(\''+J(o.key)+'\','+day+',true)">복습불필요</button>'+'</div>'+(done?'':'<span class="rvmust">※ 반드시 선택</span>')+'</div>'; }
     if(day===0&&!done&&!window.ccViewUid){ try{ const pl=ccPlanOf(o.t), T=ccISO(ccToday()); if((pl.xadd||{})[o.key]===T) h+='<div class="rvsel xs"><button type="button" onclick="nxAddLec(-1,\''+J(o.key)+'\')">− 이 강의 빼기 (추가한 강의)</button></div>'; }catch(e){} }
     if(op){
       h+='<div class="flow">'+(window.ccMyNoteRow?ccMyNoteRow(o):'')+S.map(function(x,i){ if(i>s) return ''; const ok=i<s;
         return '<div class="st'+(ok?' ok':'')+'"><span class="nn">'+(ok?'✓':(i+1))+'</span><b>'+x[0]+' '+E(x[1])+'</b>'+(ok?'<button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">다시</button><span class="dn">완료</span>':(STARTED[k]===i?'<button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">다시 열기</button><button class="okb" onclick="event.stopPropagation();nxStepDone(\''+J(k)+'\','+i+')">✅ 완료</button>':'<button onclick="event.stopPropagation();nxGo(\''+J(k)+'\','+i+')">시작 →</button>'))+'</div>'; }).join("")+
-        (s<S.length?(s<S.length-1?'':'<div class="st lock">마지막 단계입니다 — 마치고 「✅ 완료」를 누르면 이 강의가 체크됩니다</div>'):'<div class="st fin">✅ 이 강의 학습 완료 — 체크되었습니다</div>')+
+        ((day>0&&(day<8||o.t==="1차")&&!done)?(s<S.length-1?'':'<div class="st lock">'+(s<S.length?'마지막 단계입니다 — 마치고 ':'')+(day>=8?'수강완료 · 차후 재복습':'복습필요 · 복습불필요')+' 중 하나를 반드시 선택하세요</div>'):(s<S.length?(s<S.length-1?'':'<div class="st lock">마지막 단계입니다 — 마치고 「✅ 완료」를 누르면 이 강의가 체크됩니다</div>'):'<div class="st fin">✅ 이 강의 학습 완료 — 체크되었습니다</div>'))+
         ((o.t==="1차"&&o.stage==="문제풀이"&&day===0)?'<div class="st ex"><button onclick="event.stopPropagation();nxWrong(\''+J(k)+'\')">📒 오답노트 '+(noteHas("오답|"+o.key)?'보기 ✓':'올리기')+'</button></div>':'')+
         '</div>';
     }
@@ -9274,8 +9280,8 @@ html #nxWiz .gorow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin
     }catch(e){ console.warn(e); cols[0]=cols[0].replace('@@LECCHIP@@','').replace('@@WKAV@@','').replace('@@LECH@@',''); }
     cols[0]=cols[0].replace('@@WKAV@@','').replace('@@LECH@@','');
     h+=HOW;
-    const RVHOW='<div class="rvr"><span class="rvl">복습대상</span><div><div>1. 플래시카드 → 필수암기문장 → OX풀이 → 5지택일</div><div>2. 복습실행 후 다음복습필요나 다음복습불필요버튼을 눌러서 복습여부를 선택</div></div></div>'+
-      '<div class="rvr"><span class="rvl">복습생략이용</span><div><div>1. 강의가 밀려서 이번주 강의수강수를 늘려야 하는 경우 또는 실제적으로 복습이 불필요한 경우</div><div>2. 복습생략버튼 누른 후 다음복습필요나 다음복습불필요버튼을 눌러서 복습여부를 선택</div></div></div>';
+    const RVHOW='<div class="rvr"><span class="rvl">복습대상</span><div><div>1. 플래시카드 → 필수암기문장 → OX풀이 → 5지택일</div><div>2. 복습실행 후 복습필요나 복습불필요버튼을 눌러서 복습여부를 선택</div></div></div>'+
+      '<div class="rvr"><span class="rvl">복습생략이용</span><div><div>1. 강의가 밀려서 이번주 강의수강수를 늘려야 하는 경우 또는 실제적으로 복습이 불필요한 경우</div><div>2. 복습생략버튼 누른 후 복습필요나 복습불필요버튼을 눌러서 복습여부를 선택</div></div></div>';
     { let done=false; for(let q=cols.length-1;q>=1;q--){ if(!done&&cols[q].indexOf('@@RVHOW@@')>=0){ cols[q]=cols[q].replace('@@RVHOW@@',RVHOW); done=true; } else cols[q]=cols[q].split('@@RVHOW@@').join(''); } }   /* 복습방법 = 맨 앞 복습 칸의 [복습정보] 안 (2026-11-23) */
     /* 복습 먼저 → 오늘 공부 (2026-11-23): 14일 전 → 6일 전 → 2일 전 → 이번 주 수강강의목록 */
     const ord=cols.slice(1).filter(function(x){ return x.indexOf('class="empty"')<0; }).reverse().concat([cols[0]]);   /* 빈 복습 칸은 숨김 (2026-11-23) */
@@ -10582,6 +10588,113 @@ window.nxRvEnd=function(k,day,end){ if(window.ccPreview){ try{ toast("관리자 
 </script>
 <script>
 (function(){ try{ const c=new CSSStyleSheet(); c.replaceSync('html #nxWiz .plan .lb small.lbf,html .plan .lb small.lbf{color:#5a6070!important;font-weight:700!important;font-size:11px!important}html body .plan .plnote{font-size:13px;font-weight:800;color:#6B5312;margin:8px 0 2px}html body .plan .lb small{white-space:nowrap}@media (max-width:640px){html body .plan .gantt{--lbw:0px}html body .plan .gr.gr,html body .plan .ax.ax{grid-template-columns:1fr!important}html body .plan .ax.ax>div:first-child{display:none}html body .plan .lb small{white-space:normal}}'); document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){} })();
+</script>
+<script>
+/* [합격을 향해 가는 나] — 홈 「합격 진단」 바로 위 실선 박스 (2026-11-24) */
+(function(){
+  const st=document.createElement("style");
+  st.textContent='#hmMe{border:1px solid #cbd5e1;border-radius:14px;padding:12px 16px;margin:0 0 12px;background:#fff;text-align:left;line-height:1.75;font-size:13px;color:#334155}#hmMe .mt{font-weight:800;color:#0D1F3C;font-size:13.5px;margin-bottom:2px}#hmMe b{color:#0D1F3C;font-weight:700}';
+  document.head.appendChild(st);
+  const E=function(x){ return String(x==null?"":x).replace(/[&<>"]/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); };
+  const RD=function(k){ try{ return JSON.parse(localStorage.getItem(k)||"{}")||{}; }catch(e){ return {}; } };
+  let last="", lastAt=0;
+  const lec=function(t){ try{ const pl=ccPlanOf(t), f=ccFlat(t,pl), D=RD("cc_nxdone"); let o=null;
+      f.forEach(function(x){ if(D["0|"+t+"|"+x.key]) o=x; });
+      if(!o) return "아직 완료한 강의 없음";
+      return CC_STAGES[t][o.si]+" "+o.l+" 제"+(o.i+1)+"강까지 완료"; }catch(e){ return "—"; } };
+  const dd=function(t){ try{ const td=ccToday(); return Math.max(0,Math.round((ccExamDate(t,td)-td)/864e5)); }catch(e){ return null; } };
+  const go=function(){ try{
+    const top=document.getElementById("hmTop"); if(!top||typeof user==="undefined"||!user) return;
+    let b=document.getElementById("hmMe");
+    if(!b){ b=document.createElement("div"); b.id="hmMe"; }
+    if(b.parentNode!==top.parentNode||b.nextSibling!==top) top.parentNode.insertBefore(b,top);
+    const now=Date.now(); const key=(user.id||"")+"|"+(user.track||"")+"|"+(typeof TRACK!=="undefined"?TRACK:"")+"|"+(localStorage.getItem("cc_nxdone")||"")+"|"+ccISO(ccToday());
+    if(key===last&&now-lastAt<60000) return; last=key; lastAt=now;
+    const tr=user.track||"1차", dual=tr==="1+2차", t=dual?((typeof TRACK!=="undefined"&&TRACK)||"1차"):tr;
+    const ex=function(v){ return v==="응시해 봄"?"재시":(v==="합격·면제"?"면제":"초시"); };
+    const kind=dual?("동차 "+ex(user.exp1)):(tr==="2차"?"2차 "+ex(user.exp2):"1차 "+ex(user.exp1));
+    const dl=dual?("1차 D-"+dd("1차")+" · 2차 D-"+dd("2차")):("D-"+dd(t));
+    b.innerHTML='<div class="mt">[합격을 향해 가는 나]</div>'+
+      '<div>- 이름: <b>'+E(user.name||user.login_id||"")+'</b></div>'+
+      '<div>- 유형: '+E(kind)+'</div>'+
+      '<div>- 수강: '+E(lec(t))+'</div>'+
+      '<div>- 시험일: '+E(dl)+'</div>';
+  }catch(e){ console.warn("[합격을 향해 가는 나]",e); } };
+  setInterval(go,800); setTimeout(go,300);
+})();
+</script>
+<script>
+/* 복습생략 — 강의명 옆 작은 단추 (2026-11-24) */
+(function(){ try{ const c=new CSSStyleSheet();
+  c.replaceSync('html body #nxMine#nxMine .it .rvsk{display:inline-block;margin:0 0 0 10px;padding:3px 9px!important;font-size:11.2px!important;font-weight:700;line-height:1.5;border:1px solid #cfc7ae;border-radius:7px;background:#fff;color:#6b6b6b;cursor:pointer;vertical-align:1px;min-width:0;width:auto}'+
+   'html body #nxMine#nxMine .it span.rvh{display:flex!important;align-items:center;flex-wrap:wrap}html body #nxMine#nxMine .it span.rvh>b{display:inline!important}'+
+   'html body #nxMine#nxMine .it .rvsk:hover{border-color:#b8921d;color:#8a6d1a}'+
+   'html body #nxMine#nxMine .it .rvsk.on{background:#6b7280;border-color:#6b7280;color:#fff}');
+  document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){} })();
+</script>
+<script>
+/* 복습: 복습필요 · 복습불필요 중 반드시 선택 (2026-11-24) — 체크칸을 직접 눌러 끝낼 수 없음 */
+window.nxRvChk=function(k,on){
+  if(on){ try{ toast(parseInt(k,10)>=8?"수강완료 · 차후 재복습 중 하나를 선택하세요":"복습필요 · 복습불필요 중 하나를 선택하세요"); }catch(e){} try{ nxRender(); }catch(e){} return; }
+  try{ const day=parseInt(k,10), key=k.slice(String(day).length+1), M=JSON.parse(localStorage.getItem("cc_nxrvend")||"{}")||{}; if(+M[key]===day){ delete M[key]; localStorage.setItem("cc_nxrvend",JSON.stringify(M)); } }catch(e){}
+  nxChk(k,false); };
+(function(){ try{ const c=new CSSStyleSheet(); c.replaceSync('html body #nxMine#nxMine .rvrw{display:flex;align-items:center}html body #nxMine#nxMine .rvrw>.rvsel{flex:0 0 240px;width:240px}html body #nxMine#nxMine .rvrw .rvmust{flex:0 0 auto;margin-left:10px;font-size:11px;font-weight:700;color:#c62828;white-space:nowrap;background:none;border:0}');
+  document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){} })();
+</script>
+<script>
+/* 14일째 [수강완료 | 차후 재복습] (2026-11-24)
+   · 수강완료: 이 강의 복습 끝 · 차후 재복습: 복습 끝 + 이 강의의 OX · 5지택일(선다형) 문항 중 마지막에 틀린 문항만 오답노트에(찍어정답 제외)
+   · 쌓인 문항은 오답노트에서만 다시 풂(오답집 받기 · 최종정리에는 넣지 않음) · 다른 날 두 번 맞히면 빠짐 */
+(function(){ try{ if(CC.syncExact.indexOf("cc_nxrvlater")<0) CC.syncExact.push("cc_nxrvlater"); }catch(e){} })();
+window.nxRvFin=async function(k,day,later){
+  if(window.ccPreview||window.ccViewUid){ try{ toast("관리자 미리보기 — 저장하지 않습니다"); }catch(e){} return; }
+  const RDJ=function(n){ try{ return JSON.parse(localStorage.getItem(n)||"{}")||{}; }catch(e){ return {}; } };
+  const L=RDJ("cc_nxrvlater");
+  if(!later){ delete L[k]; localStorage.setItem("cc_nxrvlater",JSON.stringify(L)); try{ nxChk(day+"|"+k,true); }catch(e){} return; }
+  L[k]={d:ccISO(ccToday())}; localStorage.setItem("cc_nxrvlater",JSON.stringify(L)); try{ nxChk(day+"|"+k,true); }catch(e){}
+  let ox=0, mc=0, err="";
+  try{
+    const p=k.split("|"), t=p[0], key=k.slice(t.length+1); let o=null;
+    ccFlat(t,ccPlanOf(t)).some(function(x){ if(x.key===key){ o=x; return true; } return false; });
+    if(!o) throw new Error("강의를 찾지 못했습니다");
+    const sh=window.ccSharedName&&ccSharedName(t,o.l,o.si,o.src,o.i), subj=sh?sh.list[0]:o.l, stage=CC_STAGES[t][o.si], lec=String(o.i+1);
+    await nmRvLoad(); await nmRvBank(); if(NM_RV.err) throw new Error(nmRvErrText());
+    const H=RDJ("cc_qb_hist"), rows=await ccQBLoadRaw("1차"), T=nmRvT();
+    for(const q of rows){
+      if(q.subject!==subj||String(q.stage||"").split(" · ")[0]!==stage||String(q.lec)!==lec) continue;
+      if(q.qtype!=="OX"&&q.qtype!=="5지택일"&&q.qtype!=="콤보형") continue;
+      const h=String(H[q.id]||""); if(!h||h.slice(-1)!=="X") continue;   /* 마지막 풀이가 틀린 문항만 */
+      const qk=nmRvKey(q), ex=NM_RV.rows[qk]; if(ex&&!ex.graduated) continue;   /* 이미 복습 · 오답노트에 있는 문항은 그대로 */
+      await nmRvSave(Object.assign({},ex||{},{user_id:ccUid,qkey:qk,qid:q.id,subject:q.subject,lec:q.lec,first_date:T,mark:"재복습",step:9,next_due:null,correct_streak:0,graduated:false,in_note:true,final_done:false,final_ok:null,last_review:null,reviews:0}));
+      if(q.qtype==="OX") ox++; else mc++;
+    }
+  }catch(e){ err=String(e&&e.message||e); console.warn("[차후 재복습]",e); }
+  const L2=RDJ("cc_nxrvlater"); if(L2[k]){ L2[k].ox=ox; L2[k].mc=mc; L2[k].n=ox+mc; localStorage.setItem("cc_nxrvlater",JSON.stringify(L2)); }
+  try{ toast(err?("오답노트에 쌓지 못했습니다 — "+err):(ox+mc?"OX 오답 "+ox+"문항 · 5지택일 오답 "+mc+"문항이 오답노트에 쌓였습니다":"틀린 문항이 없어 오답노트에 쌓인 문항이 없습니다")); }catch(e){}
+  try{ nxRender(); }catch(e){} };
+/* 오답노트: 차후 재복습 문항 — 여기서 바로 풀기 (다른 날 두 번 맞히면 빠짐) */
+window.nmRvLtItem=function(r,q,i){
+  const E=nmRvEsc, ox=q.qtype==="OX", ch=ox?["O","X"]:nmRvChoices(q), T=nmRvT(), id="lt"+i;
+  const st=r.last_review===T?(r.correct_streak>0?'<span class="nmrvdone">✓ 오늘 맞힘 — 다른 날 한 번 더 맞히면 빠집니다</span>':'<span class="nmrvagain">오늘 틀림</span>'):(r.correct_streak>0?'<span class="nmrvdone">✓ 한 번 맞힘 — 한 번 더</span>':'');
+  return '<div class="nmrvitem nmlt"><div class="nmrvmeta">'+(i+1)+'. '+E(q.stage||"")+' '+E(ccJindo(r.lec||1))+' · '+(ox?'OX':'5지택일')+' · '+nmRvMD(r.first_date)+' 차후 재복습'+(st?' · '+st:'')+'</div>'+
+    '<div class="nmrvq sm">'+E(q.question)+'</div>'+(q.case_text?'<div class="nmrvcase">'+E(q.case_text)+'</div>':'')+
+    (r.last_review===T?'':'<div class="nmrvlt" id="'+id+'">'+ch.map(function(x,ci){ return '<button type="button" onclick="nmRvLtAns(\''+E(r.qkey).replace(/'/g,"\\'")+'\','+(ox?'\''+x+'\'':(ci+1))+')">'+(ox?x:"①②③④⑤⑥⑦⑧"[ci]+' '+E(x))+'</button>'; }).join("")+'</div>')+
+    '<details class="nmrvdet"><summary>정답 · 해설 보기</summary><div class="nmrvopt right">정답: '+E(ox?String(q.answer||"").toUpperCase():"①②③④⑤⑥⑦⑧"[(parseInt(q.answer,10)||1)-1]+' '+(ch[(parseInt(q.answer,10)||1)-1]||""))+'</div>'+(q.explanation?'<div class="nmrvexp">💡 '+E(q.explanation)+'</div>':'')+'</details>'+
+    nmRvNoteForm(r,"rvl"+i)+'</div>';
+};
+window.nmRvLtAns=async function(qk,v){
+  const r=NM_RV.rows[qk], q=NM_RV.bank&&NM_RV.bank.byKey[qk]; if(!r||!q) return;
+  const T=nmRvT(), ok=q.qtype==="OX"?String(q.answer||"").trim().toUpperCase()===v:String(parseInt(q.answer,10))===String(v);
+  if(r.last_review===T) return;
+  const n=Object.assign({},r); n.reviews=(n.reviews||0)+1; n.last_review=T;
+  if(ok){ n.correct_streak=(n.correct_streak||0)+1; if(n.correct_streak>=2){ n.graduated=true; } } else n.correct_streak=0;
+  try{ const H=JSON.parse(localStorage.getItem("cc_qb_hist")||"{}")||{}; H[q.id]=(String(H[q.id]||"")+(ok?"O":"X")).slice(-12); localStorage.setItem("cc_qb_hist",JSON.stringify(H)); }catch(e){}
+  try{ await nmRvSave(n); }catch(e){ try{ toast("저장하지 못했습니다 — "+ccErr(e)); }catch(x){} return; }
+  try{ toast(ok?(n.graduated?"⭕ 정답 — 두 번 맞혀 오답노트에서 빠졌습니다":"⭕ 정답 — 다른 날 한 번 더 맞히면 빠집니다"):"❌ 오답 — 정답·해설을 확인하세요"); }catch(e){}
+  nmRvNoteDraw(); };
+(function(){ try{ const c=new CSSStyleSheet(); c.replaceSync('html body #nxMine#nxMine .rvsel.rv2 button.lt.on{background:#6d3fa0;border-color:#6d3fa0;color:#fff}html body #nxMine#nxMine .rvltn{font-size:11px;color:#6d3fa0;margin:2px 0 8px 64px}'+
+  '.nmrvlt{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.nmrvlt button{font-size:12px;padding:5px 12px;border:1px solid #cfc7ae;border-radius:8px;background:#fff;color:#334155;cursor:pointer;text-align:left}.nmrvlt button:hover{border-color:#b8921d}');
+  document.adoptedStyleSheets=document.adoptedStyleSheets.concat([c]); }catch(e){} })();
 </script>
 </body>
 </html>
