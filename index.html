@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-25 13:10 목표합격안진단_학생안내">
+<meta name="cc-build" content="2026-11-25 10:40 진단기록_일괄조회">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -10888,9 +10888,12 @@ NM_ADV.chk={};
 window.nmGoalStage=function(uid){ try{ const nx=nxAdmCalc(uid,"1차"); if(!nx||!nx.stg) return null; let last=null;
     for(let i=0;i<nx.stg.length;i++){ const x=nx.stg[i]; if(x.n>0&&x.d>=x.n) last=x.si; else break; }
     return last; }catch(e){ return null; } };
-window.nmGoalChkGet=function(uid){ const v=NM_ADV.chk[uid];
-  if(v===undefined){ NM_ADV.chk[uid]=null; (async function(){ try{ const r=await sb.from("cc_settings").select("value").eq("key","nm_rec1chk_"+uid).maybeSingle(); if(!r.error&&r.data){ const x=r.data.value; NM_ADV.chk[uid]=(typeof x==="string"?JSON.parse(x||"null"):x)||null; try{ ccAdmStuPanel(); }catch(e){} } }catch(e){} })(); return null; }
-  return v; };
+/* 진단 기록은 한 번의 조회로 전체를 받아 둔다 (수강생 수만큼 서버 호출·재그리기 방지) */
+window.nmGoalChkGet=function(uid){
+  if(!NM_ADV.chkP){ NM_ADV.chkP=(async function(){ try{ if(!sb) return; const r=await sb.from("cc_settings").select("key,value").like("key","nm_rec1chk_%");
+      if(!r.error&&r.data){ let n=0; r.data.forEach(function(row){ try{ const x=row.value; const u=String(row.key).slice(11); if(NM_ADV.chk[u]===undefined||NM_ADV.chk[u]===null){ NM_ADV.chk[u]=(typeof x==="string"?JSON.parse(x||"null"):x)||null; n++; } }catch(e){} });
+        if(n){ try{ ccAdmStuPanel(); }catch(e){} try{ nmAdvSentRefresh(); }catch(e){} } } }catch(e){} })(); }
+  return NM_ADV.chk[uid]||null; };
 window.nmGoalChkDone=async function(uid){ if(!uid) return; const si=nmGoalStage(uid); if(si==null) return; const c=nmGoalChkGet(uid); if(c&&c.si>=si) return;
   const o={si:si,at:new Date().toISOString()}; NM_ADV.chk[uid]=o;
   try{ await sb.from("cc_settings").upsert([{key:"nm_rec1chk_"+uid,value:JSON.stringify(o),updated_at:o.at}],{onConflict:"key"}); }catch(e){}
