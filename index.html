@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-25 09:25 관리자_수강생목록_홈">
+<meta name="cc-build" content="2026-11-25 10:15 진단카드_버튼정리">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -6449,18 +6449,25 @@ function ccAdmStuPanel(){
     pn.style.cssText="margin:14px 0 6px;padding:12px 14px;border:1.5px solid var(--gold);border-radius:12px;background:rgba(232,185,60,.07)";
     const hh=document.getElementById("homeHero");   /* (2026-11-25) 홈 화면에서도 보이게 — 홈 위로 */
     if(hh&&hh.parentNode) hh.parentNode.insertBefore(pn,hh); else { const hb=ds.querySelector(".homebtn"); ds.insertBefore(pn,hb?hb.nextSibling:ds.firstChild); } }
-  const L=ccAdmStuList(), q=CC_ASQ.trim(), cur=window.ccViewUid;
-  const F=L.filter(function(pf){ return !q||String(pf.name||"").indexOf(q)>=0||String(pf.login_id||"").indexOf(q)>=0; });
-  const chip=function(on,label,sub,fn){ return '<button class="mini" style="margin:3px 4px 3px 0;'+(on?'background:var(--gold);color:var(--navy);border-color:var(--gold);':'')+'" onclick="'+fn+'">'+label+(sub?' <small style="opacity:.75;font-weight:500">'+sub+'</small>':'')+'</button>'; };
-  pn.innerHTML='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px"><b style="color:var(--gold)">👥 수강생 목록</b>'+
-    '<small style="color:var(--mute)">이름을 누르면 그 수강생의 화면을 그대로 봅니다 (열람 전용) · 전체 '+L.length+'명</small>'+
-    '<input id="ccAsQ" placeholder="이름·아이디 검색" value="'+ccEsc(q)+'" oninput="CC_ASQ=this.value;clearTimeout(window.__ccAsT);window.__ccAsT=setTimeout(function(){ccAdmStuPanel();var e=document.getElementById(\'ccAsQ\');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},250)" style="margin-left:auto;padding:5px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:.8rem;min-width:160px"></div>'+
-    '<div style="max-height:150px;overflow:auto">'+chip(!cur,'📄 견본 화면','빈 계획',"ccAdmStuSample()")+
-    (F.length?F.map(function(pf){ return chip(cur===pf.id,ccEsc(pf.name||pf.login_id),ccEsc((pf.track||"1차")+(pf.active===false?" · 정지":"")),"ccAdmStuGo('"+pf.id+"')"); }).join(""):
-      (L.length?'<small style="color:var(--mute)">검색 결과가 없습니다</small>':'<small style="color:var(--mute)">수강생 목록을 불러오는 중이거나 아직 수강생이 없습니다</small>'))+'</div>';
+  /* (2026-11-25) 200명 이상 대비: [1차][2차][동차] 버튼 → 누르면 그 유형 수강생이 아래로 세로 목록 (맨 위 이름·아이디 검색) */
+  const L=ccAdmStuList(), q=CC_ASQ.trim(), cur=window.ccViewUid, T=window.CC_AST||"";
+  const TR=[["1차","1차"],["2차","2차"],["1+2차","동차"]];
+  const cnt=function(t){ return L.filter(function(pf){ return (pf.track||"1차")===t; }).length; };
+  const tb=function(t,lab){ const on=T===t; return '<button class="mini" style="margin:0 6px 0 0;min-width:84px;'+(on?'background:var(--gold);color:var(--navy);border-color:var(--gold);':'')+'" onclick="window.CC_AST=(window.CC_AST===\''+t+'\'?\'\':\''+t+'\');CC_ASQ=\'\';ccAdmStuPanel();setTimeout(function(){var e=document.getElementById(\'ccAsQ\');if(e)e.focus();},30)">'+lab+' <small style="opacity:.75">'+cnt(t)+'명</small> '+(on?'▴':'▾')+'</button>'; };
+  let h='<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px 0"><b style="color:var(--gold);margin-right:12px">👥 수강생 목록</b>'+TR.map(function(x){ return tb(x[0],x[1]); }).join("")+'</div>';
+  if(T){
+    const F=L.filter(function(pf){ return (pf.track||"1차")===T&&(!q||String(pf.name||"").indexOf(q)>=0||String(pf.login_id||"").indexOf(q)>=0); });
+    h+='<div style="margin-top:8px;border:1px solid var(--line);border-radius:10px;background:var(--card,#fff);padding:8px">'+
+      '<input id="ccAsQ" placeholder="이름·아이디 검색" value="'+ccEsc(q)+'" oninput="CC_ASQ=this.value;clearTimeout(window.__ccAsT);window.__ccAsT=setTimeout(function(){ccAdmStuPanel();var e=document.getElementById(\'ccAsQ\');if(e){e.focus();e.setSelectionRange(e.value.length,e.value.length);}},250)" style="width:100%;box-sizing:border-box;padding:6px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:.82rem;margin-bottom:6px">'+
+      '<div style="max-height:260px;overflow:auto">'+(F.length?F.map(function(pf){ const on=cur===pf.id;
+        return '<button class="mini ccasrow" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;margin:0 0 4px;'+(on?'background:var(--gold);color:var(--navy);border-color:var(--gold);':'')+'" onclick="ccAdmStuGo(\''+pf.id+'\')"><b>'+ccEsc(pf.name||pf.login_id)+'</b><small style="opacity:.7">'+ccEsc(pf.login_id||"")+(pf.active===false?' · 정지':'')+'</small></button>'; }).join(""):
+        '<small style="color:var(--mute)">'+(L.length?'검색 결과가 없습니다':'수강생 목록을 불러오는 중이거나 아직 수강생이 없습니다')+'</small>')+'</div></div>';
+  }
+  pn.innerHTML=h;
 }
 window.ccAdmStuGo=async function(id){
   const pf=ccAdmStuList().find(function(x){ return x.id===id; }); if(!pf) return;
+  window.CC_AST=""; CC_ASQ="";   /* (2026-11-25) 고르면 목록은 접고, 그 아래로 이 수강생 진단 카드가 펼쳐짐 */
   await ccAdminViewPf(pf);
   setTimeout(function(){ try{ nxHome(); }catch(e){} ccAdmStuPanel(); },120);   /* (2026-11-25) 수강생과 똑같이 홈부터 */
 };
@@ -6680,13 +6687,17 @@ window.nmAdvCard=function(){
   const uid=window.ccViewUid; if(!uid) return "";
   const pf=nmAdvPf(uid); if(!pf) return "";
   const S=nmChkFor(uid), col={warn:"#e0685a",weak:"#e0a44a",ok:"#3fb27f"};
+  /* (2026-11-25) 위: [오늘의합격조언미리보기][조언직접쓰기][2차합격평균점수] · 줄마다 [생성조언]은 [오늘의합격조언미리보기] 바로 밑에 맞춤 (2열 격자) */
+  const L='style="font-size:.84rem;line-height:1.55;padding:6px 0;border-bottom:1px solid var(--line)"', R='style="padding:6px 0;border-bottom:1px solid var(--line)"';
   return '<div style="margin-top:10px;padding:10px 12px;border-top:1px dashed var(--gold)">'+
-    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap"><b>🩺 '+nmAdvE(pf.name||pf.login_id)+' 진단</b><small style="color:var(--mute)">마지막 접속 '+nmAdvE(ccLastStr(pf.last_seen))+' · 복습 기록 '+(NM_ADV.rv[uid]||[]).length+'문항</small>'+
-    '<span style="margin-left:auto"></span><button class="mini" onclick="nmAdvPopup(true)">👁 오늘의 합격조언 미리보기</button><button class="mini" onclick="nmAdvCompose(\''+uid+'\',\'free\')">✍️ 직접 조언 쓰기</button><button class="mini" onclick="nmPassAvgOpen()">⚙️ 2차 합격평균점수</button></div>'+
-    (NM_ADV.err==="missing"?'<div class="tksub" style="color:#e0685a">조언 발송을 쓰려면 nomusa_advice.sql을 먼저 실행해 주세요</div>':'')+
-    (S.length?S.map(function(s){ return '<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--line)"><span style="flex:none;font-size:.72rem;font-weight:700;color:#fff;background:'+col[s.lvl]+';border-radius:6px;padding:2px 7px">'+NM_ADV_KIND[s.k]+'</span>'+
-      '<div style="flex:1;font-size:.84rem;line-height:1.55">'+s.adm+'<br>'+nmAdvFollow(uid,s.k,true)+'</div><button class="mini" style="flex:none" onclick="nmAdvCompose(\''+uid+'\',\''+s.k+'\')">조언 쓰기</button></div>'; }).join(""):
-      '<div class="tksub">아직 진단할 기록이 적습니다 (복습 기록이 쌓이면 신호가 잡힙니다)</div>')+
+    '<div style="display:grid;grid-template-columns:1fr auto;column-gap:10px;align-items:start">'+
+    '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:4px"><b>🩺 '+nmAdvE(pf.name||pf.login_id)+' 진단</b><small style="color:var(--mute)">마지막 접속 '+nmAdvE(ccLastStr(pf.last_seen))+' · 복습 기록 '+(NM_ADV.rv[uid]||[]).length+'문항</small></div>'+
+    '<div style="display:flex;gap:6px;padding-bottom:4px"><button class="mini" style="margin:0" onclick="nmAdvPopup(true)">👁 오늘의합격조언미리보기</button><button class="mini" style="margin:0" onclick="nmAdvCompose(\''+uid+'\',\'free\')">✍️ 조언직접쓰기</button><button class="mini" style="margin:0" onclick="nmPassAvgOpen()">⚙️ 2차합격평균점수</button></div>'+
+    (NM_ADV.err==="missing"?'<div class="tksub" style="color:#e0685a;grid-column:1/-1">조언 발송을 쓰려면 nomusa_advice.sql을 먼저 실행해 주세요</div>':'')+
+    (S.length?S.map(function(s){ return '<div '+L+'><span style="display:inline-block;font-size:.72rem;font-weight:700;color:#fff;background:'+col[s.lvl]+';border-radius:6px;padding:2px 7px;margin-right:8px">'+NM_ADV_KIND[s.k]+'</span>'+s.adm+'<br>'+nmAdvFollow(uid,s.k,true)+'</div>'+
+      '<div '+R+'><button class="mini" style="margin:0" onclick="nmAdvCompose(\''+uid+'\',\''+s.k+'\')">생성조언</button></div>'; }).join(""):
+      '<div class="tksub" style="grid-column:1/-1">아직 진단할 기록이 적습니다 (복습 기록이 쌓이면 신호가 잡힙니다)</div>')+
+    '</div>'+
     (function(){ const H=NM_ADV.all.filter(function(a){ return a.user_id===uid; }).slice(0,4); if(!H.length) return "";
       return '<div style="margin-top:6px;font-size:.8rem;color:var(--mute)"><b>보낸 조언</b> '+H.map(function(a){ return nmAdvDate(a.created_at)+' '+nmAdvE(NM_ADV_KIND[a.kind]||a.kind)+'('+(a.read_at?'읽음':'안 읽음')+')'; }).join(' · ')+'</div>'; })()+
     '</div>';
@@ -6747,7 +6758,10 @@ window.nmAdvRead=function(){
     pn.apply(this,arguments);
     const el=document.getElementById("ccAdmStu"); if(!el) return;
     if(!NM_ADV.P){ nmAdvEnsure().then(function(){ ccAdmStuPanel(); }); return; }
-    el.querySelectorAll("button[onclick^=\"ccAdmStuGo('\"]").forEach(function(b){ const m=/ccAdmStuGo\('([^']+)'\)/.exec(b.getAttribute("onclick")); if(m) b.insertAdjacentHTML("beforeend",nmAdvBadge(m[1])); });
+    /* (2026-11-25) ⚠ 표시는 펼친 목록에서만 · 10명씩 나눠 계산 (200명 이상에서도 멈추지 않게) */
+    const bs=[].slice.call(el.querySelectorAll("button[onclick^=\"ccAdmStuGo('\"]")); let bi=0; const gen=(window.__ccAsGen=(window.__ccAsGen||0)+1);
+    const step=function(){ if(gen!==window.__ccAsGen) return; for(let k=0;k<10&&bi<bs.length;k++,bi++){ const b=bs[bi]; const m=/ccAdmStuGo\('([^']+)'\)/.exec(b.getAttribute("onclick")); if(m&&b.isConnected) try{ b.insertAdjacentHTML("beforeend",nmAdvBadge(m[1])); }catch(e){} } if(bi<bs.length) setTimeout(step,0); };
+    step();
     el.insertAdjacentHTML("beforeend",nmAdvCard());
   };
 })();
