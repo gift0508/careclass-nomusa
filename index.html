@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="cc-build" content="2026-11-25 10:15 진단카드_버튼정리">
+<meta name="cc-build" content="2026-11-25 10:20 진단카드_실선">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -6688,14 +6688,14 @@ window.nmAdvCard=function(){
   const pf=nmAdvPf(uid); if(!pf) return "";
   const S=nmChkFor(uid), col={warn:"#e0685a",weak:"#e0a44a",ok:"#3fb27f"};
   /* (2026-11-25) 위: [오늘의합격조언미리보기][조언직접쓰기][2차합격평균점수] · 줄마다 [생성조언]은 [오늘의합격조언미리보기] 바로 밑에 맞춤 (2열 격자) */
-  const L='style="font-size:.84rem;line-height:1.55;padding:6px 0;border-bottom:1px solid var(--line)"', R='style="padding:6px 0;border-bottom:1px solid var(--line)"';
+  const L='style="font-size:.84rem;line-height:1.55;padding:6px 0"', R='style="padding:6px 0"';
   return '<div style="margin-top:10px;padding:10px 12px;border-top:1px dashed var(--gold)">'+
     '<div style="display:grid;grid-template-columns:1fr auto;column-gap:10px;align-items:start">'+
     '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-bottom:4px"><b>🩺 '+nmAdvE(pf.name||pf.login_id)+' 진단</b><small style="color:var(--mute)">마지막 접속 '+nmAdvE(ccLastStr(pf.last_seen))+' · 복습 기록 '+(NM_ADV.rv[uid]||[]).length+'문항</small></div>'+
     '<div style="display:flex;gap:6px;padding-bottom:4px"><button class="mini" style="margin:0" onclick="nmAdvPopup(true)">👁 오늘의합격조언미리보기</button><button class="mini" style="margin:0" onclick="nmAdvCompose(\''+uid+'\',\'free\')">✍️ 조언직접쓰기</button><button class="mini" style="margin:0" onclick="nmPassAvgOpen()">⚙️ 2차합격평균점수</button></div>'+
     (NM_ADV.err==="missing"?'<div class="tksub" style="color:#e0685a;grid-column:1/-1">조언 발송을 쓰려면 nomusa_advice.sql을 먼저 실행해 주세요</div>':'')+
-    (S.length?S.map(function(s){ return '<div '+L+'><span style="display:inline-block;font-size:.72rem;font-weight:700;color:#fff;background:'+col[s.lvl]+';border-radius:6px;padding:2px 7px;margin-right:8px">'+NM_ADV_KIND[s.k]+'</span>'+s.adm+'<br>'+nmAdvFollow(uid,s.k,true)+'</div>'+
-      '<div '+R+'><button class="mini" style="margin:0" onclick="nmAdvCompose(\''+uid+'\',\''+s.k+'\')">생성조언</button></div>'; }).join(""):
+    (S.length?S.map(function(s){ return '<div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;border-bottom:1px solid var(--line)"><div '+L+'><span style="display:inline-block;font-size:.72rem;font-weight:700;color:#fff;background:'+col[s.lvl]+';border-radius:6px;padding:2px 7px;margin-right:8px">'+NM_ADV_KIND[s.k]+'</span>'+s.adm+'<br>'+nmAdvFollow(uid,s.k,true)+'</div>'+
+      '<div '+R+'><button class="mini" style="margin:0" onclick="nmAdvCompose(\''+uid+'\',\''+s.k+'\')">생성조언</button></div></div>'; }).join(""):
       '<div class="tksub" style="grid-column:1/-1">아직 진단할 기록이 적습니다 (복습 기록이 쌓이면 신호가 잡힙니다)</div>')+
     '</div>'+
     (function(){ const H=NM_ADV.all.filter(function(a){ return a.user_id===uid; }).slice(0,4); if(!H.length) return "";
